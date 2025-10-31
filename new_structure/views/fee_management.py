@@ -2,8 +2,8 @@
 Fee Management Blueprint - Routes for managing fees, payments, and student accounts.
 Phase 1: Basic CRUD operations for testing frontend integration.
 """
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
+from functools import wraps
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -12,12 +12,32 @@ from new_structure.models.fee_management import (
     FeeStructure, StudentFeeAccount, PaymentMethod, Payment, PaymentAllocation
 )
 from new_structure.models.academic import Student, Grade, Term
+from new_structure.services import is_authenticated, get_role
 
 fee_bp = Blueprint('fees', __name__, url_prefix='/fees')
 
 
+# Authentication decorator for fee management routes
+def fee_access_required(f):
+    """Decorator to require authenticated user (any role: headteacher, classteacher, teacher)"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_authenticated(session):
+            flash('Please log in to access fee management.', 'warning')
+            return redirect(url_for('auth.classteacher_login'))
+        
+        role = get_role(session)
+        # Allow all teacher roles to access fee management
+        if role not in ('headteacher', 'classteacher', 'teacher'):
+            flash('Access denied. Fee management requires staff privileges.', 'error')
+            return redirect(url_for('auth.classteacher_login'))
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @fee_bp.route('/')
-@login_required
+@fee_access_required
 def index():
     """Dashboard showing fee management overview"""
     total_fees = FeeStructure.query.filter_by(is_active=True).count()
@@ -35,7 +55,7 @@ def index():
 
 
 @fee_bp.route('/structures')
-@login_required
+@fee_access_required
 def fee_structures():
     """List all fee structures"""
     fees = FeeStructure.query.filter_by(is_active=True).order_by(
@@ -47,11 +67,12 @@ def fee_structures():
 
 
 @fee_bp.route('/structures/create', methods=['GET', 'POST'])
-@login_required
+@fee_access_required
 def create_fee_structure():
     """Create a new fee structure"""
     if request.method == 'POST':
         try:
+            teacher_id = session.get('teacher_id')
             fee = FeeStructure(
                 fee_type_name=request.form['fee_type_name'],
                 description=request.form.get('description'),
@@ -62,7 +83,7 @@ def create_fee_structure():
                 allocation_priority=int(request.form.get('allocation_priority', 1)),
                 allow_partial_payment=request.form.get('allow_partial_payment') == 'on',
                 is_mandatory=request.form.get('is_mandatory') == 'on',
-                created_by=current_user.id if hasattr(current_user, 'id') else None
+                created_by=teacher_id
             )
             db.session.add(fee)
             db.session.commit()
@@ -77,7 +98,7 @@ def create_fee_structure():
 
 
 @fee_bp.route('/student/<int:student_id>')
-@login_required
+@fee_access_required
 def student_fees(student_id):
     """View all fees for a specific student"""
     student = Student.query.get_or_404(student_id)
@@ -108,11 +129,12 @@ def student_fees(student_id):
 
 
 @fee_bp.route('/payment/record', methods=['GET', 'POST'])
-@login_required
+@fee_access_required
 def record_payment():
     """Record a new payment"""
     if request.method == 'POST':
         try:
+            teacher_id = session.get('teacher_id')
             student_id = int(request.form['student_id'])
             amount = Decimal(request.form['amount'])
             method_id = int(request.form['method_id'])
@@ -127,7 +149,7 @@ def record_payment():
                 reference=reference,
                 allocation_mode=allocation_mode,
                 payment_date=datetime.utcnow(),
-                recorded_by=current_user.id if hasattr(current_user, 'id') else None
+                recorded_by=teacher_id
             )
             db.session.add(payment)
             db.session.flush()  # Get payment ID
@@ -184,7 +206,7 @@ def record_payment():
 
 
 @fee_bp.route('/reports/balances')
-@login_required
+@fee_access_required
 def balance_report():
     """Show fee balances for all students"""
     # Get all students with outstanding balances
@@ -200,7 +222,7 @@ def balance_report():
 
 
 @fee_bp.route('/api/student/<int:student_id>/balance')
-@login_required
+@fee_access_required
 def api_student_balance(student_id):
     """API endpoint to get student's current balance"""
     accounts = StudentFeeAccount.query.filter_by(student_id=student_id).all()
