@@ -30,3 +30,10 @@ except ImportError:
     ParentStudent = None
     ParentEmailLog = None
     EmailTemplate = None
+
+# Import fee management models (with error handling for backward compatibility)
+try:
+    from .fee_management import FeeStructure
+except ImportError:
+    # Fee management models not available yet
+    FeeStructure = None
