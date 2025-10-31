@@ -223,7 +223,7 @@ def teacher_login():
         # Command injection protection
         if (RCEProtection.detect_code_injection(username) or
             RCEProtection.detect_code_injection(password)):
-            return render_template('teacher_.html', error='Invalid credentials')
+            return render_template('teacher_login.html', error='Invalid credentials')
 
         # Secure logging - don't expose usernames
         client_ip = request.environ.get('REMOTE_ADDR', 'unknown')
