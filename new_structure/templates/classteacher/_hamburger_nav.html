@@ -653,14 +653,14 @@
     } catch (e) {}
 
     // Close drawer when navigation links are clicked
-    const navLinks = drawer.querySelectorAll('.ct-nav a[href]');
-    navLinks.forEach(link => {
-      link.addEventListener('click', function(e) {
+    const navLinks = drawer.querySelectorAll(".ct-nav a[href]");
+    navLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
         // Only close if it's not a hash link (for anchors like #generate-section)
-        const href = this.getAttribute('href');
-        if (href && !href.startsWith('#')) {
+        const href = this.getAttribute("href");
+        if (href && !href.startsWith("#")) {
           // Mark that user manually navigated - prevents auto-open on next page
-          sessionStorage.setItem('ct-drawer-manual-nav', 'true');
+          sessionStorage.setItem("ct-drawer-manual-nav", "true");
           // Close drawer immediately when navigation link is clicked
           closeDrawer();
         }
@@ -675,14 +675,14 @@
       window.innerWidth < 769
     ) {
       // Check if we've already auto-opened in this session OR if user manually navigated
-      const hasAutoOpened = sessionStorage.getItem('ct-drawer-auto-opened');
-      const manualNav = sessionStorage.getItem('ct-drawer-manual-nav');
-      
+      const hasAutoOpened = sessionStorage.getItem("ct-drawer-auto-opened");
+      const manualNav = sessionStorage.getItem("ct-drawer-manual-nav");
+
       if (!hasAutoOpened && !manualNav) {
         // Use setTimeout to ensure this happens after page render
         setTimeout(() => {
           openDrawer();
-          sessionStorage.setItem('ct-drawer-auto-opened', 'true');
+          sessionStorage.setItem("ct-drawer-auto-opened", "true");
         }, 100);
       }
     }
