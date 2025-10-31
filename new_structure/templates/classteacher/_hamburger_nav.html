@@ -663,13 +663,32 @@
     } catch (e) {}
 
     // Ensure ARIA state matches when auto-open is desired on mobile
+    // Only auto-open on initial page load, not on subsequent navigation
     if (
       document.body &&
       document.body.getAttribute("data-ct-auto-open") === "true" &&
       window.innerWidth < 769
     ) {
-      openDrawer();
+      // Check if we've already auto-opened in this session
+      const hasAutoOpened = sessionStorage.getItem('ct-drawer-auto-opened');
+      if (!hasAutoOpened) {
+        openDrawer();
+        sessionStorage.setItem('ct-drawer-auto-opened', 'true');
+      }
     }
+    
+    // Close drawer when navigation links are clicked
+    const navLinks = drawer.querySelectorAll('.ct-nav a[href]');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        // Only close if it's not a hash link (for anchors like #generate-section)
+        const href = this.getAttribute('href');
+        if (href && !href.startsWith('#')) {
+          // Close drawer immediately when navigation link is clicked
+          closeDrawer();
+        }
+      });
+    });
 
     // Initialize theme last to ensure icon state matches
     initTheme();
