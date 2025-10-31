@@ -237,16 +237,6 @@
     white-space: nowrap;
     border: 0;
   }
-  /* Auto-open on mobile when body has data-ct-auto-open="true" (prevents flash) */
-  @media (max-width: 768px) {
-    body[data-ct-auto-open="true"] #ctOverlay {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    body[data-ct-auto-open="true"] #ctDrawer {
-      left: 0;
-    }
-  }
   /* Show only on mobile/tablet */
   @media (min-width: 769px) {
     .ct-menu-btn {
@@ -662,21 +652,6 @@
       }
     } catch (e) {}
 
-    // Ensure ARIA state matches when auto-open is desired on mobile
-    // Only auto-open on initial page load, not on subsequent navigation
-    if (
-      document.body &&
-      document.body.getAttribute("data-ct-auto-open") === "true" &&
-      window.innerWidth < 769
-    ) {
-      // Check if we've already auto-opened in this session
-      const hasAutoOpened = sessionStorage.getItem('ct-drawer-auto-opened');
-      if (!hasAutoOpened) {
-        openDrawer();
-        sessionStorage.setItem('ct-drawer-auto-opened', 'true');
-      }
-    }
-    
     // Close drawer when navigation links are clicked
     const navLinks = drawer.querySelectorAll('.ct-nav a[href]');
     navLinks.forEach(link => {
@@ -684,11 +659,33 @@
         // Only close if it's not a hash link (for anchors like #generate-section)
         const href = this.getAttribute('href');
         if (href && !href.startsWith('#')) {
+          // Mark that user manually navigated - prevents auto-open on next page
+          sessionStorage.setItem('ct-drawer-manual-nav', 'true');
           // Close drawer immediately when navigation link is clicked
           closeDrawer();
         }
       });
     });
+
+    // Ensure ARIA state matches when auto-open is desired on mobile
+    // Only auto-open on initial page load, not on subsequent navigation
+    if (
+      document.body &&
+      document.body.getAttribute("data-ct-auto-open") === "true" &&
+      window.innerWidth < 769
+    ) {
+      // Check if we've already auto-opened in this session OR if user manually navigated
+      const hasAutoOpened = sessionStorage.getItem('ct-drawer-auto-opened');
+      const manualNav = sessionStorage.getItem('ct-drawer-manual-nav');
+      
+      if (!hasAutoOpened && !manualNav) {
+        // Use setTimeout to ensure this happens after page render
+        setTimeout(() => {
+          openDrawer();
+          sessionStorage.setItem('ct-drawer-auto-opened', 'true');
+        }, 100);
+      }
+    }
 
     // Initialize theme last to ensure icon state matches
     initTheme();
