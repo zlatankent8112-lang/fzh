@@ -4,6 +4,10 @@ import sys
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
+from dotenv import load_dotenv
+
+# Load .env file
+load_dotenv()
 
 config = context.config
 if config.config_file_name is not None:
@@ -26,12 +30,21 @@ except Exception as e:  # pragma: no cover
 
 target_metadata = db.metadata
 
-# Database URL from environment or fallback to config value
-DB_URL = os.environ.get('DB_URL') or os.environ.get('SQLALCHEMY_DATABASE_URI')
-if DB_URL:
-    # Escape % for configparser interpolation handling
-    safe_url = DB_URL.replace('%', '%%')
-    config.set_main_option('sqlalchemy.url', safe_url)
+# Build Database URL from .env variables
+from urllib.parse import quote_plus
+MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
+MYSQL_PORT = os.getenv('MYSQL_PORT', '3306')
+MYSQL_USER = os.getenv('MYSQL_USER', 'root')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'hillview_demo001')
+
+# URL-encode password to handle special characters
+_ENC_PWD = quote_plus(MYSQL_PASSWORD) if MYSQL_PASSWORD else ''
+DB_URL = f"mysql+pymysql://{MYSQL_USER}:{_ENC_PWD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}?charset=utf8mb4"
+
+# Escape % for configparser interpolation handling
+safe_url = DB_URL.replace('%', '%%')
+config.set_main_option('sqlalchemy.url', safe_url)
 
 
 def run_migrations_offline():
