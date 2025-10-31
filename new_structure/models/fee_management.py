@@ -206,7 +206,7 @@ class StudentFeeAccount(db.Model):
         return {
             'id': self.id,
             'student_id': self.student_id,
-            'student_name': f"{self.student.first_name} {self.student.last_name}" if self.student else None,
+            'student_name': self.student.name if self.student else None,
             'fee_structure_id': self.fee_structure_id,
             'fee_type_name': self.fee_structure.fee_type_name if self.fee_structure else None,
             'academic_year': self.academic_year,
@@ -395,3 +395,191 @@ class PaymentAllocation(db.Model):
 
     def __repr__(self):
         return f'<PaymentAllocation payment={self.payment_id} account={self.student_fee_account_id} amount=KES{self.amount_allocated}>'
+
+
+class FeeInvoice(db.Model):
+    """Invoices generated for students (per term/year)."""
+    __tablename__ = 'fee_invoice'
+
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_number = db.Column(db.String(50), unique=True, nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    academic_year = db.Column(db.String(10), nullable=False)
+    term = db.Column(db.String(20), nullable=False)
+    issue_date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    due_date = db.Column(db.Date, nullable=True)
+    total_amount = db.Column(db.Numeric(10, 2), nullable=False)
+    status = db.Column(db.String(20), default='issued')  # issued, partially_paid, paid, canceled
+    generated_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    student = db.relationship('Student', backref='fee_invoices', lazy=True)
+    generator = db.relationship('Teacher', backref='generated_invoices', lazy=True)
+
+
+class FeeWaiver(db.Model):
+    """Scholarships/discounts granted to a student or a specific fee account."""
+    __tablename__ = 'fee_waiver'
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    student_fee_account_id = db.Column(db.Integer, db.ForeignKey('student_fee_account.id'), nullable=True)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    reason = db.Column(db.Text, nullable=True)
+    approved_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+    approved_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    student = db.relationship('Student', backref='fee_waivers', lazy=True)
+    approver = db.relationship('Teacher', backref='approved_waivers', lazy=True)
+    account = db.relationship('StudentFeeAccount', backref='waivers', lazy=True)
+
+
+class FeeReminder(db.Model):
+    """Log of reminders sent (SMS/Email)."""
+    __tablename__ = 'fee_reminder'
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    channel = db.Column(db.String(20), nullable=False)  # sms, email
+    message = db.Column(db.Text, nullable=False)
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='sent')  # sent, failed, queued
+    delivery_ref = db.Column(db.String(100), nullable=True)
+
+    student = db.relationship('Student', backref='fee_reminders', lazy=True)
+
+
+class Receipt(db.Model):
+    """Official receipt for a Payment (printable)."""
+    __tablename__ = 'receipt'
+
+    id = db.Column(db.Integer, primary_key=True)
+    receipt_number = db.Column(db.String(50), unique=True, nullable=False)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
+    issued_at = db.Column(db.DateTime, default=datetime.utcnow)
+    issued_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+
+    payment = db.relationship('Payment', backref='receipt', uselist=False, lazy=True)
+    issuer = db.relationship('Teacher', backref='issued_receipts', lazy=True)
+
+
+class MpesaTransaction(db.Model):
+    """M-PESA transaction log (manual/automated import)."""
+    __tablename__ = 'mpesa_transaction'
+
+    id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.String(50), unique=True, nullable=False)  # e.g., LNB7QW123
+    phone_number = db.Column(db.String(20), nullable=True)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    trans_time = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='received')  # received, matched, applied, failed
+    result_code = db.Column(db.String(10), nullable=True)
+    raw_payload = db.Column(db.Text, nullable=True)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=True)
+
+    payment = db.relationship('Payment', backref='mpesa_transactions', lazy=True)
+
+
+class FeeInvoice(db.Model):
+    """
+    Invoice generated for a student's term fees.
+    """
+    __tablename__ = 'fee_invoice'
+
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_number = db.Column(db.String(50), unique=True, nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    academic_year = db.Column(db.String(10), nullable=False)
+    term = db.Column(db.String(20), nullable=False)
+    total_amount = db.Column(db.Numeric(10, 2), nullable=False)
+    status = db.Column(db.String(20), default='issued')  # draft, issued, partial, paid, cancelled
+    due_date = db.Column(db.Date, nullable=True)
+    issued_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+
+    student = db.relationship('Student', backref='fee_invoices', lazy=True)
+    creator = db.relationship('Teacher', foreign_keys=[created_by], backref='created_invoices', lazy=True)
+
+    def __repr__(self):
+        return f'<FeeInvoice {self.invoice_number} student={self.student_id} total=KES{self.total_amount}>'
+
+
+class FeeWaiver(db.Model):
+    """Scholarships/discounts record applied to a specific StudentFeeAccount."""
+    __tablename__ = 'fee_waiver'
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_fee_account_id = db.Column(db.Integer, db.ForeignKey('student_fee_account.id'), nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    reason = db.Column(db.Text, nullable=True)
+    approved_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+    approved_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    account = db.relationship('StudentFeeAccount', backref='waivers', lazy=True)
+    approver = db.relationship('Teacher', backref='approved_waivers', lazy=True)
+
+    def __repr__(self):
+        return f'<FeeWaiver account={self.student_fee_account_id} amount=KES{self.amount}>'
+
+
+class FeeReminder(db.Model):
+    """SMS/Email reminder logs for fee follow-up."""
+    __tablename__ = 'fee_reminder'
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    channel = db.Column(db.String(10), default='sms')  # sms | email
+    message = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), default='sent')  # sent | failed
+    invoice_id = db.Column(db.Integer, db.ForeignKey('fee_invoice.id'), nullable=True)
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    student = db.relationship('Student', backref='fee_reminders', lazy=True)
+    invoice = db.relationship('FeeInvoice', backref='reminders', lazy=True)
+
+    def __repr__(self):
+        return f'<FeeReminder student={self.student_id} channel={self.channel} status={self.status}>'
+
+
+class Receipt(db.Model):
+    """Official receipt linked to a Payment."""
+    __tablename__ = 'receipt'
+
+    id = db.Column(db.Integer, primary_key=True)
+    receipt_number = db.Column(db.String(50), unique=True, nullable=False)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
+    issued_at = db.Column(db.DateTime, default=datetime.utcnow)
+    issued_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+
+    payment = db.relationship('Payment', backref='receipt', lazy=True, uselist=False)
+    issuer = db.relationship('Teacher', backref='issued_receipts', lazy=True)
+
+    def __repr__(self):
+        return f'<Receipt {self.receipt_number} payment={self.payment_id}>'
+
+
+class MpesaTransaction(db.Model):
+    """M-PESA transactions captured for later reconciliation to Payments."""
+    __tablename__ = 'mpesa_transaction'
+
+    id = db.Column(db.Integer, primary_key=True)
+    mpesa_code = db.Column(db.String(30), unique=True, nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
+    payer_name = db.Column(db.String(100), nullable=True)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    received_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='received')  # received | applied | failed
+    raw_payload = db.Column(db.Text, nullable=True)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=True)
+
+    payment = db.relationship('Payment', backref='mpesa_transactions', lazy=True)
+
+    def __repr__(self):
+        return f'<MpesaTransaction {self.mpesa_code} amount=KES{self.amount} status={self.status}>'

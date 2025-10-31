@@ -39,6 +39,11 @@ try:
         PaymentMethod,
         Payment,
         PaymentAllocation,
+        FeeInvoice,
+        FeeWaiver,
+        FeeReminder,
+        Receipt,
+        MpesaTransaction,
     )
 except ImportError:
     # Fee management models not available yet
@@ -47,3 +52,8 @@ except ImportError:
     PaymentMethod = None
     Payment = None
     PaymentAllocation = None
+    FeeInvoice = None
+    FeeWaiver = None
+    FeeReminder = None
+    Receipt = None
+    MpesaTransaction = None

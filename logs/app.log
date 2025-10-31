@@ -8248,3 +8248,17 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-10-31 18:05:10,671 - WARNING - c134a65b84ad4029addcd4f14aded917 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
 2025-10-31 18:05:23,701 - INFO - 8ed5dcf2b2fa4caba4e0d49bfced260a - audit - GET /permission/requests - AUDIT timestamp='[REDACTED-PHONE]31T12:20:23.701886' request_id='8ed5dcf2b2fa4caba4e0d49bfced260a' actor=2 action='access_granted' target='system_config:read' outcome='success' category='authorization' ip='127.0.0.1' user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36' severity='info' details={'ip': '127.0.0.1'}
 2025-10-31 18:05:23,753 - INFO - 8ed5dcf2b2fa4caba4e0d49bfced260a - audit - GET /permission/requests - AUDIT timestamp='[REDACTED-PHONE]31T12:20:23.753890' request_id='8ed5dcf2b2fa4caba4e0d49bfced260a' actor=2 action='authorize' target='system_config:read' outcome='success' category='authorization' ip='127.0.0.1' user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36' severity='info' details={}
+2025-11-01 01:56:48,165 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 01:56:48,563 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-11-01 01:56:48,618 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-01 01:56:58,075 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 01:57:33,439 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 01:57:33,989 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-11-01 01:57:34,011 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-01 01:57:35,807 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 01:58:00,776 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 01:58:03,092 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 01:58:50,418 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 01:58:52,600 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
