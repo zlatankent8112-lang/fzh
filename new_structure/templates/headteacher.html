@@ -747,8 +747,8 @@
                     clip-rule="evenodd"
                   />
                 </svg>
-                Excellent performance {% elif (dashboard_stats.avg_performance or 0) >=
-                60 %}
+                Excellent performance {% elif (dashboard_stats.avg_performance
+                or 0) >= 60 %}
                 <!-- Heroicon: check-circle (solid) -->
                 <svg class="heroicon" fill="currentColor" viewBox="0 0 24 24">
                   <path
@@ -1786,7 +1786,8 @@
           const counts = row.performance_counts || {};
           const ee = (Number(counts.EE1) || 0) + (Number(counts.EE2) || 0);
           const me = (Number(counts.ME1) || 0) + (Number(counts.ME2) || 0);
-          const approaching = (Number(counts.AE1) || 0) + (Number(counts.AE2) || 0);
+          const approaching =
+            (Number(counts.AE1) || 0) + (Number(counts.AE2) || 0);
           const below = (Number(counts.BE1) || 0) + (Number(counts.BE2) || 0);
           if (!byClass[key])
             byClass[key] = {
@@ -1816,7 +1817,8 @@
           // Calculate percentages correctly (students, not marks)
           const excellence = v.total > 0 ? (v.ee / v.total) * 100 : 0;
           const mastery = v.total > 0 ? (v.me / v.total) * 100 : 0;
-          const approachingRate = v.total > 0 ? (v.approaching / v.total) * 100 : 0;
+          const approachingRate =
+            v.total > 0 ? (v.approaching / v.total) * 100 : 0;
           const belowRate = v.total > 0 ? (v.below / v.total) * 100 : 0;
           let value = average;
           let sub = "Class Average";
@@ -1885,18 +1887,32 @@
           )}%, Mastery: ${e.mastery.toFixed(1)}%`;
           div.addEventListener("click", () => {
             populateDrillDown(
-              `<h4 style="margin:0 0 .25rem 0;">${e.cls}</h4>
-                   <div style="color:${Solar.base01()}; margin-bottom:.5rem;">${
+              `<h4 style="margin:0 0 .25rem 0; color:${Solar.base3()};">${
+                e.cls
+              }</h4>
+                   <div style="color:${Solar.base2()}; margin-bottom:.5rem; font-size:1.05rem;">${
                 e.sub
               } • ${e.value.toFixed(1)}%</div>
-                   <ul style="margin:0; padding-left:1rem; color:${Solar.base02()};">
-                     <li>Class Average: ${e.average.toFixed(1)}%</li>
-                     <li>Mean Score: ${e.rawAverage.toFixed(2)}</li>
-                     <li>Excellence Rate: ${e.excellence.toFixed(1)}%</li>
-                     <li>Mastery Rate: ${e.mastery.toFixed(1)}%</li>
-                     <li>Approaching Rate: ${e.approachingRate.toFixed(1)}%</li>
-                     <li>Below Expectation Rate: ${e.belowRate.toFixed(1)}%</li>
-                     <li>Students: ${e.total}</li>
+                   <ul style="margin:0; padding-left:1rem; color:${Solar.base2()}; line-height:1.8;">
+                     <li><strong>Class Average:</strong> ${e.average.toFixed(
+                       1
+                     )}%</li>
+                     <li><strong>Mean Score:</strong> ${e.rawAverage.toFixed(
+                       2
+                     )}</li>
+                     <li><strong>Excellence Rate:</strong> ${e.excellence.toFixed(
+                       1
+                     )}%</li>
+                     <li><strong>Mastery Rate:</strong> ${e.mastery.toFixed(
+                       1
+                     )}%</li>
+                     <li><strong>Approaching Rate:</strong> ${e.approachingRate.toFixed(
+                       1
+                     )}%</li>
+                     <li><strong>Below Expectation Rate:</strong> ${e.belowRate.toFixed(
+                       1
+                     )}%</li>
+                     <li><strong>Students:</strong> ${e.total}</li>
                    </ul>`
             );
           });
@@ -1906,18 +1922,32 @@
         if (items.length) {
           const first = items[0];
           populateDrillDown(
-            `<h4 style="margin:0 0 .25rem 0;">${first.cls}</h4>
-               <div style="color:${Solar.base01()}; margin-bottom:.5rem;">${
+            `<h4 style="margin:0 0 .25rem 0; color:${Solar.base3()};">${
+              first.cls
+            }</h4>
+               <div style="color:${Solar.base2()}; margin-bottom:.5rem; font-size:1.05rem;">${
               first.sub
             } • ${first.value.toFixed(1)}%</div>
-               <ul style="margin:0; padding-left:1rem; color:${Solar.base02()};">
-                 <li>Class Average: ${first.average.toFixed(1)}%</li>
-                 <li>Mean Score: ${first.rawAverage.toFixed(2)}</li>
-                 <li>Excellence Rate: ${first.excellence.toFixed(1)}%</li>
-                 <li>Mastery Rate: ${first.mastery.toFixed(1)}%</li>
-                 <li>Approaching Rate: ${first.approachingRate.toFixed(1)}%</li>
-                 <li>Below Expectation Rate: ${first.belowRate.toFixed(1)}%</li>
-                 <li>Students: ${first.total}</li>
+               <ul style="margin:0; padding-left:1rem; color:${Solar.base2()}; line-height:1.8;">
+                 <li><strong>Class Average:</strong> ${first.average.toFixed(
+                   1
+                 )}%</li>
+                 <li><strong>Mean Score:</strong> ${first.rawAverage.toFixed(
+                   2
+                 )}</li>
+                 <li><strong>Excellence Rate:</strong> ${first.excellence.toFixed(
+                   1
+                 )}%</li>
+                 <li><strong>Mastery Rate:</strong> ${first.mastery.toFixed(
+                   1
+                 )}%</li>
+                 <li><strong>Approaching Rate:</strong> ${first.approachingRate.toFixed(
+                   1
+                 )}%</li>
+                 <li><strong>Below Expectation Rate:</strong> ${first.belowRate.toFixed(
+                   1
+                 )}%</li>
+                 <li><strong>Students:</strong> ${first.total}</li>
                </ul>`
           );
         }
@@ -1936,17 +1966,17 @@
           );
           return;
         }
-        let html = `<h4 style="margin:0 0 .5rem 0;">${grade} ${stream} — Detailed Analysis</h4>`;
+        let html = `<h4 style="margin:0 0 .5rem 0; color:${Solar.base3()};">${grade} ${stream} — Detailed Analysis</h4>`;
         html +=
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;">';
         for (const r of items) {
           const c = r.performance_counts || {};
           html += `
-                <div class="analytics-card">
-                  <div style="font-weight:700;color:${Solar.base02()};margin-bottom:.25rem;">Term ${
+                <div class="analytics-card" style="padding:1.25rem;">
+                  <div style="font-weight:700;color:${Solar.base3()};margin-bottom:.5rem;font-size:1.05rem;">Term ${
             r.term
           } • ${r.assessment_type}</div>
-                  <div style="display:flex;gap:1rem;flex-wrap:wrap;color:${Solar.base01()};">
+                  <div style="display:flex;gap:1rem;flex-wrap:wrap;color:${Solar.base2()};margin-bottom:.5rem;">
                     <div><strong>Students:</strong> ${r.total_students}</div>
                     <div><strong>Class Average:</strong> ${Number(
                       r.class_average || 0
@@ -1955,33 +1985,37 @@
                       r.class_average_raw || 0
                     ).toFixed(2)}</div>
                   </div>
-                  <div style="margin-top:.35rem;color:${Solar.base01()};display:flex;flex-wrap:wrap;gap:1rem;">
+                  <div style="margin-top:.5rem;color:${Solar.base2()};display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:.5rem;">
                     <div><strong>Excellence:</strong> ${(
                       (((c.EE1 || 0) + (c.EE2 || 0)) /
-                        (r.total_students || 1)) * 100
+                        (r.total_students || 1)) *
+                      100
                     ).toFixed(1)}%</div>
                     <div><strong>Mastery:</strong> ${(
                       (((c.ME1 || 0) + (c.ME2 || 0)) /
-                        (r.total_students || 1)) * 100
+                        (r.total_students || 1)) *
+                      100
                     ).toFixed(1)}%</div>
                     <div><strong>Approaching:</strong> ${(
                       (((c.AE1 || 0) + (c.AE2 || 0)) /
-                        (r.total_students || 1)) * 100
+                        (r.total_students || 1)) *
+                      100
                     ).toFixed(1)}%</div>
                     <div><strong>Below:</strong> ${(
                       (((c.BE1 || 0) + (c.BE2 || 0)) /
-                        (r.total_students || 1)) * 100
+                        (r.total_students || 1)) *
+                      100
                     ).toFixed(1)}%</div>
                   </div>
-                  <div style="margin-top:.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem;font-size:.9rem;">
-                    <div>EE1: ${c.EE1 || 0}</div>
-                    <div>EE2: ${c.EE2 || 0}</div>
-                    <div>ME1: ${c.ME1 || 0}</div>
-                    <div>ME2: ${c.ME2 || 0}</div>
-                    <div>AE1: ${c.AE1 || 0}</div>
-                    <div>AE2: ${c.AE2 || 0}</div>
-                    <div>BE1: ${c.BE1 || 0}</div>
-                    <div>BE2: ${c.BE2 || 0}</div>
+                  <div style="margin-top:.75rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;font-size:.9rem;color:${Solar.base2()};background:rgba(255,255,255,0.05);padding:.75rem;border-radius:8px;">
+                    <div><strong>EE1:</strong> ${c.EE1 || 0}</div>
+                    <div><strong>EE2:</strong> ${c.EE2 || 0}</div>
+                    <div><strong>ME1:</strong> ${c.ME1 || 0}</div>
+                    <div><strong>ME2:</strong> ${c.ME2 || 0}</div>
+                    <div><strong>AE1:</strong> ${c.AE1 || 0}</div>
+                    <div><strong>AE2:</strong> ${c.AE2 || 0}</div>
+                    <div><strong>BE1:</strong> ${c.BE1 || 0}</div>
+                    <div><strong>BE2:</strong> ${c.BE2 || 0}</div>
                   </div>
                 </div>`;
         }
@@ -2074,8 +2108,13 @@
 
         if (!alerts.length) {
           alertsContainer.innerHTML = `
-            <div class="no-alerts">
-              No performance alerts — all monitored classes are within expected ranges.
+            <div class="alert-card neutral">
+              <div class="alert-heading">
+                <span class="alert-title">No Performance Alerts</span>
+              </div>
+              <div class="alert-body">
+                <p>No performance alerts — all monitored classes are within expected ranges.</p>
+              </div>
             </div>`;
           return;
         }
@@ -2341,13 +2380,19 @@
             #heatmapContainer {
               display: grid;
               gap: 1rem;
-              grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+              grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
               align-items: stretch;
+            }
+            @media (max-width: 768px) {
+              #heatmapContainer {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+              }
             }
             .heatmap-tile {
               border-radius: 16px;
               border: 1px solid rgba(255, 255, 255, 0.18);
-              color: ${Solar.base03()};
+              color: ${Solar.base3()};
               padding: 1rem 1.25rem;
               backdrop-filter: saturate(130%) blur(10px);
               box-shadow: 0 18px 28px rgba(0, 0, 0, 0.25);
@@ -2374,21 +2419,39 @@
               font-size: 0.95rem;
             }
             #drillDownContainer {
-              color: ${Solar.base03()};
+              color: ${Solar.base3()};
+              background: rgba(255, 255, 255, 0.08);
+              border: 1px solid rgba(255, 255, 255, 0.15);
+              border-radius: 16px;
+              padding: 1.5rem;
+              box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
             }
             #drillDownContainer h4 {
               margin-bottom: 0.4rem;
+              color: ${Solar.base3()};
             }
             #drillDownContainer ul li {
               margin: 0.15rem 0;
+              color: ${Solar.base2()};
             }
             .no-alerts {
-              padding: 1.5rem;
+              padding: 1.5rem 1rem;
               border-radius: 12px;
               border: 1px dashed rgba(255,255,255,0.25);
               text-align: center;
               color: ${Solar.base3()};
-              opacity: 0.85;
+              opacity: 1;
+              font-size: 1rem;
+              line-height: 1.7;
+              word-wrap: break-word;
+              overflow-wrap: break-word;
+              word-break: break-word;
+              white-space: normal;
+              width: 100%;
+              max-width: 100%;
+              box-sizing: border-box;
+              overflow: visible;
+              display: block;
             }
             .alert-card.success {
               background: rgba(76, 217, 100, 0.18);
@@ -2410,6 +2473,15 @@
               flex-direction: column;
               gap: 0.75rem;
             }
+            /* Ensure flex children wrap text and never clip */
+            #performanceAlerts, #performanceAlerts * {
+              min-width: 0;
+              overflow: visible;
+              text-overflow: clip;
+              word-wrap: break-word;
+              overflow-wrap: break-word;
+              white-space: normal;
+            }
             #performanceAlerts .alert-card {
               padding: 1rem 1.25rem;
               border-radius: 14px;
@@ -2424,28 +2496,43 @@
               box-shadow: 0 18px 28px rgba(0,0,0,0.25);
             }
             @media (max-width: 768px) {
+              .analytics-section {
+                padding: 1rem;
+              }
               .analytics-grid {
                 display: flex;
                 flex-direction: column;
-                gap: 1.2rem;
+                gap: 1.5rem;
+                margin-top: 1rem;
               }
               .analytics-card {
                 padding: 1.3rem;
-                border-radius: 20px;
+                border-radius: 16px;
                 background: rgba(255,255,255,0.12);
+                width: 100%;
+                box-sizing: border-box;
               }
               #heatmapContainer {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
+                gap: 1rem;
               }
               .heatmap-tile {
-                padding: 1.4rem;
-                border-radius: 22px;
+                padding: 1.2rem;
+                border-radius: 16px;
+                width: 100%;
+                box-sizing: border-box;
               }
-              #performanceAlerts .alert-card,
-              .no-alerts {
-                border-radius: 18px;
+              #performanceAlerts .alert-card {
+                border-radius: 14px;
                 background: rgba(255,255,255,0.1);
                 border: 1px solid rgba(255,255,255,0.18);
+                padding: 1.5rem 1rem;
+                width: 100%;
+                max-width: 100%;
+                min-height: auto;
+                max-height: none;
+                height: auto;
+                box-sizing: border-box;
               }
             }
           `;
@@ -2512,7 +2599,7 @@
                 maintainAspectRatio: false,
                 interaction: {
                   intersect: false,
-                  mode: 'index',
+                  mode: "index",
                 },
                 plugins: {
                   legend: {
@@ -2529,52 +2616,67 @@
                   tooltip: {
                     enabled: true,
                     callbacks: {
-                      label: function(context) {
-                        const label = context.label || '';
+                      label: function (context) {
+                        const label = context.label || "";
                         const value = context.parsed || 0;
-                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        const total = context.dataset.data.reduce(
+                          (a, b) => a + b,
+                          0
+                        );
+                        const percentage =
+                          total > 0 ? ((value / total) * 100).toFixed(1) : 0;
                         return `${label}: ${value} students (${percentage}%)`;
-                      }
-                    }
-                  }
+                      },
+                    },
+                  },
                 },
                 onClick: (evt, elements) => {
                   if (!elements || elements.length === 0) return;
                   const idx = elements[0].index;
                   if (typeof idx !== "number") return;
-                  
-                  const labels = ["Exceeds Expectations", "Meets Expectations", "Approaches Expectations", "Below Expectations"];
+
+                  const labels = [
+                    "Exceeds Expectations",
+                    "Meets Expectations",
+                    "Approaches Expectations",
+                    "Below Expectations",
+                  ];
                   const keys = ["EE", "ME", "AE", "BE"];
                   const label = labels[idx] || "Performance";
                   const key = keys[idx] || "";
                   const value = chartData[idx] || 0;
-                  
+
                   // Get detailed breakdown from performance data
-                  const perfData = Array.isArray(window.performanceData) ? window.performanceData : [];
+                  const perfData = Array.isArray(window.performanceData)
+                    ? window.performanceData
+                    : [];
                   let detailHtml = `<h4 style="margin:0 0 .5rem 0;">${label}</h4>`;
                   detailHtml += `<div style="color:${Solar.base01()}; margin-bottom:.5rem;">Total Students: ${value}</div>`;
-                  
+
                   if (key && perfData.length > 0) {
                     detailHtml += `<div style="color:${Solar.base02()}; margin-top:.5rem;"><strong>Breakdown by Class:</strong></div>`;
                     detailHtml += `<ul style="margin:.5rem 0; padding-left:1rem; color:${Solar.base02()}; max-height:200px; overflow-y:auto;">`;
-                    
-                    perfData.forEach(item => {
+
+                    perfData.forEach((item) => {
                       const counts = item.performance_counts || {};
                       let count = 0;
-                      if (key === "EE") count = (counts.EE1 || 0) + (counts.EE2 || 0);
-                      else if (key === "ME") count = (counts.ME1 || 0) + (counts.ME2 || 0);
-                      else if (key === "AE") count = (counts.AE1 || 0) + (counts.AE2 || 0);
-                      else if (key === "BE") count = (counts.BE1 || 0) + (counts.BE2 || 0);
-                      
+                      if (key === "EE")
+                        count = (counts.EE1 || 0) + (counts.EE2 || 0);
+                      else if (key === "ME")
+                        count = (counts.ME1 || 0) + (counts.ME2 || 0);
+                      else if (key === "AE")
+                        count = (counts.AE1 || 0) + (counts.AE2 || 0);
+                      else if (key === "BE")
+                        count = (counts.BE1 || 0) + (counts.BE2 || 0);
+
                       if (count > 0) {
                         detailHtml += `<li>${item.grade} ${item.stream}: ${count} students</li>`;
                       }
                     });
-                    
+
                     detailHtml += `</ul>`;
                   }
-                  
+
                   populateDrillDown(detailHtml);
                 },
               },
