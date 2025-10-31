@@ -1,96 +1,117 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Record Payment - Fee Management</title>
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
+      .container { max-width: 1200px; margin: 0 auto; }
+      .row { display: flex; gap: 20px; flex-wrap: wrap; }
+      .col-8 { flex: 0 0 calc(66.666% - 13px); }
+      .col-4 { flex: 0 0 calc(33.333% - 13px); }
+      @media (max-width: 768px) { .col-8, .col-4 { flex: 0 0 100%; } }
+      .card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 30px; margin-bottom: 20px; }
+      .card.bg-light { background: #f8f9fa; }
+      h1 { color: #333; margin-bottom: 30px; }
+      h5 { color: #333; margin-bottom: 15px; }
+      .form-group { margin-bottom: 20px; }
+      label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
+      input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+      input:focus, select:focus { outline: none; border-color: #007bff; }
+      .form-text { font-size: 12px; color: #666; margin-top: 5px; }
+      .btn { display: inline-block; padding: 10px 20px; margin-right: 10px; border: none; border-radius: 4px; text-decoration: none; cursor: pointer; font-size: 14px; }
+      .btn-primary { background: #007bff; color: white; }
+      .btn-secondary { background: #6c757d; color: white; }
+      .btn:hover { opacity: 0.9; }
+      ul { padding-left: 20px; }
+      ul li { margin-bottom: 10px; color: #555; }
+      .back-link { display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; }
+      .back-link:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="{{ url_for('fees.index') }}" class="back-link">← Back to Fee Dashboard</a>
+      
+      <h1>Record Payment</h1>
 
-{% block title %}Record Payment{% endblock %}
+      <div class="row">
+        <div class="col-8">
+          <div class="card">
+            <form method="POST" action="{{ url_for('fees.record_payment') }}">
+              <div class="form-group">
+                <label for="student_id">Student *</label>
+                <select id="student_id" name="student_id" required>
+                  <option value="">Select a student...</option>
+                  {% for student in students %}
+                  <option value="{{ student.id }}">{{ student.name }} ({{ student.admission_number }})</option>
+                  {% endfor %}
+                </select>
+              </div>
 
-{% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">Record Payment</h1>
-    
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('fees.record_payment') }}">
-                        <div class="mb-3">
-                            <label for="student_id" class="form-label">Student *</label>
-                            <select class="form-select" id="student_id" name="student_id" required>
-                                <option value="">Select a student...</option>
-                                {% for student in students %}
-                                <option value="{{ student.id }}">{{ student.name }} ({{ student.admission_number }})</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="amount" class="form-label">Amount (KES) *</label>
-                            <input type="number" class="form-control" id="amount" name="amount" 
-                                   step="0.01" min="0" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="method_id" class="form-label">Payment Method *</label>
-                            <select class="form-select" id="method_id" name="method_id" required>
-                                <option value="">Select method...</option>
-                                {% for method in payment_methods %}
-                                <option value="{{ method.id }}">{{ method.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="reference" class="form-label">Reference/Receipt No.</label>
-                            <input type="text" class="form-control" id="reference" name="reference" 
-                                   placeholder="e.g., M-PESA code, cheque no.">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="allocation_mode" class="form-label">Allocation Mode *</label>
-                            <select class="form-select" id="allocation_mode" name="allocation_mode" required>
-                                <option value="auto">Auto (Pay highest priority fees first)</option>
-                                <option value="manual">Manual (Select fees manually)</option>
-                            </select>
-                            <div class="form-text">
-                                Auto mode will allocate payment to outstanding fees by priority.<br>
-                                Example: Tuition (Priority 1) → Transport (Priority 2) → Lunch (Priority 3)
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary">Record Payment</button>
-                        <a href="{{ url_for('fees.index') }}" class="btn btn-secondary">Cancel</a>
-                    </form>
+              <div class="form-group">
+                <label for="amount">Amount (KES) *</label>
+                <input type="number" id="amount" name="amount" step="0.01" min="0" required />
+              </div>
+
+              <div class="form-group">
+                <label for="method_id">Payment Method *</label>
+                <select id="method_id" name="method_id" required>
+                  <option value="">Select method...</option>
+                  {% for method in payment_methods %}
+                  <option value="{{ method.id }}">{{ method.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="reference">Reference/Receipt No.</label>
+                <input type="text" id="reference" name="reference" placeholder="e.g., M-PESA code, cheque no." />
+              </div>
+
+              <div class="form-group">
+                <label for="allocation_mode">Allocation Mode *</label>
+                <select id="allocation_mode" name="allocation_mode" required>
+                  <option value="auto">Auto (Pay highest priority fees first)</option>
+                  <option value="manual">Manual (Select fees manually)</option>
+                </select>
+                <div class="form-text">
+                  Auto mode allocates payment by priority: Tuition (1) → Transport (2) → Lunch (3)
                 </div>
-            </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Record Payment</button>
+              <a href="{{ url_for('fees.index') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+          </div>
         </div>
-        
-        <div class="col-md-4">
-            <div class="card bg-light">
-                <div class="card-body">
-                    <h5 class="card-title">💡 Tips</h5>
-                    <ul>
-                        <li>Select the student first</li>
-                        <li>Enter the exact amount received</li>
-                        <li>Choose "Auto" allocation for quick processing</li>
-                        <li>Payment will be allocated by priority</li>
-                        <li>Receipt will be generated automatically</li>
-                    </ul>
-                </div>
-            </div>
+
+        <div class="col-4">
+          <div class="card bg-light">
+            <h5>💡 Tips</h5>
+            <ul>
+              <li>Select the student first</li>
+              <li>Enter the exact amount received</li>
+              <li>Choose "Auto" for quick processing</li>
+              <li>Payment allocated by priority</li>
+              <li>Receipt generated automatically</li>
+            </ul>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<script>
-// Optional: Load student balance when student is selected
-document.getElementById('student_id').addEventListener('change', function() {
-    const studentId = this.value;
-    if (studentId) {
-        fetch(`/fees/api/student/${studentId}/balance`)
-            .then(res => res.json())
-            .then(data => {
-                console.log('Student balance:', data.total_balance);
-                // You can display this on the page if needed
-            });
-    }
-});
-</script>
-{% endblock %}
+    <script>
+      document.getElementById("student_id").addEventListener("change", function () {
+        const studentId = this.value;
+        if (studentId) {
+          fetch(`/fees/api/student/${studentId}/balance`)
+            .then((res) => res.json())
+            .then((data) => console.log("Student balance:", data.total_balance))
+            .catch((err) => console.error("Error fetching balance:", err));
+        }
+      });
+    </script>
+  </body>
+</html>
