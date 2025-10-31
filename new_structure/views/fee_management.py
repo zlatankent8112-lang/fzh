@@ -209,16 +209,72 @@ def record_payment():
 @fee_access_required
 def balance_report():
     """Show fee balances for all students"""
-    # Get all students with outstanding balances
-    students_with_balances = db.session.query(
+    from sqlalchemy import func
+    
+    # Get filter parameters
+    grade_id = request.args.get('grade_id', type=int)
+    status = request.args.get('status', '')
+    
+    # Base query - get all students with fee accounts
+    query = db.session.query(
         Student,
-        db.func.sum(StudentFeeAccount.balance).label('total_balance')
-    ).join(StudentFeeAccount).filter(
-        StudentFeeAccount.balance > 0
-    ).group_by(Student.id).all()
+        func.sum(StudentFeeAccount.total_amount).label('total_fees'),
+        func.sum(StudentFeeAccount.amount_paid).label('total_paid'),
+        func.sum(StudentFeeAccount.balance).label('balance')
+    ).join(StudentFeeAccount)
+    
+    # Apply filters
+    if grade_id:
+        query = query.filter(Student.grade_id == grade_id)
+    
+    if status:
+        if status == 'paid':
+            query = query.having(func.sum(StudentFeeAccount.balance) == 0)
+        elif status == 'partial':
+            query = query.having(
+                func.sum(StudentFeeAccount.amount_paid) > 0,
+                func.sum(StudentFeeAccount.balance) > 0
+            )
+        elif status == 'pending':
+            query = query.having(func.sum(StudentFeeAccount.amount_paid) == 0)
+        elif status == 'overdue':
+            # For now, consider any unpaid balance as overdue
+            query = query.having(func.sum(StudentFeeAccount.balance) > 0)
+    
+    # Group by student and order by balance descending
+    query = query.group_by(Student.id).order_by(func.sum(StudentFeeAccount.balance).desc())
+    
+    results = query.all()
+    
+    # Format results with balance info
+    students_with_balances = []
+    total_charged = 0
+    total_collected = 0
+    
+    for student, total_fees, total_paid, balance in results:
+        balance_info = type('obj', (object,), {
+            'total_fees': total_fees or 0,
+            'total_paid': total_paid or 0,
+            'balance': balance or 0,
+            'is_overdue': (balance or 0) > 0  # Simple overdue logic for now
+        })()
+        students_with_balances.append((student, balance_info))
+        total_charged += balance_info.total_fees
+        total_collected += balance_info.total_paid
+    
+    total_outstanding = total_charged - total_collected
+    
+    # Get all grades for filter
+    grades = Grade.query.order_by(Grade.name).all()
     
     return render_template('fees/balance_report.html',
-                         students_with_balances=students_with_balances)
+                         students_with_balances=students_with_balances,
+                         total_charged=total_charged,
+                         total_collected=total_collected,
+                         total_outstanding=total_outstanding,
+                         grades=grades,
+                         selected_grade=request.args.get('grade_id', ''),
+                         selected_status=status)
 
 
 @fee_bp.route('/api/student/<int:student_id>/balance')
