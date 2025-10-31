@@ -35,6 +35,10 @@ class FeeStructure(db.Model):
     is_boarding = db.Column(db.Boolean, default=False)  # Boarding school fee vs Day school
     frequency = db.Column(db.String(20), default='termly')  # 'termly', 'annual', 'monthly'
     
+    # Payment Allocation Settings (HYBRID APPROACH)
+    allocation_priority = db.Column(db.Integer, default=1)  # 1 = highest priority (paid first)
+    allow_partial_payment = db.Column(db.Boolean, default=True)  # Can this fee be partially paid?
+    
     # Status
     is_active = db.Column(db.Boolean, default=True)  # Can be deactivated without deleting
     
@@ -69,6 +73,8 @@ class FeeStructure(db.Model):
             'is_mandatory': self.is_mandatory,
             'is_boarding': self.is_boarding,
             'frequency': self.frequency,
+            'allocation_priority': self.allocation_priority,
+            'allow_partial_payment': self.allow_partial_payment,
             'is_active': self.is_active,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None
         }
@@ -118,3 +124,26 @@ class FeeStructure(db.Model):
                 total += fee.amount
         
         return total
+    
+    @classmethod
+    def get_fees_by_priority(cls, grade_id, term, academic_year):
+        """Get active fees sorted by allocation priority (for auto-allocation)"""
+        # Get grade-specific fees
+        grade_fees = cls.query.filter_by(
+            grade_id=grade_id,
+            term=term,
+            academic_year=academic_year,
+            is_active=True
+        ).order_by(cls.allocation_priority.asc()).all()
+        
+        # Get school-wide fees
+        school_fees = cls.query.filter_by(
+            grade_id=None,
+            term=term,
+            academic_year=academic_year,
+            is_active=True
+        ).order_by(cls.allocation_priority.asc()).all()
+        
+        # Combine and sort by priority
+        all_fees = grade_fees + school_fees
+        return sorted(all_fees, key=lambda x: x.allocation_priority)
