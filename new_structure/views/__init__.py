@@ -42,6 +42,14 @@ except ImportError:
 email_config_bp = None
 email_config_bp_available = False
 
+# Import fee management blueprint with error handling
+try:
+    from .fee_management import fee_bp
+    fee_bp_available = True
+except ImportError:
+    fee_bp = None
+    fee_bp_available = False
+
 # List of all blueprints to register with the app
 blueprints = [
     auth_bp, teacher_bp, classteacher_bp, admin_bp,
@@ -63,3 +71,7 @@ if parent_mgmt_bp_available and parent_management_bp:
 # Add email configuration blueprint if available
 if email_config_bp_available and email_config_bp:
     blueprints.append(email_config_bp)
+
+# Add fee management blueprint if available
+if fee_bp_available and fee_bp:
+    blueprints.append(fee_bp)

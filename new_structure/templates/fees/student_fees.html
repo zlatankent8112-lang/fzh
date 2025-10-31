@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Student Fee Account - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('fees.index') }}">Fee Management</a></li>
+            <li class="breadcrumb-item active">{{ student.name }}</li>
+        </ol>
+    </nav>
+    
+    <h1 class="mb-4">{{ student.name }} - Fee Account</h1>
+    
+    <!-- Student Info -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Admission Number:</strong> {{ student.admission_number }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Grade:</strong> {{ student.grade.name if student.grade else 'N/A' }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Term:</strong> {{ current_term }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Academic Year:</strong> {{ current_year }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Balance Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Fees</h6>
+                    <h2 class="text-primary">KES {{ "{:,.2f}".format(total_fees) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h6 class="text-muted">Amount Paid</h6>
+                    <h2 class="text-success">KES {{ "{:,.2f}".format(total_paid) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <h6 class="text-muted">Balance Due</h6>
+                    <h2 class="text-danger">KES {{ "{:,.2f}".format(balance) }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fee Breakdown -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Fee Breakdown (By Priority)</h5>
+                    <a href="{{ url_for('fees.record_payment') }}?student_id={{ student.id }}" 
+                       class="btn btn-sm btn-primary">Record Payment</a>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Priority</th>
+                                <th>Fee Type</th>
+                                <th>Total Amount</th>
+                                <th>Paid</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in accounts %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-secondary">{{ account.fee_structure.allocation_priority }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ account.fee_structure.fee_type_name }}</strong>
+                                    {% if account.fee_structure.description %}
+                                    <br><small class="text-muted">{{ account.fee_structure.description }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>KES {{ "{:,.2f}".format(account.total_amount) }}</td>
+                                <td>KES {{ "{:,.2f}".format(account.amount_paid) }}</td>
+                                <td>
+                                    <strong class="{{ 'text-danger' if account.balance > 0 else 'text-success' }}">
+                                        KES {{ "{:,.2f}".format(account.balance) }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    {% if account.status == 'paid' %}
+                                        <span class="badge bg-success">Paid</span>
+                                    {% elif account.status == 'partial' %}
+                                        <span class="badge bg-warning">Partial</span>
+                                    {% elif account.status == 'overdue' %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if account.due_date %}
+                                        {{ account.due_date.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">No fee accounts found for this student</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light">
+                                <th colspan="2">TOTAL</th>
+                                <th>KES {{ "{:,.2f}".format(total_fees) }}</th>
+                                <th>KES {{ "{:,.2f}".format(total_paid) }}</th>
+                                <th><strong>KES {{ "{:,.2f}".format(balance) }}</strong></th>
+                                <th colspan="2"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment History (if needed later) -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Payments</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Payment history will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

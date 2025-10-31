@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Record Payment{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Record Payment</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('fees.record_payment') }}">
+                        <div class="mb-3">
+                            <label for="student_id" class="form-label">Student *</label>
+                            <select class="form-select" id="student_id" name="student_id" required>
+                                <option value="">Select a student...</option>
+                                {% for student in students %}
+                                <option value="{{ student.id }}">{{ student.name }} ({{ student.admission_number }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount (KES) *</label>
+                            <input type="number" class="form-control" id="amount" name="amount" 
+                                   step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="method_id" class="form-label">Payment Method *</label>
+                            <select class="form-select" id="method_id" name="method_id" required>
+                                <option value="">Select method...</option>
+                                {% for method in payment_methods %}
+                                <option value="{{ method.id }}">{{ method.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reference" class="form-label">Reference/Receipt No.</label>
+                            <input type="text" class="form-control" id="reference" name="reference" 
+                                   placeholder="e.g., M-PESA code, cheque no.">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="allocation_mode" class="form-label">Allocation Mode *</label>
+                            <select class="form-select" id="allocation_mode" name="allocation_mode" required>
+                                <option value="auto">Auto (Pay highest priority fees first)</option>
+                                <option value="manual">Manual (Select fees manually)</option>
+                            </select>
+                            <div class="form-text">
+                                Auto mode will allocate payment to outstanding fees by priority.<br>
+                                Example: Tuition (Priority 1) → Transport (Priority 2) → Lunch (Priority 3)
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Record Payment</button>
+                        <a href="{{ url_for('fees.index') }}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">💡 Tips</h5>
+                    <ul>
+                        <li>Select the student first</li>
+                        <li>Enter the exact amount received</li>
+                        <li>Choose "Auto" allocation for quick processing</li>
+                        <li>Payment will be allocated by priority</li>
+                        <li>Receipt will be generated automatically</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Optional: Load student balance when student is selected
+document.getElementById('student_id').addEventListener('change', function() {
+    const studentId = this.value;
+    if (studentId) {
+        fetch(`/fees/api/student/${studentId}/balance`)
+            .then(res => res.json())
+            .then(data => {
+                console.log('Student balance:', data.total_balance);
+                // You can display this on the page if needed
+            });
+    }
+});
+</script>
+{% endblock %}
