@@ -33,7 +33,17 @@ except ImportError:
 
 # Import fee management models (with error handling for backward compatibility)
 try:
-    from .fee_management import FeeStructure
+    from .fee_management import (
+        FeeStructure,
+        StudentFeeAccount,
+        PaymentMethod,
+        Payment,
+        PaymentAllocation,
+    )
 except ImportError:
     # Fee management models not available yet
     FeeStructure = None
+    StudentFeeAccount = None
+    PaymentMethod = None
+    Payment = None
+    PaymentAllocation = None

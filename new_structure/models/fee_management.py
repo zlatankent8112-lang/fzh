@@ -147,3 +147,251 @@ class FeeStructure(db.Model):
         # Combine and sort by priority
         all_fees = grade_fees + school_fees
         return sorted(all_fees, key=lambda x: x.allocation_priority)
+
+
+class StudentFeeAccount(db.Model):
+    """
+    Individual student fee obligations. Links students to specific fees.
+    Tracks balance, payments, due dates, and status for each fee per student.
+    """
+    __tablename__ = 'student_fee_account'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Student & Fee Linkage
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    fee_structure_id = db.Column(db.Integer, db.ForeignKey('fee_structure.id'), nullable=False)
+    
+    # Academic Context
+    academic_year = db.Column(db.String(10), nullable=False)
+    term = db.Column(db.String(20), nullable=False)
+    term_id = db.Column(db.Integer, db.ForeignKey('term.id'), nullable=True)
+    
+    # Financial Tracking
+    total_amount = db.Column(db.Numeric(10, 2), nullable=False)  # Total fee amount owed
+    amount_paid = db.Column(db.Numeric(10, 2), default=0.00)  # Total amount paid so far
+    balance = db.Column(db.Numeric(10, 2), nullable=False)  # Remaining balance (total - paid)
+    
+    # Discount/Waiver (if applicable)
+    discount_amount = db.Column(db.Numeric(10, 2), default=0.00)  # Scholarship/discount applied
+    discount_reason = db.Column(db.Text, nullable=True)  # Reason for discount
+    
+    # Due Date & Status
+    due_date = db.Column(db.Date, nullable=True)  # When fee is due
+    status = db.Column(db.String(20), default='pending')  # 'pending', 'partial', 'paid', 'overdue', 'waived'
+    is_overdue = db.Column(db.Boolean, default=False)  # Calculated field
+    
+    # Payment Plan (if student is on installment)
+    has_payment_plan = db.Column(db.Boolean, default=False)
+    payment_plan_id = db.Column(db.Integer, nullable=True)  # Link to payment plan (future)
+    
+    # Notes
+    notes = db.Column(db.Text, nullable=True)  # Special notes about this fee for this student
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_payment_date = db.Column(db.DateTime, nullable=True)  # When last payment was received
+    
+    # Relationships
+    student = db.relationship('Student', backref='fee_accounts', lazy=True)
+    fee_structure = db.relationship('FeeStructure', backref='student_accounts', lazy=True)
+    term_obj = db.relationship('Term', foreign_keys=[term_id], backref='student_fee_accounts', lazy=True)
+    
+    def __repr__(self):
+        return f'<StudentFeeAccount Student:{self.student_id} Fee:{self.fee_structure.fee_type_name if self.fee_structure else "N/A"} Balance:KES{self.balance}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON responses"""
+        return {
+            'id': self.id,
+            'student_id': self.student_id,
+            'student_name': f"{self.student.first_name} {self.student.last_name}" if self.student else None,
+            'fee_structure_id': self.fee_structure_id,
+            'fee_type_name': self.fee_structure.fee_type_name if self.fee_structure else None,
+            'academic_year': self.academic_year,
+            'term': self.term,
+            'total_amount': float(self.total_amount) if self.total_amount else 0,
+            'amount_paid': float(self.amount_paid) if self.amount_paid else 0,
+            'balance': float(self.balance) if self.balance else 0,
+            'discount_amount': float(self.discount_amount) if self.discount_amount else 0,
+            'discount_reason': self.discount_reason,
+            'due_date': self.due_date.strftime('%Y-%m-%d') if self.due_date else None,
+            'status': self.status,
+            'is_overdue': self.is_overdue,
+            'has_payment_plan': self.has_payment_plan,
+            'notes': self.notes,
+            'last_payment_date': self.last_payment_date.strftime('%Y-%m-%d %H:%M:%S') if self.last_payment_date else None
+        }
+    
+    def update_balance(self):
+        """Recalculate balance after payment/discount changes"""
+        from decimal import Decimal
+        self.balance = Decimal(str(self.total_amount)) - Decimal(str(self.amount_paid)) - Decimal(str(self.discount_amount))
+        
+        # Update status based on balance
+        if self.balance <= 0:
+            self.status = 'paid'
+        elif self.amount_paid > 0:
+            self.status = 'partial'
+        else:
+            self.status = 'pending'
+        
+        db.session.commit()
+    
+    def check_overdue_status(self):
+        """Check if fee is overdue"""
+        from datetime import date
+        if self.due_date and self.balance > 0:
+            self.is_overdue = date.today() > self.due_date
+            db.session.commit()
+    
+    @classmethod
+    def get_student_fees_summary(cls, student_id, term, academic_year):
+        """Get all fees for a student in a given term"""
+        return cls.query.filter_by(
+            student_id=student_id,
+            term=term,
+            academic_year=academic_year
+        ).all()
+    
+    @classmethod
+    def calculate_total_balance(cls, student_id, term, academic_year):
+        """Calculate total balance for a student in a given term"""
+        from decimal import Decimal
+        accounts = cls.get_student_fees_summary(student_id, term, academic_year)
+        total_balance = Decimal('0.00')
+        for account in accounts:
+            total_balance += account.balance
+        return total_balance
+    
+    @classmethod
+    def get_overdue_accounts(cls, student_id=None):
+        """Get all overdue fee accounts (optionally filtered by student)"""
+        from datetime import date
+        query = cls.query.filter(
+            cls.due_date < date.today(),
+            cls.balance > 0
+        )
+        if student_id:
+            query = query.filter_by(student_id=student_id)
+        return query.all()
+    
+    @classmethod
+    def create_accounts_for_student(cls, student, term, academic_year, due_date=None):
+        """
+        Auto-create fee accounts when a student enrolls for a term.
+        Links student to all applicable fees based on their grade.
+        """
+        from decimal import Decimal
+        
+        # Get all applicable fees for this student's grade
+        applicable_fees = FeeStructure.get_active_fees_for_grade(
+            student.grade_id,
+            term,
+            academic_year
+        )
+        
+        # Add school-wide fees
+        school_fees = FeeStructure.get_school_wide_fees(term, academic_year)
+        applicable_fees.extend(school_fees)
+        
+        created_accounts = []
+        for fee in applicable_fees:
+            # Check if account already exists
+            existing = cls.query.filter_by(
+                student_id=student.id,
+                fee_structure_id=fee.id,
+                term=term,
+                academic_year=academic_year
+            ).first()
+            
+            if not existing:
+                account = cls(
+                    student_id=student.id,
+                    fee_structure_id=fee.id,
+                    academic_year=academic_year,
+                    term=term,
+                    total_amount=fee.amount,
+                    amount_paid=Decimal('0.00'),
+                    balance=fee.amount,
+                    due_date=due_date,
+                    status='pending'
+                )
+                db.session.add(account)
+                created_accounts.append(account)
+        
+        db.session.commit()
+        return created_accounts
+
+
+class PaymentMethod(db.Model):
+    """
+    Payment methods configuration (Cash, M-PESA, Bank, Cheque, etc.).
+    """
+    __tablename__ = 'payment_method'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)  # e.g., Cash, M-PESA, Bank
+    description = db.Column(db.Text, nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    # Optional JSON configuration for gateways (kept text for MySQL 8 compatibility)
+    config_json = db.Column(db.Text, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<PaymentMethod {self.name} active={self.is_active}>'
+
+
+class Payment(db.Model):
+    """
+    Payment records made by or on behalf of a student.
+    allocation_mode: 'auto' pays highest-priority outstanding fees first; 'manual' uses PaymentAllocation rows provided.
+    """
+    __tablename__ = 'payment'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Who/when/how
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    method_id = db.Column(db.Integer, db.ForeignKey('payment_method.id'), nullable=True)
+    payment_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    currency = db.Column(db.String(10), default='KES')
+    reference = db.Column(db.String(100), nullable=True)  # MPESA code, bank slip, receipt no., etc.
+    allocation_mode = db.Column(db.String(10), default='auto')  # 'auto' | 'manual'
+    notes = db.Column(db.Text, nullable=True)
+    recorded_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    student = db.relationship('Student', backref='payments', lazy=True)
+    method = db.relationship('PaymentMethod', backref='payments', lazy=True)
+    recorder = db.relationship('Teacher', backref='recorded_payments', lazy=True)
+
+    def __repr__(self):
+        return f'<Payment id={self.id} student={self.student_id} amount=KES{self.amount} mode={self.allocation_mode}>'
+
+
+class PaymentAllocation(db.Model):
+    """
+    Allocation of a payment amount to specific student fee accounts.
+    """
+    __tablename__ = 'payment_allocation'
+
+    id = db.Column(db.Integer, primary_key=True)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
+    student_fee_account_id = db.Column(db.Integer, db.ForeignKey('student_fee_account.id'), nullable=False)
+    amount_allocated = db.Column(db.Numeric(10, 2), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    payment = db.relationship('Payment', backref='allocations', lazy=True)
+    student_fee_account = db.relationship('StudentFeeAccount', backref='allocations', lazy=True)
+
+    def __repr__(self):
+        return f'<PaymentAllocation payment={self.payment_id} account={self.student_fee_account_id} amount=KES{self.amount_allocated}>'
