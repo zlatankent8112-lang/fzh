@@ -353,7 +353,7 @@ def api_student_balance(student_id):
 def view_receipt(receipt_id):
     """View receipt details"""
     from new_structure.models.fee_management import Receipt
-    from new_structure.models.academic import Teacher
+    from new_structure.models.user import Teacher
     
     receipt = Receipt.query.get_or_404(receipt_id)
     payment = receipt.payment
@@ -388,7 +388,7 @@ def view_receipt(receipt_id):
 def print_receipt(receipt_id):
     """Print-friendly receipt view"""
     from new_structure.models.fee_management import Receipt
-    from new_structure.models.academic import Teacher
+    from new_structure.models.user import Teacher
     
     receipt = Receipt.query.get_or_404(receipt_id)
     payment = receipt.payment
