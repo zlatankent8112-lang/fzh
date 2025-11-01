@@ -8262,3 +8262,113 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-11-01 01:58:03,092 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
 2025-11-01 01:58:50,418 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
 2025-11-01 01:58:52,600 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 02:05:45,416 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 02:05:48,354 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 02:06:36,726 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 02:06:38,921 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 02:07:37,292 - INFO - 3daee6a06bdc4398b18c5692650eeffb - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 02:07:42,160 - WARNING - 9f042ae1a8d341ec860ebc0e1223a385 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 02:08:00,306 - INFO - 2081b14ae5d84e90bfdd04c6b2254149 - audit - GET /permission/requests - AUDIT timestamp='[REDACTED-PHONE]31T20:23:00.306307' request_id='2081b14ae5d84e90bfdd04c6b2254149' actor=2 action='access_granted' target='system_config:read' outcome='success' category='authorization' ip='127.0.0.1' user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' severity='info' details={'ip': '127.0.0.1'}
+2025-11-01 02:08:00,443 - INFO - 2081b14ae5d84e90bfdd04c6b2254149 - audit - GET /permission/requests - AUDIT timestamp='[REDACTED-PHONE]31T20:23:00.443492' request_id='2081b14ae5d84e90bfdd04c6b2254149' actor=2 action='authorize' target='system_config:read' outcome='success' category='authorization' ip='127.0.0.1' user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' severity='info' details={}
+2025-11-01 02:18:57,482 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 02:18:59,809 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 02:19:47,868 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 02:19:50,131 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 02:19:55,392 - WARNING - 9f9732343d514b90b8e0097b0afba58d - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 02:27:33,815 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 02:27:36,368 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 02:29:13,241 - WARNING - 220d1c813a264d7f99fa583cd601c2f9 - security - POST /fees/payment/record - Bad request: http://127.0.0.1:8080/fees/payment/record - 127.0.0.1
+2025-11-01 02:41:28,561 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 02:41:30,911 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 02:50:23,922 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 02:50:26,444 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 02:53:52,515 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 02:53:55,575 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 02:55:21,858 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 02:55:23,974 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 12:07:37,089 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 12:07:39,054 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 12:07:46,445 - INFO - 3f8e3d2268dd479eb68566f57a7638d7 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 12:07:46,501 - INFO - 74c63656c7ab4d31bd5f6fea6b3ad2b1 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 12:07:52,367 - INFO - 750858786a0d4a97bf5b7a046a2e6192 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 12:07:52,480 - INFO - af1592f387ab4d4aa19e460d7d1be837 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 12:08:30,724 - INFO - 6b83b4f802964dd0a290c87832573962 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 12:08:35,157 - WARNING - b0fa16e2e0ea4255a8d53a3fabc1b14a - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 12:09:26,587 - INFO - 485f88e2c8f1461ba2b5a34b67a24ed3 - new_structure - GET /headteacher/fees/ - Page not found: http://127.0.0.1:8080/headteacher/fees/ - 127.0.0.1
+2025-11-01 12:11:50,048 - WARNING - 3c5602fb36e8467da0181f3f7263cb19 - security - POST /fees/payment/record - Bad request: http://127.0.0.1:8080/fees/payment/record - 127.0.0.1
+2025-11-01 12:13:35,266 - WARNING - cf0c1335d7fa424a9f177f9bf0736aa8 - security - POST /fees/payment/record - Bad request: http://127.0.0.1:8080/fees/payment/record - 127.0.0.1
+2025-11-01 12:18:01,798 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 12:18:03,642 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 12:24:45,122 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 12:24:46,856 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 13:31:41,557 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 13:31:44,762 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 13:31:46,947 - INFO - 2b482df95a194e52b300203c78592a94 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 13:31:47,024 - INFO - e1b9cccc8526485daedf6724475ee49d - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 13:31:53,229 - INFO - c0b522e4151e4204956bb048b6fba426 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 13:31:53,261 - INFO - 6063d7cc39f449eba5c93bd2e1b730a3 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 13:32:20,898 - INFO - 0149c4b2b2a74806b9b3412371c7db41 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 13:32:25,775 - WARNING - f72de69293824bca8b0850e646465b28 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 14:03:56,186 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 14:03:59,315 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 14:19:54,757 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 14:19:57,090 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 15:02:26,626 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 15:02:29,087 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 15:13:03,659 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 15:13:05,821 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 15:13:14,091 - INFO - 6687519371b240eb8fbda2c8ee66423b - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 15:18:22,876 - WARNING - a55e5392f3014de4b38fba4a9d31050f - security - GET /fees/receipt/1 - Forbidden access attempt: http://127.0.0.1:8080/fees/receipt/[REDACTED-PHONE].0.0.1
+2025-11-01 15:19:53,608 - INFO - 77678e21ed00471192330c04c5bbe56f - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 15:19:58,446 - WARNING - 194804dd8680471c9bcd6c5d831b24d2 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 15:20:06,112 - WARNING - 085195c21ade4e9ea1931c651938492e - security - GET /fees/receipt/1 - Forbidden access attempt: http://127.0.0.1:8080/fees/receipt/[REDACTED-PHONE].0.0.1
+2025-11-01 15:20:07,391 - WARNING - 14960f3c405b460e939160d6e3abd436 - security - GET /fees/receipt/1 - Forbidden access attempt: http://127.0.0.1:8080/fees/receipt/[REDACTED-PHONE].0.0.1
+2025-11-01 15:20:08,547 - WARNING - 1eabbd1d4a8446309b1e52cbd35dfa8e - security - GET /fees/receipt/1 - Forbidden access attempt: http://127.0.0.1:8080/fees/receipt/[REDACTED-PHONE].0.0.1
+2025-11-01 15:23:26,582 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 15:23:28,745 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 15:23:39,087 - WARNING - 4a5058f8b2624e739b668d1a785d24f3 - security - GET /fees/receipt/1 - Forbidden access attempt: http://127.0.0.1:8080/fees/receipt/[REDACTED-PHONE].0.0.1
+2025-11-01 15:24:04,493 - INFO - 1037833075a24c5d9529711d128cdce1 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 15:24:05,987 - INFO - 1c2e8b76114c4db3b2401f84f18609e6 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-01 15:24:13,936 - INFO - c0f61465e53242299a36eecb3f53ea10 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 15:24:18,636 - WARNING - 6e6435d6299d4da2bd434c7da3e5d45b - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 15:24:31,398 - WARNING - 06b5209cc14445ef8a84b7df66eebc45 - security - GET /fees/receipt/1 - Forbidden access attempt: http://127.0.0.1:8080/fees/receipt/[REDACTED-PHONE].0.0.1
+2025-11-01 15:37:40,052 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 15:37:42,384 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 15:48:59,648 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 15:49:08,462 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 16:04:49,804 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 16:04:54,207 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 16:05:31,280 - WARNING - 7469be5678e8475ebf5ccb29b97d52a1 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 16:07:57,641 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 16:07:59,436 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 16:08:16,708 - INFO - 73bcc6d59b6c479e8ee940e211d7e0fa - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 16:08:21,116 - WARNING - b0d52ed4a88a4b51bb525f7e1647f933 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 16:26:52,364 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 16:26:55,243 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 16:27:01,381 - WARNING - 8d3f5e60668145ef85ca7e1c790996ed - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 16:27:11,309 - INFO - e538b6f76bda4b4cb4805160e0c13a9a - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-01 16:41:56,983 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 16:41:58,803 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 16:42:32,828 - WARNING - 61c1f7989ebe402689ebd82341c35806 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 16:49:11,807 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 16:49:13,875 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 17:17:48,233 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 17:17:53,008 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 17:18:21,515 - WARNING - ba3e35c559114e648e7cc9bd97712c96 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 17:18:57,044 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 17:18:58,847 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 17:27:21,906 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 17:27:24,617 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 18:02:08,569 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 18:02:17,166 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 18:02:23,889 - INFO - d4ce86c1fc5f44588c019237b6ace0b7 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 18:02:28,800 - WARNING - 58a685c86eae4b8f818d4e09529de977 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 18:49:55,997 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 18:49:58,697 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 18:52:24,930 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 18:52:27,372 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 18:52:28,471 - INFO - e55fa52aba6a4d40878d8c30bdb177c8 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 18:52:41,260 - INFO - 4b8223c9cfb443b79c6542f0a55166f6 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 18:52:45,873 - WARNING - 4890fc12b6464426b7e63324b027856a - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 18:56:57,616 - WARNING - 8d16f3195013431b9a2b41d92197c95c - security - POST /fees/invoice/generate - Bad request: http://127.0.0.1:8080/fees/invoice/generate - 127.0.0.1
+2025-11-01 18:59:14,886 - WARNING - c1464c2ac6324b4a83ef467f6e2197ee - security - POST /fees/invoice/generate - Bad request: http://127.0.0.1:8080/fees/invoice/generate - 127.0.0.1

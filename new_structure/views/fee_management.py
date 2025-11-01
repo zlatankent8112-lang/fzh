@@ -11,7 +11,7 @@ from new_structure.extensions import db
 from new_structure.models.fee_management import (
     FeeStructure, StudentFeeAccount, PaymentMethod, Payment, PaymentAllocation, StudentCreditBalance
 )
-from new_structure.models.academic import Student, Grade, Term
+from new_structure.models.academic import Student, Grade, Term, Stream
 from new_structure.services import is_authenticated, get_role
 
 fee_bp = Blueprint('fees', __name__, url_prefix='/fees')
@@ -567,6 +567,7 @@ def invoice_list():
     # Get filter parameters
     status = request.args.get('status', '')
     grade_id = request.args.get('grade_id', type=int)
+    stream_id = request.args.get('stream_id', type=int)
     term = request.args.get('term', '')
     academic_year = request.args.get('academic_year', '')
     
@@ -578,6 +579,8 @@ def invoice_list():
         query = query.filter(FeeInvoice.status == status)
     if grade_id:
         query = query.filter(Student.grade_id == grade_id)
+    if stream_id:
+        query = query.filter(Student.stream_id == stream_id)
     if term:
         query = query.filter(FeeInvoice.term == term)
     if academic_year:
@@ -586,20 +589,29 @@ def invoice_list():
     # Order by most recent
     invoices = query.order_by(FeeInvoice.issue_date.desc()).all()
     
-    # Get all grades for filter dropdown
+    # Get all grades and streams for filter dropdown
     grades = Grade.query.order_by(Grade.name).all()
+    streams = Stream.query.order_by(Stream.name).all()
     
-    # Get unique terms and academic years
-    terms = db.session.query(FeeInvoice.term).distinct().all()
-    academic_years = db.session.query(FeeInvoice.academic_year).distinct().all()
+    # Get unique terms and academic years from invoices OR fee structures
+    terms_from_invoices = db.session.query(FeeInvoice.term).distinct().all()
+    academic_years_from_invoices = db.session.query(FeeInvoice.academic_year).distinct().all()
+    
+    # If no invoices exist, get from fee structures
+    if not terms_from_invoices:
+        terms_from_invoices = db.session.query(FeeStructure.term).distinct().all()
+    if not academic_years_from_invoices:
+        academic_years_from_invoices = db.session.query(FeeStructure.academic_year).distinct().all()
     
     return render_template('fees/invoice_list.html',
                          invoices=invoices,
                          grades=grades,
-                         terms=[t[0] for t in terms],
-                         academic_years=[ay[0] for ay in academic_years],
+                         streams=streams,
+                         terms=[t[0] for t in terms_from_invoices if t[0]],
+                         academic_years=[ay[0] for ay in academic_years_from_invoices if ay[0]],
                          current_status=status,
                          current_grade_id=grade_id,
+                         current_stream_id=stream_id,
                          current_term=term,
                          current_academic_year=academic_year)
 

@@ -1,507 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Invoice {{ invoice.invoice_number }} - Hillview School</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f5f5;
+        padding: 20px;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      /* Header */
+      .invoice-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px;
+      }
+      .school-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 30px;
+      }
+      .school-name {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .school-details {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      .invoice-title {
+        font-size: 48px;
+        font-weight: bold;
+        text-align: right;
+        opacity: 0.3;
+      }
+      .invoice-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .meta-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+      }
+      .meta-label {
+        font-size: 12px;
+        opacity: 0.8;
+        margin-bottom: 5px;
+      }
+      .meta-value {
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      /* Body */
+      .invoice-body {
+        padding: 40px;
+      }
+
+      /* Student Info */
+      .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #667eea;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+      .info-item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      .info-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 5px;
+      }
+      .info-value {
+        font-size: 16px;
+        color: #333;
+        font-weight: 600;
+      }
+
+      /* Fee Breakdown Table */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+      }
+      thead {
+        background: #667eea;
+        color: white;
+      }
+      th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+      }
+      td {
+        padding: 15px;
+        border-bottom: 1px solid #e9ecef;
+      }
+      tbody tr:hover {
+        background: #f8f9fa;
+      }
+      .priority-badge {
+        background: #6c757d;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+      }
+      .status-badge {
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .status-paid {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status-partial {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .status-pending {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      /* Totals */
+      .totals-section {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+      }
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        font-size: 16px;
+      }
+      .total-row.grand-total {
+        border-top: 2px solid #667eea;
+        margin-top: 10px;
+        padding-top: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      /* Payment Instructions */
+      .payment-instructions {
+        background: #e7f3ff;
+        padding: 25px;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+        margin-bottom: 30px;
+      }
+      .payment-instructions h3 {
+        color: #007bff;
+        margin-bottom: 15px;
+      }
+      .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+      .payment-method {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      .payment-method strong {
+        display: block;
+        color: #333;
+        margin-bottom: 5px;
+      }
+      .payment-method span {
+        color: #666;
+        font-size: 14px;
+      }
+
+      /* Footer */
+      .invoice-footer {
+        background: #f8f9fa;
+        padding: 30px 40px;
+        text-align: center;
+        color: #666;
+      }
+      .invoice-footer p {
+        margin-bottom: 10px;
+      }
+
+      /* Action Buttons */
+      .actions {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #5568d3;
+      }
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+      .btn-success:hover {
+        background: #218838;
+      }
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
+      .btn-secondary:hover {
+        background: #5a6268;
+      }
+
+      /* Print Styles */
+      @media print {
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
+          background: white;
+          padding: 0;
         }
         .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            overflow: hidden;
+          box-shadow: none;
+          border-radius: 0;
         }
-        
-        /* Header */
-        .invoice-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
-        }
-        .school-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 30px;
-        }
-        .school-name {
-            font-size: 32px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .school-details {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        .invoice-title {
-            font-size: 48px;
-            font-weight: bold;
-            text-align: right;
-            opacity: 0.3;
-        }
-        .invoice-meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .meta-item {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .meta-label {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-bottom: 5px;
-        }
-        .meta-value {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        
-        /* Body */
-        .invoice-body {
-            padding: 40px;
-        }
-        
-        /* Student Info */
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .info-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .info-label {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        .info-value {
-            font-size: 16px;
-            color: #333;
-            font-weight: 600;
-        }
-        
-        /* Fee Breakdown Table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
-        thead {
-            background: #667eea;
-            color: white;
-        }
-        th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #e9ecef;
-        }
-        tbody tr:hover {
-            background: #f8f9fa;
-        }
-        .priority-badge {
-            background: #6c757d;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-        }
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .status-paid {
-            background: #d4edda;
-            color: #155724;
-        }
-        .status-partial {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .status-pending {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        /* Totals */
-        .totals-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            font-size: 16px;
-        }
-        .total-row.grand-total {
-            border-top: 2px solid #667eea;
-            margin-top: 10px;
-            padding-top: 15px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
-        
-        /* Payment Instructions */
-        .payment-instructions {
-            background: #e7f3ff;
-            padding: 25px;
-            border-radius: 8px;
-            border-left: 4px solid #007bff;
-            margin-bottom: 30px;
-        }
-        .payment-instructions h3 {
-            color: #007bff;
-            margin-bottom: 15px;
-        }
-        .payment-methods {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .payment-method {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .payment-method strong {
-            display: block;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .payment-method span {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        /* Footer */
-        .invoice-footer {
-            background: #f8f9fa;
-            padding: 30px 40px;
-            text-align: center;
-            color: #666;
-        }
-        .invoice-footer p {
-            margin-bottom: 10px;
-        }
-        
-        /* Action Buttons */
         .actions {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+          display: none;
         }
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
+        .invoice-header {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #5568d3;
-        }
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-        .btn-success:hover {
-            background: #218838;
-        }
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-        
-        /* Print Styles */
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-            .container {
-                box-shadow: none;
-                border-radius: 0;
-            }
-            .actions {
-                display: none;
-            }
-            .invoice-header {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <!-- Header -->
-        <div class="invoice-header">
-            <div class="school-info">
-                <div>
-                    <div class="school-name">Hillview School</div>
-                    <div class="school-details">
-                        P.O. Box 12345, Nairobi, Kenya<br>
-                        Tel: +254 700 000 000 | Email: info@hillview.ac.ke
-                    </div>
-                </div>
-                <div class="invoice-title">INVOICE</div>
+      <!-- Header -->
+      <div class="invoice-header">
+        <div class="school-info">
+          <div>
+            <div class="school-name">Hillview School</div>
+            <div class="school-details">
+              P.O. Box 12345, Nairobi, Kenya<br />
+              Tel: +254 700 000 000 | Email: info@hillview.ac.ke
             </div>
-            
-            <div class="invoice-meta">
-                <div class="meta-item">
-                    <div class="meta-label">Invoice Number</div>
-                    <div class="meta-value">{{ invoice.invoice_number }}</div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">Issue Date</div>
-                    <div class="meta-value">{{ invoice.issue_date.strftime('%d %B %Y') }}</div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">Due Date</div>
-                    <div class="meta-value">
-                        {% if invoice.due_date %}
-                            {{ invoice.due_date.strftime('%d %B %Y') }}
-                        {% else %}
-                            Not specified
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">Status</div>
-                    <div class="meta-value">{{ invoice.status.replace('_', ' ').title() }}</div>
-                </div>
-            </div>
+          </div>
+          <div class="invoice-title">INVOICE</div>
         </div>
-        
-        <!-- Body -->
-        <div class="invoice-body">
-            <!-- Actions -->
-            <div class="actions">
-                <a href="#" onclick="window.print(); return false;" class="btn btn-primary">🖨️ Print Invoice</a>
-                <a href="{{ url_for('fees.student_fees', student_id=student.id) }}" class="btn btn-success">💳 Pay Now</a>
-                <a href="{{ url_for('fees.invoice_list') }}" class="btn btn-secondary">← Back to Invoices</a>
+
+        <div class="invoice-meta">
+          <div class="meta-item">
+            <div class="meta-label">Invoice Number</div>
+            <div class="meta-value">{{ invoice.invoice_number }}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Issue Date</div>
+            <div class="meta-value">
+              {{ invoice.issue_date.strftime('%d %B %Y') }}
             </div>
-            
-            <!-- Student Information -->
-            <h2 class="section-title">Student Information</h2>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Student Name</div>
-                    <div class="info-value">{{ student.name }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Admission Number</div>
-                    <div class="info-value">{{ student.admission_number }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Grade</div>
-                    <div class="info-value">
-                        {% if student.grade %}
-                            {{ student.grade.name }}
-                            {% if student.stream %}{{ student.stream.name }}{% endif %}
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Academic Period</div>
-                    <div class="info-value">{{ invoice.term }}, {{ invoice.academic_year }}</div>
-                </div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Due Date</div>
+            <div class="meta-value">
+              {% if invoice.due_date %} {{ invoice.due_date.strftime('%d %B %Y')
+              }} {% else %} Not specified {% endif %}
             </div>
-            
-            <!-- Fee Breakdown -->
-            <h2 class="section-title">Fee Breakdown</h2>
-            {% if accounts %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Priority</th>
-                        <th>Fee Type</th>
-                        <th>Total Fee</th>
-                        <th>Paid</th>
-                        <th>Balance</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for account in accounts %}
-                    <tr>
-                        <td>
-                            <span class="priority-badge">{{ account.fee_structure.allocation_priority }}</span>
-                        </td>
-                        <td>
-                            <strong>{{ account.fee_structure.fee_type_name }}</strong>
-                            {% if account.fee_structure.description %}
-                            <br><small style="color: #666;">{{ account.fee_structure.description }}</small>
-                            {% endif %}
-                        </td>
-                        <td>KES {{ "{:,.2f}".format(account.total_amount) }}</td>
-                        <td>KES {{ "{:,.2f}".format(account.amount_paid) }}</td>
-                        <td><strong>KES {{ "{:,.2f}".format(account.balance) }}</strong></td>
-                        <td>
-                            {% if account.status == 'paid' %}
-                            <span class="status-badge status-paid">Paid</span>
-                            {% elif account.status == 'partial' %}
-                            <span class="status-badge status-partial">Partial</span>
-                            {% else %}
-                            <span class="status-badge status-pending">Pending</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p style="text-align: center; color: #999; padding: 30px;">No fee accounts found for this period.</p>
-            {% endif %}
-            
-            <!-- Totals -->
-            <div class="totals-section">
-                <div class="total-row">
-                    <span>Total Fees:</span>
-                    <span>KES {{ "{:,.2f}".format(total_fees) }}</span>
-                </div>
-                <div class="total-row">
-                    <span>Amount Paid:</span>
-                    <span style="color: #28a745;">KES {{ "{:,.2f}".format(total_paid) }}</span>
-                </div>
-                <div class="total-row grand-total">
-                    <span>Balance Due:</span>
-                    <span>KES {{ "{:,.2f}".format(balance) }}</span>
-                </div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Status</div>
+            <div class="meta-value">
+              {{ invoice.status.replace('_', ' ').title() }}
             </div>
-            
-            <!-- Payment Instructions -->
-            <div class="payment-instructions">
-                <h3>💰 Payment Instructions</h3>
-                <p>Please make your payment using any of the following methods:</p>
-                
-                <div class="payment-methods">
-                    <div class="payment-method">
-                        <strong>🏦 Bank Transfer</strong>
-                        <span>Bank: Kenya Commercial Bank<br>
-                        Account: 1234567890<br>
-                        Branch: Westlands</span>
-                    </div>
-                    <div class="payment-method">
-                        <strong>📱 M-PESA Paybill</strong>
-                        <span>Paybill: 123456<br>
-                        Account: {{ student.admission_number }}<br>
-                        Confirmation via SMS</span>
-                    </div>
-                    <div class="payment-method">
-                        <strong>💵 Cash/Cheque</strong>
-                        <span>Visit School Office<br>
-                        Mon-Fri: 8AM - 4PM<br>
-                        Receipt issued immediately</span>
-                    </div>
-                </div>
-                
-                <p style="margin-top: 15px; font-size: 14px;">
-                    <strong>Note:</strong> Please quote the invoice number ({{ invoice.invoice_number }}) 
-                    when making payment. For queries, contact the school office.
-                </p>
-            </div>
-            
-            {% if payments %}
-            <!-- Payment History -->
-            <h2 class="section-title">Recent Payment History</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Receipt No.</th>
-                        <th>Method</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for payment in payments[:5] %}
-                    <tr>
-                        <td>{{ payment.payment_date.strftime('%d %b %Y') }}</td>
-                        <td>
-                            {% if payment.receipt %}
-                            <a href="{{ url_for('fees.view_receipt', receipt_id=payment.receipt[0].id) }}">
-                                {{ payment.receipt[0].receipt_number }}
-                            </a>
-                            {% else %}
-                            -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if payment.payment_method %}
-                            {{ payment.payment_method.name }}
-                            {% else %}
-                            N/A
-                            {% endif %}
-                        </td>
-                        <td>KES {{ "{:,.2f}".format(payment.amount) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% endif %}
+          </div>
         </div>
-        
-        <!-- Footer -->
-        <div class="invoice-footer">
-            <p><strong>Thank you for your prompt payment!</strong></p>
-            <p>This is a computer-generated invoice. For queries, contact the school office.</p>
-            <p style="font-size: 12px; color: #999; margin-top: 15px;">
-                Hillview School | Excellence in Education | www.hillview.ac.ke
-            </p>
+      </div>
+
+      <!-- Body -->
+      <div class="invoice-body">
+        <!-- Actions -->
+        <div class="actions">
+          <a
+            href="#"
+            onclick="window.print(); return false;"
+            class="btn btn-primary"
+            >🖨️ Print Invoice</a
+          >
+          <a
+            href="{{ url_for('fees.student_fees', student_id=student.id) }}"
+            class="btn btn-success"
+            >💳 Pay Now</a
+          >
+          <a href="{{ url_for('fees.invoice_list') }}" class="btn btn-secondary"
+            >← Back to Invoices</a
+          >
         </div>
+
+        <!-- Student Information -->
+        <h2 class="section-title">Student Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Student Name</div>
+            <div class="info-value">{{ student.name }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Admission Number</div>
+            <div class="info-value">{{ student.admission_number }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Grade</div>
+            <div class="info-value">
+              {% if student.grade %} {{ student.grade.name }} {% if
+              student.stream %}{{ student.stream.name }}{% endif %} {% else %}
+              N/A {% endif %}
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Academic Period</div>
+            <div class="info-value">
+              {{ invoice.term }}, {{ invoice.academic_year }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Fee Breakdown -->
+        <h2 class="section-title">Fee Breakdown</h2>
+        {% if accounts %}
+        <table>
+          <thead>
+            <tr>
+              <th>Priority</th>
+              <th>Fee Type</th>
+              <th>Total Fee</th>
+              <th>Paid</th>
+              <th>Balance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for account in accounts %}
+            <tr>
+              <td>
+                <span class="priority-badge"
+                  >{{ account.fee_structure.allocation_priority }}</span
+                >
+              </td>
+              <td>
+                <strong>{{ account.fee_structure.fee_type_name }}</strong>
+                {% if account.fee_structure.description %}
+                <br /><small style="color: #666"
+                  >{{ account.fee_structure.description }}</small
+                >
+                {% endif %}
+              </td>
+              <td>KES {{ "{:,.2f}".format(account.total_amount) }}</td>
+              <td>KES {{ "{:,.2f}".format(account.amount_paid) }}</td>
+              <td>
+                <strong>KES {{ "{:,.2f}".format(account.balance) }}</strong>
+              </td>
+              <td>
+                {% if account.status == 'paid' %}
+                <span class="status-badge status-paid">Paid</span>
+                {% elif account.status == 'partial' %}
+                <span class="status-badge status-partial">Partial</span>
+                {% else %}
+                <span class="status-badge status-pending">Pending</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; color: #999; padding: 30px">
+          No fee accounts found for this period.
+        </p>
+        {% endif %}
+
+        <!-- Totals -->
+        <div class="totals-section">
+          <div class="total-row">
+            <span>Total Fees:</span>
+            <span>KES {{ "{:,.2f}".format(total_fees) }}</span>
+          </div>
+          <div class="total-row">
+            <span>Amount Paid:</span>
+            <span style="color: #28a745"
+              >KES {{ "{:,.2f}".format(total_paid) }}</span
+            >
+          </div>
+          <div class="total-row grand-total">
+            <span>Balance Due:</span>
+            <span>KES {{ "{:,.2f}".format(balance) }}</span>
+          </div>
+        </div>
+
+        <!-- Payment Instructions -->
+        <div class="payment-instructions">
+          <h3>💰 Payment Instructions</h3>
+          <p>Please make your payment using any of the following methods:</p>
+
+          <div class="payment-methods">
+            <div class="payment-method">
+              <strong>🏦 Bank Transfer</strong>
+              <span
+                >Bank: Kenya Commercial Bank<br />
+                Account: 1234567890<br />
+                Branch: Westlands</span
+              >
+            </div>
+            <div class="payment-method">
+              <strong>📱 M-PESA Paybill</strong>
+              <span
+                >Paybill: 123456<br />
+                Account: {{ student.admission_number }}<br />
+                Confirmation via SMS</span
+              >
+            </div>
+            <div class="payment-method">
+              <strong>💵 Cash/Cheque</strong>
+              <span
+                >Visit School Office<br />
+                Mon-Fri: 8AM - 4PM<br />
+                Receipt issued immediately</span
+              >
+            </div>
+          </div>
+
+          <p style="margin-top: 15px; font-size: 14px">
+            <strong>Note:</strong> Please quote the invoice number ({{
+            invoice.invoice_number }}) when making payment. For queries, contact
+            the school office.
+          </p>
+        </div>
+
+        {% if payments %}
+        <!-- Payment History -->
+        <h2 class="section-title">Recent Payment History</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Receipt No.</th>
+              <th>Method</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for payment in payments[:5] %}
+            <tr>
+              <td>{{ payment.payment_date.strftime('%d %b %Y') }}</td>
+              <td>
+                {% if payment.receipt %}
+                <a
+                  href="{{ url_for('fees.view_receipt', receipt_id=payment.receipt[0].id) }}"
+                >
+                  {{ payment.receipt[0].receipt_number }}
+                </a>
+                {% else %} - {% endif %}
+              </td>
+              <td>
+                {% if payment.payment_method %} {{ payment.payment_method.name
+                }} {% else %} N/A {% endif %}
+              </td>
+              <td>KES {{ "{:,.2f}".format(payment.amount) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+
+      <!-- Footer -->
+      <div class="invoice-footer">
+        <p><strong>Thank you for your prompt payment!</strong></p>
+        <p>
+          This is a computer-generated invoice. For queries, contact the school
+          office.
+        </p>
+        <p style="font-size: 12px; color: #999; margin-top: 15px">
+          Hillview School | Excellence in Education | www.hillview.ac.ke
+        </p>
+      </div>
     </div>
-</body>
+  </body>
 </html>
