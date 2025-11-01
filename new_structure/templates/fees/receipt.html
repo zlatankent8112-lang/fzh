@@ -153,15 +153,99 @@
         border-radius: 6px;
       }
       @media print {
+        @page {
+          size: A4;
+          margin: 15mm;
+        }
+        
         .actions,
         .btn {
-          display: none;
+          display: none !important;
         }
+        
         body {
           background: white;
+          padding: 0;
+          margin: 0;
         }
+        
         .container {
+          max-width: 100%;
+          padding: 20px;
           box-shadow: none;
+          margin: 0;
+          page-break-after: avoid;
+        }
+        
+        .header {
+          margin-bottom: 15px;
+          padding-bottom: 10px;
+        }
+        
+        .header h1 {
+          font-size: 24px;
+          margin-bottom: 5px;
+        }
+        
+        .header h2 {
+          font-size: 18px;
+        }
+        
+        .school-info {
+          margin-bottom: 15px;
+          font-size: 11px;
+        }
+        
+        .receipt-info {
+          margin-bottom: 15px;
+          padding: 10px;
+          font-size: 12px;
+        }
+        
+        .student-info {
+          margin-bottom: 15px;
+          padding: 12px;
+        }
+        
+        .student-info h3 {
+          font-size: 14px;
+          margin-bottom: 8px;
+        }
+        
+        .info-row {
+          font-size: 12px;
+          margin: 5px 0;
+        }
+        
+        h3 {
+          font-size: 14px;
+          margin: 15px 0 10px 0;
+        }
+        
+        table {
+          font-size: 11px;
+          margin: 10px 0;
+        }
+        
+        table th,
+        table td {
+          padding: 6px 8px;
+        }
+        
+        .footer {
+          margin-top: 20px;
+          padding-top: 15px;
+          font-size: 11px;
+          page-break-inside: avoid;
+        }
+        
+        .signature-line {
+          margin: 20px auto 5px auto;
+        }
+        
+        p {
+          font-size: 10px;
+          margin: 5px 0;
         }
       }
     </style>
