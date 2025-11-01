@@ -138,7 +138,7 @@ def student_fees(student_id):
     from new_structure.models.fee_management import Receipt
     receipts = Receipt.query.join(Payment).filter(
         Payment.student_id == student_id
-    ).order_by(Receipt.issue_date.desc()).all()
+    ).order_by(Receipt.issued_at.desc()).all()
     
     return render_template('fees/student_fees.html',
                          student=student,
@@ -680,8 +680,11 @@ def generate_invoices():
             flash('No students found for the selected criteria.', 'warning')
             return redirect(url_for('fees.generate_invoices'))
         
-        generated_count = 0
-        skipped_count = 0
+    generated_count = 0
+    skipped_count = 0
+    skipped_existing_count = 0
+    skipped_no_accounts_count = 0
+    total_students_considered = 0
         
         # Get the starting invoice number ONCE before the loop
         year = datetime.now().year
@@ -695,6 +698,7 @@ def generate_invoices():
             next_invoice_num = 1
         
         for student in students:
+            total_students_considered += 1
             # Check if invoice already exists
             existing = FeeInvoice.query.filter_by(
                 student_id=student.id,
@@ -704,6 +708,7 @@ def generate_invoices():
             
             if existing:
                 skipped_count += 1
+                skipped_existing_count += 1
                 continue
             
             # Get student's fee accounts for this term
@@ -715,6 +720,7 @@ def generate_invoices():
             
             if not accounts:
                 skipped_count += 1
+                skipped_no_accounts_count += 1
                 continue
             
             total_amount = sum(acc.total_amount for acc in accounts)
@@ -733,7 +739,7 @@ def generate_invoices():
                 due_date=due_date,
                 total_amount=total_amount,
                 status='issued',
-                generated_by=session.get('user_id')
+                generated_by=session.get('teacher_id')
             )
             
             db.session.add(invoice)
@@ -741,7 +747,13 @@ def generate_invoices():
         
         try:
             db.session.commit()
-            flash(f'Successfully generated {generated_count} invoice(s). Skipped {skipped_count} (already exists or no fees).', 'success')
+            # Provide richer diagnostics in the flash to help troubleshoot
+            flash(
+                f'Successfully generated {generated_count} invoice(s). '
+                f'Skipped {skipped_count} (existing: {skipped_existing_count}, no accounts: {skipped_no_accounts_count}). '
+                f'Considered {total_students_considered} student(s).',
+                'success'
+            )
         except Exception as e:
             db.session.rollback()
             flash(f'Error generating invoices: {str(e)}', 'danger')
