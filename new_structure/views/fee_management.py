@@ -58,7 +58,7 @@ def index():
 @fee_access_required
 def fee_structures():
     """List all fee structures"""
-    fees = FeeStructure.query.filter_by(is_active=True).order_by(
+    fees = FeeStructure.query.order_by(
         FeeStructure.academic_year.desc(),
         FeeStructure.term,
         FeeStructure.allocation_priority
@@ -78,23 +78,78 @@ def create_fee_structure():
                 description=request.form.get('description'),
                 amount=Decimal(request.form['amount']),
                 academic_year=request.form['academic_year'],
-                term=request.form['term'],
+                term=request.form.get('term') or None,
                 grade_id=request.form.get('grade_id') or None,
                 allocation_priority=int(request.form.get('allocation_priority', 1)),
                 allow_partial_payment=request.form.get('allow_partial_payment') == 'on',
                 is_mandatory=request.form.get('is_mandatory') == 'on',
+                is_active=request.form.get('is_active') == 'on',
                 created_by=teacher_id
             )
             db.session.add(fee)
             db.session.commit()
-            flash(f'Fee structure "{fee.fee_type_name}" created successfully!', 'success')
+            flash(f'✅ Fee structure "{fee.fee_type_name}" created successfully!', 'success')
             return redirect(url_for('fees.fee_structures'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error creating fee structure: {str(e)}', 'error')
+            flash(f'Error creating fee structure: {str(e)}', 'danger')
     
-    grades = Grade.query.all()
-    return render_template('fees/create_structure.html', grades=grades)
+    grades = Grade.query.order_by(Grade.name).all()
+    return render_template('fees/create_structure.html', grades=grades, fee=None)
+
+
+@fee_bp.route('/structures/<int:fee_id>/edit', methods=['GET', 'POST'])
+@fee_access_required
+def edit_fee_structure(fee_id):
+    """Edit an existing fee structure"""
+    fee = FeeStructure.query.get_or_404(fee_id)
+    
+    if request.method == 'POST':
+        try:
+            fee.fee_type_name = request.form['fee_type_name']
+            fee.description = request.form.get('description')
+            fee.amount = Decimal(request.form['amount'])
+            fee.academic_year = request.form['academic_year']
+            fee.term = request.form.get('term') or None
+            fee.grade_id = request.form.get('grade_id') or None
+            fee.allocation_priority = int(request.form.get('allocation_priority', 1))
+            fee.allow_partial_payment = request.form.get('allow_partial_payment') == 'on'
+            fee.is_mandatory = request.form.get('is_mandatory') == 'on'
+            fee.is_active = request.form.get('is_active') == 'on'
+            
+            db.session.commit()
+            flash(f'✅ Fee structure "{fee.fee_type_name}" updated successfully!', 'success')
+            return redirect(url_for('fees.fee_structures'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating fee structure: {str(e)}', 'danger')
+    
+    grades = Grade.query.order_by(Grade.name).all()
+    return render_template('fees/create_structure.html', grades=grades, fee=fee)
+
+
+@fee_bp.route('/structures/<int:fee_id>/delete', methods=['POST'])
+@fee_access_required
+def delete_fee_structure(fee_id):
+    """Delete a fee structure"""
+    fee = FeeStructure.query.get_or_404(fee_id)
+    fee_name = fee.fee_type_name
+    
+    try:
+        # Check if any student accounts use this fee
+        accounts_count = StudentFeeAccount.query.filter_by(fee_structure_id=fee_id).count()
+        
+        if accounts_count > 0:
+            flash(f'⚠️ Cannot delete "{fee_name}". It is used by {accounts_count} student fee account(s). Deactivate it instead.', 'warning')
+        else:
+            db.session.delete(fee)
+            db.session.commit()
+            flash(f'✅ Fee structure "{fee_name}" deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting fee structure: {str(e)}', 'danger')
+    
+    return redirect(url_for('fees.fee_structures'))
 
 
 @fee_bp.route('/student/<int:student_id>')

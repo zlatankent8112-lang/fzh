@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if fee %}Edit{% else %}Create{% endif %} Fee Structure - Hillview School</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .form-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .form-check input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        .form-check label {
+            margin: 0;
+            font-weight: normal;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        .row {
+            display: flex;
+            gap: 20px;
+        }
+        .col-6 {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{% if fee %}✏️ Edit{% else %}➕ Create{% endif %} Fee Structure</h1>
+        <p class="subtitle">Define fee type, amount, and settings</p>
+
+        <div class="alert alert-info">
+            💡 <strong>Tip:</strong> Set priority to control payment allocation order. 
+            Lower numbers = higher priority (1 gets paid first, then 2, then 3...).
+        </div>
+
+        <div class="card">
+            <form method="POST" action="{% if fee %}{{ url_for('fees.edit_fee_structure', fee_id=fee.id) }}{% else %}{{ url_for('fees.create_fee_structure') }}{% endif %}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                
+                <div class="form-group">
+                    <label for="fee_type_name">Fee Type Name *</label>
+                    <input 
+                        type="text" 
+                        id="fee_type_name" 
+                        name="fee_type_name" 
+                        value="{% if fee %}{{ fee.fee_type_name }}{% endif %}"
+                        placeholder="e.g., Tuition Fee, Transport Fee, Lunch Fee"
+                        required
+                    />
+                    <div class="form-text">A descriptive name for this fee type</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description (Optional)</label>
+                    <textarea 
+                        id="description" 
+                        name="description"
+                        placeholder="Brief description of what this fee covers"
+                    >{% if fee %}{{ fee.description }}{% endif %}</textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="amount">Amount (KES) *</label>
+                            <input 
+                                type="number" 
+                                id="amount" 
+                                name="amount" 
+                                value="{% if fee %}{{ fee.amount }}{% endif %}"
+                                step="0.01"
+                                min="0"
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="allocation_priority">Payment Priority *</label>
+                            <input 
+                                type="number" 
+                                id="allocation_priority" 
+                                name="allocation_priority" 
+                                value="{% if fee %}{{ fee.allocation_priority }}{% else %}1{% endif %}"
+                                min="1"
+                                required
+                            />
+                            <div class="form-text">1 = highest priority (paid first)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="academic_year">Academic Year *</label>
+                            <input 
+                                type="text" 
+                                id="academic_year" 
+                                name="academic_year" 
+                                value="{% if fee %}{{ fee.academic_year }}{% else %}2025-2026{% endif %}"
+                                placeholder="e.g., 2025-2026"
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="term">Term</label>
+                            <select id="term" name="term">
+                                <option value="">All Terms</option>
+                                <option value="Term 1" {% if fee and fee.term == 'Term 1' %}selected{% endif %}>Term 1</option>
+                                <option value="Term 2" {% if fee and fee.term == 'Term 2' %}selected{% endif %}>Term 2</option>
+                                <option value="Term 3" {% if fee and fee.term == 'Term 3' %}selected{% endif %}>Term 3</option>
+                            </select>
+                            <div class="form-text">Leave blank to apply to all terms</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="grade_id">Grade (Optional)</label>
+                    <select id="grade_id" name="grade_id">
+                        <option value="">All Grades</option>
+                        {% for grade in grades %}
+                        <option value="{{ grade.id }}" {% if fee and fee.grade_id == grade.id %}selected{% endif %}>
+                            {{ grade.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Leave blank to apply to all grades</div>
+                </div>
+
+                <div class="form-group">
+                    <label style="margin-bottom: 15px;">Settings</label>
+                    
+                    <div class="form-check">
+                        <input 
+                            type="checkbox" 
+                            id="is_mandatory" 
+                            name="is_mandatory"
+                            {% if not fee or fee.is_mandatory %}checked{% endif %}
+                        />
+                        <label for="is_mandatory"><strong>Mandatory Fee</strong> - All students must pay this fee</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input 
+                            type="checkbox" 
+                            id="allow_partial_payment" 
+                            name="allow_partial_payment"
+                            {% if not fee or fee.allow_partial_payment %}checked{% endif %}
+                        />
+                        <label for="allow_partial_payment"><strong>Allow Partial Payment</strong> - Students can pay in installments</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input 
+                            type="checkbox" 
+                            id="is_active" 
+                            name="is_active"
+                            {% if not fee or fee.is_active %}checked{% endif %}
+                        />
+                        <label for="is_active"><strong>Active</strong> - This fee is currently in use</label>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary">
+                        {% if fee %}💾 Update Fee Structure{% else %}✓ Create Fee Structure{% endif %}
+                    </button>
+                    <a href="{{ url_for('fees.fee_structures') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
