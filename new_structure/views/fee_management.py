@@ -58,12 +58,30 @@ def index():
 @fee_access_required
 def fee_structures():
     """List all fee structures"""
-    fees = FeeStructure.query.order_by(
+    # Get educational level filter
+    current_level = request.args.get('education_level', '')
+    
+    query = FeeStructure.query
+    if current_level:
+        query = query.filter_by(education_level=current_level)
+    
+    fees = query.order_by(
         FeeStructure.academic_year.desc(),
         FeeStructure.term,
         FeeStructure.allocation_priority
     ).all()
-    return render_template('fees/structures.html', fees=fees)
+    
+    # Get unique education levels for stats
+    education_levels = db.session.query(FeeStructure.education_level)\
+        .distinct()\
+        .filter(FeeStructure.education_level.isnot(None))\
+        .all()
+    education_levels = [level[0] for level in education_levels]
+    
+    return render_template('fees/structures.html', 
+                         fees=fees, 
+                         current_level=current_level,
+                         education_levels=education_levels)
 
 
 @fee_bp.route('/structures/create', methods=['GET', 'POST'])
@@ -80,6 +98,7 @@ def create_fee_structure():
                 academic_year=request.form['academic_year'],
                 term=request.form.get('term') or None,
                 grade_id=request.form.get('grade_id') or None,
+                education_level=request.form.get('education_level'),
                 allocation_priority=int(request.form.get('allocation_priority', 1)),
                 allow_partial_payment=request.form.get('allow_partial_payment') == 'on',
                 is_mandatory=request.form.get('is_mandatory') == 'on',
@@ -112,6 +131,7 @@ def edit_fee_structure(fee_id):
             fee.academic_year = request.form['academic_year']
             fee.term = request.form.get('term') or None
             fee.grade_id = request.form.get('grade_id') or None
+            fee.education_level = request.form.get('education_level')
             fee.allocation_priority = int(request.form.get('allocation_priority', 1))
             fee.allow_partial_payment = request.form.get('allow_partial_payment') == 'on'
             fee.is_mandatory = request.form.get('is_mandatory') == 'on'

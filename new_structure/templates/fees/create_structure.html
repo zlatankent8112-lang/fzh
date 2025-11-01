@@ -224,6 +224,29 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="education_level">🎓 Educational Level *</label>
+                    <select id="education_level" name="education_level" required>
+                        <option value="">Select Educational Level...</option>
+                        <option value="pre_primary" {% if fee and fee.education_level == 'pre_primary' %}selected{% endif %}>
+                            Pre-Primary (PP1-PP2)
+                        </option>
+                        <option value="lower_primary" {% if fee and fee.education_level == 'lower_primary' %}selected{% endif %}>
+                            Lower Primary (Grade 1-3)
+                        </option>
+                        <option value="upper_primary" {% if fee and fee.education_level == 'upper_primary' %}selected{% endif %}>
+                            Upper Primary (Grade 4-6)
+                        </option>
+                        <option value="junior_secondary" {% if fee and fee.education_level == 'junior_secondary' %}selected{% endif %}>
+                            Junior Secondary (Grade 7-9)
+                        </option>
+                        <option value="senior_secondary" {% if fee and fee.education_level == 'senior_secondary' %}selected{% endif %}>
+                            Senior Secondary (Grade 10-12)
+                        </option>
+                    </select>
+                    <div class="form-text">Each educational level can have different fee structures</div>
+                </div>
+
+                <div class="form-group">
                     <label style="margin-bottom: 15px;">Settings</label>
                     
                     <div class="form-check">
