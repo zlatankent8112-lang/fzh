@@ -237,7 +237,7 @@
         <div class="row">
           <span class="label">Received By:</span>
           <span class="value">
-            {% if accountant %}
+            {% if accountant and accountant.first_name and accountant.last_name %}
               {{ accountant.first_name }} {{ accountant.last_name }}
             {% else %}
               School Accountant

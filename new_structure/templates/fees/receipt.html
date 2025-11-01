@@ -299,11 +299,12 @@
       <div class="footer">
         <div>
           <strong>Received By:</strong><br />
-          {% if accountant %}
+          {% if accountant and accountant.first_name and accountant.last_name %}
             {{ accountant.first_name }} {{ accountant.last_name }}<br />
             <small style="color: #666">{{ accountant.username }}</small>
           {% else %}
-            School Accountant
+            School Accountant<br />
+            <small style="color: #666">{{ accountant.username if accountant else '' }}</small>
           {% endif %}
         </div>
         <div class="signature">
