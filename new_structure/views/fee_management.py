@@ -683,6 +683,17 @@ def generate_invoices():
         generated_count = 0
         skipped_count = 0
         
+        # Get the starting invoice number ONCE before the loop
+        year = datetime.now().year
+        last_invoice = FeeInvoice.query.filter(
+            FeeInvoice.invoice_number.like(f'INV-{year}-%')
+        ).order_by(FeeInvoice.id.desc()).first()
+        
+        if last_invoice:
+            next_invoice_num = int(last_invoice.invoice_number.split('-')[-1]) + 1
+        else:
+            next_invoice_num = 1
+        
         for student in students:
             # Check if invoice already exists
             existing = FeeInvoice.query.filter_by(
@@ -708,17 +719,9 @@ def generate_invoices():
             
             total_amount = sum(acc.total_amount for acc in accounts)
             
-            # Generate invoice number: INV-YYYY-NNNNN
-            year = datetime.now().year
-            last_invoice = FeeInvoice.query.filter(
-                FeeInvoice.invoice_number.like(f'INV-{year}-%')
-            ).order_by(FeeInvoice.id.desc()).first()
-            
-            if last_invoice:
-                last_num = int(last_invoice.invoice_number.split('-')[-1])
-                invoice_number = f'INV-{year}-{last_num + 1:05d}'
-            else:
-                invoice_number = f'INV-{year}-00001'
+            # Generate invoice number with incremented counter
+            invoice_number = f'INV-{year}-{next_invoice_num:05d}'
+            next_invoice_num += 1
             
             # Create invoice
             invoice = FeeInvoice(
