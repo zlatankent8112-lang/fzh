@@ -771,9 +771,9 @@ def create_app(config_name='default'):
                 return
 
             object_permissions = {
-                'headteacher': ['student', 'teacher', 'report', 'mark', 'grade', 'stream', 'streams', 'api', 'get_grade_streams', 'teacher_streams', 'get_streams', 'view_parent', 'parent', 'streams_by_id', 'subject_report', 'edit_class_marks', 'preview_class_report', 'view_student_reports', 'receipt'],
-                'classteacher': ['student', 'report', 'mark', 'get_grade_streams', 'teacher_streams', 'streams', 'get_streams', 'streams_by_id', 'subject_report', 'edit_class_marks', 'preview_class_report', 'view_student_reports', 'receipt'],
-                'teacher': ['mark', 'get_streams', 'streams', 'streams_by_id', 'subject_report', 'preview_class_report', 'view_student_reports', 'receipt']
+                'headteacher': ['student', 'teacher', 'report', 'mark', 'grade', 'stream', 'streams', 'api', 'get_grade_streams', 'teacher_streams', 'get_streams', 'view_parent', 'parent', 'streams_by_id', 'subject_report', 'edit_class_marks', 'preview_class_report', 'view_student_reports', 'receipt', 'invoice'],
+                'classteacher': ['student', 'report', 'mark', 'get_grade_streams', 'teacher_streams', 'streams', 'get_streams', 'streams_by_id', 'subject_report', 'edit_class_marks', 'preview_class_report', 'view_student_reports', 'receipt', 'invoice'],
+                'teacher': ['mark', 'get_streams', 'streams', 'streams_by_id', 'subject_report', 'preview_class_report', 'view_student_reports', 'receipt', 'invoice']
             }
 
             allowed_objects = object_permissions.get(user_role, [])
