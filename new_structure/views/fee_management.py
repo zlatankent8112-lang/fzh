@@ -717,7 +717,17 @@ def generate_invoices():
                 term=term,
                 academic_year=academic_year
             ).all()
-            
+
+            # If no prebuilt accounts exist, auto-create them from the fee structure for this student
+            if not accounts:
+                try:
+                    created_accounts = StudentFeeAccount.create_accounts_for_student(
+                        student, term, academic_year, due_date
+                    )
+                    accounts = created_accounts or []
+                except Exception:
+                    accounts = []
+
             if not accounts:
                 skipped_count += 1
                 skipped_no_accounts_count += 1
