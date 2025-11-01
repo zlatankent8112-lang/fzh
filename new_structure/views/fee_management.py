@@ -363,16 +363,30 @@ def view_receipt(receipt_id):
     # Get accountant/teacher who recorded payment
     accountant = Teacher.query.get(payment.recorded_by) if payment.recorded_by else None
     
-    # Get payment allocations
+    # Get payment allocations with full details
     allocations = PaymentAllocation.query.filter_by(payment_id=payment.id).all()
     allocation_details = []
+    total_fees = Decimal('0')
+    total_paid = Decimal('0')
+    total_balance = Decimal('0')
+    
     for alloc in allocations:
         account = StudentFeeAccount.query.get(alloc.student_fee_account_id)
         fee_structure = FeeStructure.query.get(account.fee_structure_id)
+        
+        # Calculate balance after this allocation
+        balance_after = account.balance
+        
         allocation_details.append({
             'fee_name': fee_structure.fee_type_name,
-            'amount': alloc.amount_allocated
+            'total_fee': account.total_amount,
+            'amount_allocated': alloc.amount_allocated,
+            'balance': balance_after
         })
+        
+        total_fees += account.total_amount
+        total_paid += account.amount_paid
+        total_balance += balance_after
     
     return render_template('fees/receipt.html',
                          receipt=receipt,
@@ -380,7 +394,10 @@ def view_receipt(receipt_id):
                          student=student,
                          payment_method=payment_method,
                          accountant=accountant,
-                         allocations=allocation_details)
+                         allocations=allocation_details,
+                         total_fees=total_fees,
+                         total_paid=total_paid,
+                         total_balance=total_balance)
 
 
 @fee_bp.route('/receipt/<int:receipt_id>/print')
@@ -398,24 +415,27 @@ def print_receipt(receipt_id):
     # Get accountant/teacher who recorded payment
     accountant = Teacher.query.get(payment.recorded_by) if payment.recorded_by else None
     
-    # Get payment allocations
+    # Get payment allocations with full details
     allocations = PaymentAllocation.query.filter_by(payment_id=payment.id).all()
     allocation_details = []
-    total_before = Decimal('0')
-    total_after = Decimal('0')
+    total_fees = Decimal('0')
+    total_paid = Decimal('0')
+    total_balance = Decimal('0')
     
     for alloc in allocations:
         account = StudentFeeAccount.query.get(alloc.student_fee_account_id)
         fee_structure = FeeStructure.query.get(account.fee_structure_id)
-        balance_before = account.balance + alloc.amount_allocated
+        
         allocation_details.append({
             'fee_name': fee_structure.fee_type_name,
-            'amount': alloc.amount_allocated,
-            'balance_before': balance_before,
-            'balance_after': account.balance
+            'total_fee': account.total_amount,
+            'amount_allocated': alloc.amount_allocated,
+            'balance': account.balance
         })
-        total_before += balance_before
-        total_after += account.balance
+        
+        total_fees += account.total_amount
+        total_paid += account.amount_paid
+        total_balance += account.balance
     
     return render_template('fees/receipt_print.html',
                          receipt=receipt,
@@ -424,5 +444,5 @@ def print_receipt(receipt_id):
                          payment_method=payment_method,
                          accountant=accountant,
                          allocations=allocation_details,
-                         total_before=total_before,
-                         total_after=total_after)
+                         total_fees=total_fees,
+                         total_balance=total_balance)
