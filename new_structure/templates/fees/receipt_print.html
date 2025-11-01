@@ -144,11 +144,8 @@
         <div class="row">
           <span class="label">Grade:</span>
           <span class="value">
-            {% if student.grade %}
-              {{ student.grade.name }}{% if student.stream %} {{ student.stream.name }}{% endif %}
-            {% else %}
-              N/A
-            {% endif %}
+            {% if student.grade %} {{ student.grade.name }}{% if student.stream
+            %} {{ student.stream.name }}{% endif %} {% else %} N/A {% endif %}
           </span>
         </div>
       </div>
@@ -239,9 +236,13 @@
       <div class="section">
         <div class="row">
           <span class="label">Received By:</span>
-          <span class="value"
-            >{{ accountant.name if accountant else 'School Accountant' }}</span
-          >
+          <span class="value">
+            {% if accountant %}
+              {{ accountant.first_name }} {{ accountant.last_name }}
+            {% else %}
+              School Accountant
+            {% endif %}
+          </span>
         </div>
       </div>
 

@@ -205,11 +205,8 @@
         <div class="info-row">
           <span class="info-label">Grade:</span>
           <span class="info-value">
-            {% if student.grade %}
-              {{ student.grade.name }}{% if student.stream %} {{ student.stream.name }}{% endif %}
-            {% else %}
-              N/A
-            {% endif %}
+            {% if student.grade %} {{ student.grade.name }}{% if student.stream
+            %} {{ student.stream.name }}{% endif %} {% else %} N/A {% endif %}
           </span>
         </div>
       </div>
@@ -302,10 +299,12 @@
       <div class="footer">
         <div>
           <strong>Received By:</strong><br />
-          {{ accountant.name if accountant else 'School Accountant' }}<br />
-          <small style="color: #666"
-            >{{ accountant.email if accountant else '' }}</small
-          >
+          {% if accountant %}
+            {{ accountant.first_name }} {{ accountant.last_name }}<br />
+            <small style="color: #666">{{ accountant.username }}</small>
+          {% else %}
+            School Accountant
+          {% endif %}
         </div>
         <div class="signature">
           <div class="signature-line"></div>
