@@ -486,29 +486,7 @@ class MpesaTransaction(db.Model):
     payment = db.relationship('Payment', backref='mpesa_transactions', lazy=True)
 
 
-class FeeInvoice(db.Model):
-    """
-    Invoice generated for a student's term fees.
-    """
-    __tablename__ = 'fee_invoice'
 
-    id = db.Column(db.Integer, primary_key=True)
-    invoice_number = db.Column(db.String(50), unique=True, nullable=False)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
-    academic_year = db.Column(db.String(10), nullable=False)
-    term = db.Column(db.String(20), nullable=False)
-    total_amount = db.Column(db.Numeric(10, 2), nullable=False)
-    status = db.Column(db.String(20), default='issued')  # draft, issued, partial, paid, cancelled
-    due_date = db.Column(db.Date, nullable=True)
-    issued_at = db.Column(db.DateTime, default=datetime.utcnow)
-    created_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
-    notes = db.Column(db.Text, nullable=True)
-
-    student = db.relationship('Student', backref='fee_invoices', lazy=True)
-    creator = db.relationship('Teacher', foreign_keys=[created_by], backref='created_invoices', lazy=True)
-
-    def __repr__(self):
-        return f'<FeeInvoice {self.invoice_number} student={self.student_id} total=KES{self.total_amount}>'
 
 
 class FeeWaiver(db.Model):
