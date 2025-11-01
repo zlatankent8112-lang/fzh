@@ -254,6 +254,15 @@
         </div>
       </div>
 
+      <!-- QR Code -->
+      <div style="text-align: center; margin: 15px 0;">
+        <img src="{{ url_for('fees.receipt_qr', receipt_id=receipt.id) }}" 
+             alt="QR Code" 
+             style="width: 80px; height: 80px;">
+        <div style="font-size: 9px; margin-top: 5px;">Scan to Verify</div>
+        <div style="font-size: 8px;">{{ receipt.receipt_number }}</div>
+      </div>
+
       <!-- Signature -->
       <div class="signature">
         <div class="signature-line"></div>

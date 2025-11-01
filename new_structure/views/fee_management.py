@@ -134,6 +134,12 @@ def student_fees(student_id):
             Student.parent_contact == student.parent_contact
         ).all()
     
+    # Get receipt history for this student
+    from new_structure.models.fee_management import Receipt
+    receipts = Receipt.query.join(Payment).filter(
+        Payment.student_id == student_id
+    ).order_by(Receipt.issue_date.desc()).all()
+    
     return render_template('fees/student_fees.html',
                          student=student,
                          accounts=accounts,
@@ -144,7 +150,8 @@ def student_fees(student_id):
                          total_credit=total_credit,
                          siblings=siblings,
                          current_term=current_term,
-                         current_year=current_year)
+                         current_year=current_year,
+                         receipts=receipts)
 
 
 @fee_bp.route('/payment/record', methods=['GET', 'POST'])
@@ -487,3 +494,61 @@ def print_receipt(receipt_id):
                          total_balance=total_balance,
                          academic_year=academic_year,
                          term=term)
+
+
+@fee_bp.route('/receipt/<int:receipt_id>/qr')
+def receipt_qr(receipt_id):
+    """Generate QR code for receipt verification"""
+    import qrcode
+    from io import BytesIO
+    from flask import send_file
+    
+    from new_structure.models.fee_management import Receipt
+    
+    receipt = Receipt.query.get_or_404(receipt_id)
+    
+    # Create verification URL
+    verification_url = request.url_root.rstrip('/') + url_for('fees.verify_receipt', receipt_number=receipt.receipt_number)
+    
+    # Generate QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(verification_url)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Save to BytesIO object
+    img_io = BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
+    
+    return send_file(img_io, mimetype='image/png')
+
+
+@fee_bp.route('/receipt/verify/<receipt_number>')
+def verify_receipt(receipt_number):
+    """Verify receipt authenticity"""
+    from new_structure.models.fee_management import Receipt
+    
+    receipt = Receipt.query.filter_by(receipt_number=receipt_number).first()
+    
+    if not receipt:
+        return render_template('fees/receipt_verify.html', 
+                             valid=False, 
+                             message="Invalid receipt number. This receipt does not exist in our system.")
+    
+    payment = receipt.payment
+    student = Student.query.get(payment.student_id)
+    payment_method = PaymentMethod.query.get(payment.method_id)
+    
+    return render_template('fees/receipt_verify.html',
+                         valid=True,
+                         receipt=receipt,
+                         payment=payment,
+                         student=student,
+                         payment_method=payment_method)
