@@ -583,3 +583,76 @@ class MpesaTransaction(db.Model):
 
     def __repr__(self):
         return f'<MpesaTransaction {self.mpesa_code} amount=KES{self.amount} status={self.status}>'
+
+
+class StudentCreditBalance(db.Model):
+    """
+    Track credit balances (overpayments) for students.
+    These credits can be applied to future term fees or refunded.
+    """
+    __tablename__ = 'student_credit_balance'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=True)  # Source payment
+    
+    # Credit amount
+    credit_amount = db.Column(db.Numeric(10, 2), nullable=False)
+    remaining_credit = db.Column(db.Numeric(10, 2), nullable=False)
+    
+    # Status tracking
+    status = db.Column(db.String(20), default='available')  # available | applied | refunded | expired
+    
+    # Metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    applied_at = db.Column(db.DateTime, nullable=True)
+    refunded_at = db.Column(db.DateTime, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    
+    # Relationships
+    student = db.relationship('Student', backref='credit_balances', lazy=True)
+    payment = db.relationship('Payment', backref='credit_balances', lazy=True)
+    
+    def __repr__(self):
+        return f'<StudentCreditBalance student_id={self.student_id} remaining=KES{self.remaining_credit} status={self.status}>'
+
+
+class CreditTransfer(db.Model):
+    """
+    Track credit transfers between siblings.
+    Requires parent authorization and admin approval.
+    """
+    __tablename__ = 'credit_transfer'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Transfer details
+    from_student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    to_student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    credit_balance_id = db.Column(db.Integer, db.ForeignKey('student_credit_balance.id'), nullable=False)
+    
+    # Amount transferred
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    
+    # Authorization and approval
+    authorized_by = db.Column(db.String(100), nullable=True)  # Parent name/email
+    authorization_date = db.Column(db.DateTime, nullable=True)
+    approved_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)  # Admin/headteacher
+    approved_at = db.Column(db.DateTime, nullable=True)
+    
+    # Status
+    status = db.Column(db.String(20), default='pending')  # pending | approved | rejected | completed
+    
+    # Metadata
+    reason = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relationships
+    from_student = db.relationship('Student', foreign_keys=[from_student_id], backref='credit_transfers_out', lazy=True)
+    to_student = db.relationship('Student', foreign_keys=[to_student_id], backref='credit_transfers_in', lazy=True)
+    credit_balance = db.relationship('StudentCreditBalance', backref='transfers', lazy=True)
+    approver = db.relationship('Teacher', backref='approved_credit_transfers', lazy=True)
+    
+    def __repr__(self):
+        return f'<CreditTransfer from={self.from_student_id} to={self.to_student_id} amount=KES{self.amount} status={self.status}>'

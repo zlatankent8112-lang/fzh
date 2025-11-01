@@ -9,7 +9,7 @@ from decimal import Decimal
 
 from new_structure.extensions import db
 from new_structure.models.fee_management import (
-    FeeStructure, StudentFeeAccount, PaymentMethod, Payment, PaymentAllocation
+    FeeStructure, StudentFeeAccount, PaymentMethod, Payment, PaymentAllocation, StudentCreditBalance
 )
 from new_structure.models.academic import Student, Grade, Term
 from new_structure.services import is_authenticated, get_role
@@ -118,12 +118,29 @@ def student_fees(student_id):
     total_paid = sum(acc.amount_paid for acc in accounts)
     balance = sum(acc.balance for acc in accounts)
     
+    # Get available credit balances
+    from new_structure.models.fee_management import StudentCreditBalance
+    credit_balances = StudentCreditBalance.query.filter_by(
+        student_id=student_id,
+        status='available'
+    ).all()
+    total_credit = sum(credit.remaining_credit for credit in credit_balances)
+    
+    # Get siblings (same parent)
+    siblings = Student.query.filter(
+        Student.id != student_id,
+        Student.parent_id == student.parent_id
+    ).all() if student.parent_id else []
+    
     return render_template('fees/student_fees.html',
                          student=student,
                          accounts=accounts,
                          total_fees=total_fees,
                          total_paid=total_paid,
                          balance=balance,
+                         credit_balances=credit_balances,
+                         total_credit=total_credit,
+                         siblings=siblings,
                          current_term=current_term,
                          current_year=current_year)
 
@@ -140,6 +157,18 @@ def record_payment():
             method_id = int(request.form['method_id'])
             reference = request.form.get('reference', '')
             allocation_mode = request.form.get('allocation_mode', 'auto')
+            
+            # Check current balance to detect overpayment
+            current_balance = db.session.query(
+                db.func.sum(StudentFeeAccount.balance)
+            ).filter(StudentFeeAccount.student_id == student_id).scalar() or 0
+            
+            overpayment = amount - current_balance
+            
+            # Warn about overpayment but still allow it (school policy may vary)
+            if overpayment > 0:
+                flash(f'⚠️ Notice: Payment of KES {amount} exceeds outstanding balance of KES {current_balance}. '
+                      f'Excess amount (KES {overpayment}) will be kept as credit for future fees.', 'warning')
             
             # Create payment
             payment = Payment(
@@ -163,6 +192,8 @@ def record_payment():
                 ).join(FeeStructure).order_by(FeeStructure.allocation_priority).all()
                 
                 remaining = amount
+                allocated_total = Decimal('0')
+                
                 for acc in accounts:
                     if remaining <= 0:
                         break
@@ -187,9 +218,30 @@ def record_payment():
                     acc.last_payment_date = datetime.utcnow()
                     
                     remaining -= allocated
+                    allocated_total += allocated
+                
+                # Handle unallocated amount (overpayment/credit)
+                if remaining > 0:
+                    # Create credit balance record
+                    credit = StudentCreditBalance(
+                        student_id=student_id,
+                        payment_id=payment.id,
+                        credit_amount=remaining,
+                        remaining_credit=remaining,
+                        status='available',
+                        notes=f'Credit from payment {payment.reference or payment.id} - overpayment of KES {remaining}'
+                    )
+                    db.session.add(credit)
+                    flash(f'ℹ️ Unallocated credit: KES {remaining} has been recorded and will be applied to future fees. '
+                          f'Total allocated to current fees: KES {allocated_total}.', 'info')
             
             db.session.commit()
-            flash(f'Payment of KES {amount} recorded successfully!', 'success')
+            
+            if overpayment <= 0:
+                flash(f'✅ Payment of KES {amount} recorded successfully!', 'success')
+            else:
+                flash(f'✅ Payment recorded. KES {allocated_total} allocated, KES {remaining} kept as credit.', 'success')
+                
             return redirect(url_for('fees.student_fees', student_id=student_id))
             
         except Exception as e:
