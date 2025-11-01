@@ -128,6 +128,7 @@
         <div class="col-8">
           <div class="card">
             <form method="POST" action="{{ url_for('fees.record_payment') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <div class="form-group">
                 <label for="student_id">Student *</label>
                 <select id="student_id" name="student_id" required>
