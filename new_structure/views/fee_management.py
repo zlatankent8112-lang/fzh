@@ -396,6 +396,15 @@ def view_receipt(receipt_id):
     # Sort by priority (lower number = higher priority)
     allocation_details.sort(key=lambda x: x['priority'])
     
+    # Get term and academic year from first fee structure
+    academic_year = None
+    term = None
+    if all_accounts:
+        first_fee_structure = FeeStructure.query.get(all_accounts[0].fee_structure_id)
+        if first_fee_structure:
+            academic_year = first_fee_structure.academic_year
+            term = first_fee_structure.term
+    
     return render_template('fees/receipt.html',
                          receipt=receipt,
                          payment=payment,
@@ -405,7 +414,9 @@ def view_receipt(receipt_id):
                          allocations=allocation_details,
                          total_fees=total_fees,
                          total_paid=total_paid,
-                         total_balance=total_balance)
+                         total_balance=total_balance,
+                         academic_year=academic_year,
+                         term=term)
 
 
 @fee_bp.route('/receipt/<int:receipt_id>/print')
@@ -456,6 +467,15 @@ def print_receipt(receipt_id):
     # Sort by priority (lower number = higher priority)
     allocation_details.sort(key=lambda x: x['priority'])
     
+    # Get term and academic year from first fee structure
+    academic_year = None
+    term = None
+    if all_accounts:
+        first_fee_structure = FeeStructure.query.get(all_accounts[0].fee_structure_id)
+        if first_fee_structure:
+            academic_year = first_fee_structure.academic_year
+            term = first_fee_structure.term
+    
     return render_template('fees/receipt_print.html',
                          receipt=receipt,
                          payment=payment,
@@ -464,4 +484,6 @@ def print_receipt(receipt_id):
                          accountant=accountant,
                          allocations=allocation_details,
                          total_fees=total_fees,
-                         total_balance=total_balance)
+                         total_balance=total_balance,
+                         academic_year=academic_year,
+                         term=term)

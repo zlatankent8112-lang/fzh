@@ -157,18 +157,18 @@
           size: A4;
           margin: 15mm;
         }
-        
+
         .actions,
         .btn {
           display: none !important;
         }
-        
+
         body {
           background: white;
           padding: 0;
           margin: 0;
         }
-        
+
         .container {
           max-width: 100%;
           padding: 20px;
@@ -176,73 +176,73 @@
           margin: 0;
           page-break-after: avoid;
         }
-        
+
         .header {
           margin-bottom: 15px;
           padding-bottom: 10px;
         }
-        
+
         .header h1 {
           font-size: 24px;
           margin-bottom: 5px;
         }
-        
+
         .header h2 {
           font-size: 18px;
         }
-        
+
         .school-info {
           margin-bottom: 15px;
           font-size: 11px;
         }
-        
+
         .receipt-info {
           margin-bottom: 15px;
           padding: 10px;
           font-size: 12px;
         }
-        
+
         .student-info {
           margin-bottom: 15px;
           padding: 12px;
         }
-        
+
         .student-info h3 {
           font-size: 14px;
           margin-bottom: 8px;
         }
-        
+
         .info-row {
           font-size: 12px;
           margin: 5px 0;
         }
-        
+
         h3 {
           font-size: 14px;
           margin: 15px 0 10px 0;
         }
-        
+
         table {
           font-size: 11px;
           margin: 10px 0;
         }
-        
+
         table th,
         table td {
           padding: 6px 8px;
         }
-        
+
         .footer {
           margin-top: 20px;
           padding-top: 15px;
           font-size: 11px;
           page-break-inside: avoid;
         }
-        
+
         .signature-line {
           margin: 20px auto 5px auto;
         }
-        
+
         p {
           font-size: 10px;
           margin: 5px 0;
@@ -292,6 +292,16 @@
             {% if student.grade %} {{ student.grade.name }}{% if student.stream
             %} {{ student.stream.name }}{% endif %} {% else %} N/A {% endif %}
           </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Academic Year:</span>
+          <span class="info-value"
+            >{{ academic_year if academic_year else 'N/A' }}</span
+          >
+        </div>
+        <div class="info-row">
+          <span class="info-label">Term:</span>
+          <span class="info-value">{{ term if term else 'N/A' }}</span>
         </div>
       </div>
 
@@ -384,11 +394,12 @@
         <div>
           <strong>Received By:</strong><br />
           {% if accountant and accountant.first_name and accountant.last_name %}
-            {{ accountant.first_name }} {{ accountant.last_name }}<br />
-            <small style="color: #666">{{ accountant.username }}</small>
-          {% else %}
-            School Accountant<br />
-            <small style="color: #666">{{ accountant.username if accountant else '' }}</small>
+          {{ accountant.first_name }} {{ accountant.last_name }}<br />
+          <small style="color: #666">{{ accountant.username }}</small>
+          {% else %} School Accountant<br />
+          <small style="color: #666"
+            >{{ accountant.username if accountant else '' }}</small
+          >
           {% endif %}
         </div>
         <div class="signature">
