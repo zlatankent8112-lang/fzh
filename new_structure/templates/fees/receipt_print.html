@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt #{{ receipt.receipt_number }} - Print</title>
+    <style>
+        @page {
+            size: A5;
+            margin: 10mm;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 0;
+            padding: 15px;
+            background: white;
+        }
+        .receipt {
+            max-width: 380px;
+            margin: 0 auto;
+            border: 2px solid #000;
+            padding: 15px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .header h2 {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+        }
+        .header p {
+            margin: 3px 0;
+            font-size: 10px;
+        }
+        .section {
+            margin: 15px 0;
+            padding: 10px 0;
+            border-bottom: 1px dashed #999;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        .label {
+            font-weight: bold;
+        }
+        .value {
+            text-align: right;
+        }
+        .amount {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            border: 2px solid #000;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        table th {
+            border-bottom: 2px solid #000;
+            padding: 5px;
+            text-align: left;
+            font-weight: bold;
+        }
+        table td {
+            padding: 5px;
+            border-bottom: 1px dotted #999;
+        }
+        .total-row {
+            border-top: 2px solid #000;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 10px;
+        }
+        .signature {
+            margin-top: 30px;
+            text-align: right;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 150px;
+            margin: 30px 0 5px auto;
+        }
+        @media print {
+            body {
+                padding: 0;
+            }
+            .receipt {
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body onload="window.print();">
+    <div class="receipt">
+        <!-- Header -->
+        <div class="header">
+            <h1>HILLVIEW SCHOOL</h1>
+            <h2>PAYMENT RECEIPT</h2>
+            <p>Kiambu Road, Runda Estate, Nairobi</p>
+            <p>Tel: +254705204870</p>
+        </div>
+
+        <!-- Receipt Number & Date -->
+        <div class="section">
+            <div class="row">
+                <span class="label">Receipt No:</span>
+                <span class="value">{{ receipt.receipt_number }}</span>
+            </div>
+            <div class="row">
+                <span class="label">Date:</span>
+                <span class="value">{{ receipt.issued_at.strftime('%d/%m/%Y %I:%M %p') }}</span>
+            </div>
+        </div>
+
+        <!-- Student Info -->
+        <div class="section">
+            <div class="row">
+                <span class="label">Student:</span>
+                <span class="value">{{ student.name }}</span>
+            </div>
+            <div class="row">
+                <span class="label">Adm No:</span>
+                <span class="value">{{ student.admission_number }}</span>
+            </div>
+            <div class="row">
+                <span class="label">Grade:</span>
+                <span class="value">{{ student.grade.name if student.grade else 'N/A' }}</span>
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="section">
+            <div class="row">
+                <span class="label">Method:</span>
+                <span class="value">{{ payment_method.name }}</span>
+            </div>
+            {% if payment.reference %}
+            <div class="row">
+                <span class="label">Ref:</span>
+                <span class="value">{{ payment.reference }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Amount -->
+        <div class="amount">
+            AMOUNT PAID: KES {{ "{:,.2f}".format(payment.amount) }}
+        </div>
+
+        <!-- Fee Allocation -->
+        {% if allocations %}
+        <div style="margin: 15px 0;">
+            <strong>Payment Allocated To:</strong>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fee Type</th>
+                        <th style="text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alloc in allocations %}
+                    <tr>
+                        <td>{{ alloc.fee_name }}</td>
+                        <td style="text-align: right;">{{ "{:,.2f}".format(alloc.amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td>TOTAL</td>
+                        <td style="text-align: right;">{{ "{:,.2f}".format(payment.amount) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Balance Summary -->
+        <div class="section">
+            <div class="row">
+                <span class="label">Balance Before:</span>
+                <span class="value">KES {{ "{:,.2f}".format(total_before) }}</span>
+            </div>
+            <div class="row">
+                <span class="label">Amount Paid:</span>
+                <span class="value">KES {{ "{:,.2f}".format(payment.amount) }}</span>
+            </div>
+            <div class="row">
+                <span class="label">Balance After:</span>
+                <span class="value">KES {{ "{:,.2f}".format(total_after) }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Received By -->
+        <div class="section">
+            <div class="row">
+                <span class="label">Received By:</span>
+                <span class="value">{{ accountant.name if accountant else 'School Accountant' }}</span>
+            </div>
+        </div>
+
+        <!-- Signature -->
+        <div class="signature">
+            <div class="signature-line"></div>
+            <div>Authorized Signature</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>*** OFFICIAL RECEIPT ***</p>
+            <p>Thank you for your payment</p>
+            <p>Please retain for your records</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -230,7 +230,22 @@ def record_payment():
                 # Manual mode - just record payment, admin will allocate later
                 flash(f'✅ Payment of KES {amount} recorded. Please allocate manually to specific fees.', 'warning')
             
+            # Auto-generate receipt for this payment
+            from new_structure.models.fee_management import Receipt
+            receipt_number = f"RCP-{datetime.utcnow().year}-{payment.id:05d}"
+            receipt = Receipt(
+                receipt_number=receipt_number,
+                payment_id=payment.id,
+                issued_by=teacher_id,
+                issued_at=datetime.utcnow()
+            )
+            db.session.add(receipt)
+            
             db.session.commit()
+            
+            # Show receipt link in flash message
+            flash(f'📄 Receipt #{receipt_number} generated. <a href="/fees/receipt/{receipt.id}" style="color: white; text-decoration: underline;">View/Print Receipt</a>', 'info')
+            
             return redirect(url_for('fees.student_fees', student_id=student_id))
             
         except Exception as e:
@@ -331,3 +346,83 @@ def api_student_balance(student_id):
         'total_balance': float(total_balance),
         'accounts': [acc.to_dict() for acc in accounts]
     })
+
+
+@fee_bp.route('/receipt/<int:receipt_id>')
+@fee_access_required
+def view_receipt(receipt_id):
+    """View receipt details"""
+    from new_structure.models.fee_management import Receipt
+    from new_structure.models.academic import Teacher
+    
+    receipt = Receipt.query.get_or_404(receipt_id)
+    payment = receipt.payment
+    student = Student.query.get(payment.student_id)
+    payment_method = PaymentMethod.query.get(payment.method_id)
+    
+    # Get accountant/teacher who recorded payment
+    accountant = Teacher.query.get(payment.recorded_by) if payment.recorded_by else None
+    
+    # Get payment allocations
+    allocations = PaymentAllocation.query.filter_by(payment_id=payment.id).all()
+    allocation_details = []
+    for alloc in allocations:
+        account = StudentFeeAccount.query.get(alloc.student_fee_account_id)
+        fee_structure = FeeStructure.query.get(account.fee_structure_id)
+        allocation_details.append({
+            'fee_name': fee_structure.fee_type_name,
+            'amount': alloc.amount_allocated
+        })
+    
+    return render_template('fees/receipt.html',
+                         receipt=receipt,
+                         payment=payment,
+                         student=student,
+                         payment_method=payment_method,
+                         accountant=accountant,
+                         allocations=allocation_details)
+
+
+@fee_bp.route('/receipt/<int:receipt_id>/print')
+@fee_access_required
+def print_receipt(receipt_id):
+    """Print-friendly receipt view"""
+    from new_structure.models.fee_management import Receipt
+    from new_structure.models.academic import Teacher
+    
+    receipt = Receipt.query.get_or_404(receipt_id)
+    payment = receipt.payment
+    student = Student.query.get(payment.student_id)
+    payment_method = PaymentMethod.query.get(payment.method_id)
+    
+    # Get accountant/teacher who recorded payment
+    accountant = Teacher.query.get(payment.recorded_by) if payment.recorded_by else None
+    
+    # Get payment allocations
+    allocations = PaymentAllocation.query.filter_by(payment_id=payment.id).all()
+    allocation_details = []
+    total_before = Decimal('0')
+    total_after = Decimal('0')
+    
+    for alloc in allocations:
+        account = StudentFeeAccount.query.get(alloc.student_fee_account_id)
+        fee_structure = FeeStructure.query.get(account.fee_structure_id)
+        balance_before = account.balance + alloc.amount_allocated
+        allocation_details.append({
+            'fee_name': fee_structure.fee_type_name,
+            'amount': alloc.amount_allocated,
+            'balance_before': balance_before,
+            'balance_after': account.balance
+        })
+        total_before += balance_before
+        total_after += account.balance
+    
+    return render_template('fees/receipt_print.html',
+                         receipt=receipt,
+                         payment=payment,
+                         student=student,
+                         payment_method=payment_method,
+                         accountant=accountant,
+                         allocations=allocation_details,
+                         total_before=total_before,
+                         total_after=total_after)

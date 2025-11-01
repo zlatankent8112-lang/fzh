@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt #{{ receipt.receipt_number }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #28a745;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #28a745;
+            font-size: 32px;
+        }
+        .header h2 {
+            margin: 10px 0 0 0;
+            color: #333;
+            font-size: 24px;
+        }
+        .school-info {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .receipt-info div {
+            flex: 1;
+        }
+        .receipt-info strong {
+            color: #333;
+        }
+        .student-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+        .student-info h3 {
+            margin: 0 0 15px 0;
+            color: #007bff;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: 600;
+            width: 180px;
+            color: #555;
+        }
+        .info-value {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table th {
+            background: #28a745;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        table tr:hover {
+            background: #f8f9fa;
+        }
+        .total-row {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .total-row td {
+            border-top: 2px solid #28a745;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .signature {
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 2px solid #333;
+            width: 200px;
+            margin: 40px auto 10px auto;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        @media print {
+            .actions, .btn {
+                display: none;
+            }
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>HILLVIEW SCHOOL</h1>
+            <h2>OFFICIAL PAYMENT RECEIPT</h2>
+        </div>
+
+        <!-- School Info -->
+        <div class="school-info">
+            <p>Kiambu Road, Runda Estate, Nairobi, Kenya</p>
+            <p>Phone: +254705204870 | Email: info@hillviewschool.ac.ke</p>
+        </div>
+
+        <!-- Receipt Info -->
+        <div class="receipt-info">
+            <div>
+                <strong>Receipt No:</strong> {{ receipt.receipt_number }}
+            </div>
+            <div>
+                <strong>Date:</strong> {{ receipt.issued_at.strftime('%d %B %Y') }}
+            </div>
+            <div>
+                <strong>Time:</strong> {{ receipt.issued_at.strftime('%I:%M %p') }}
+            </div>
+        </div>
+
+        <!-- Student Info -->
+        <div class="student-info">
+            <h3>Student Information</h3>
+            <div class="info-row">
+                <span class="info-label">Student Name:</span>
+                <span class="info-value">{{ student.name }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Admission Number:</span>
+                <span class="info-value">{{ student.admission_number }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Grade:</span>
+                <span class="info-value">{{ student.grade.name if student.grade else 'N/A' }}</span>
+            </div>
+        </div>
+
+        <!-- Payment Details -->
+        <h3 style="color: #333; border-bottom: 2px solid #28a745; padding-bottom: 10px;">Payment Details</h3>
+        
+        <div class="info-row" style="margin: 15px 0;">
+            <span class="info-label">Payment Method:</span>
+            <span class="info-value">{{ payment_method.name }}</span>
+        </div>
+        {% if payment.reference %}
+        <div class="info-row" style="margin: 15px 0;">
+            <span class="info-label">Reference Number:</span>
+            <span class="info-value">{{ payment.reference }}</span>
+        </div>
+        {% endif %}
+        <div class="info-row" style="margin: 15px 0;">
+            <span class="info-label">Amount Paid:</span>
+            <span class="info-value" style="font-size: 20px; color: #28a745; font-weight: 600;">KES {{ "{:,.2f}".format(payment.amount) }}</span>
+        </div>
+
+        <!-- Fee Allocation -->
+        {% if allocations %}
+        <h3 style="color: #333; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-top: 30px;">Fee Allocation</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fee Type</th>
+                    <th style="text-align: right;">Amount Allocated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alloc in allocations %}
+                <tr>
+                    <td>{{ alloc.fee_name }}</td>
+                    <td style="text-align: right;">KES {{ "{:,.2f}".format(alloc.amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td><strong>TOTAL</strong></td>
+                    <td style="text-align: right;"><strong>KES {{ "{:,.2f}".format(payment.amount) }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                <strong>Received By:</strong><br>
+                {{ accountant.name if accountant else 'School Accountant' }}<br>
+                <small style="color: #666;">{{ accountant.email if accountant else '' }}</small>
+            </div>
+            <div class="signature">
+                <div class="signature-line"></div>
+                <strong>Authorized Signature</strong><br>
+                <small style="color: #666;">School Stamp</small>
+            </div>
+        </div>
+
+        <p style="text-align: center; margin-top: 30px; color: #999; font-size: 12px;">
+            This is an official receipt. Please retain for your records.<br>
+            For queries, contact the school office.
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="actions">
+            <a href="#" onclick="window.print(); return false;" class="btn btn-success">🖨️ Print Receipt</a>
+            <a href="{{ url_for('fees.print_receipt', receipt_id=receipt.id) }}" class="btn btn-primary" target="_blank">📄 Print-Friendly View</a>
+            <a href="{{ url_for('fees.student_fees', student_id=student.id) }}" class="btn btn-secondary">← Back to Student Fees</a>
+        </div>
+    </div>
+</body>
+</html>
