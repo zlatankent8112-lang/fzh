@@ -105,7 +105,7 @@ def student_fees(student_id):
     
     # Get current term (you can make this dynamic)
     current_term = "Term 1"
-    current_year = "2025"
+    current_year = "2025-2026"
     
     # Get student's fee accounts
     accounts = StudentFeeAccount.query.filter_by(
