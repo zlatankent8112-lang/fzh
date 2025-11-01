@@ -160,19 +160,7 @@ def record_payment():
             reference = request.form.get('reference', '')
             allocation_mode = request.form.get('allocation_mode', 'auto')
             
-            # Check current balance to detect overpayment
-            current_balance = db.session.query(
-                db.func.sum(StudentFeeAccount.balance)
-            ).filter(StudentFeeAccount.student_id == student_id).scalar() or 0
-            
-            overpayment = amount - current_balance
-            
-            # Warn about overpayment but still allow it (school policy may vary)
-            if overpayment > 0:
-                flash(f'⚠️ Notice: Payment of KES {amount} exceeds outstanding balance of KES {current_balance}. '
-                      f'Excess amount (KES {overpayment}) will be kept as credit for future fees.', 'warning')
-            
-            # Create payment
+            # Create payment record first
             payment = Payment(
                 student_id=student_id,
                 method_id=method_id,
@@ -185,7 +173,7 @@ def record_payment():
             db.session.add(payment)
             db.session.flush()  # Get payment ID
             
-            # Auto-allocate if mode is auto
+            # Handle allocation based on mode
             if allocation_mode == 'auto':
                 # Get student's outstanding fees by priority
                 accounts = StudentFeeAccount.query.filter(
@@ -234,16 +222,15 @@ def record_payment():
                         notes=f'Credit from payment {payment.reference or payment.id} - overpayment of KES {remaining}'
                     )
                     db.session.add(credit)
-                    flash(f'ℹ️ Unallocated credit: KES {remaining} has been recorded and will be applied to future fees. '
-                          f'Total allocated to current fees: KES {allocated_total}.', 'info')
+                    flash(f'✅ Payment of KES {amount} recorded. KES {allocated_total} allocated, KES {remaining} kept as credit for future fees.', 'success')
+                else:
+                    flash(f'✅ Payment of KES {amount} recorded and fully allocated!', 'success')
+            
+            elif allocation_mode == 'manual':
+                # Manual mode - just record payment, admin will allocate later
+                flash(f'✅ Payment of KES {amount} recorded. Please allocate manually to specific fees.', 'warning')
             
             db.session.commit()
-            
-            if overpayment <= 0:
-                flash(f'✅ Payment of KES {amount} recorded successfully!', 'success')
-            else:
-                flash(f'✅ Payment recorded. KES {allocated_total} allocated, KES {remaining} kept as credit.', 'success')
-                
             return redirect(url_for('fees.student_fees', student_id=student_id))
             
         except Exception as e:
