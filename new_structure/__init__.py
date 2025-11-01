@@ -617,14 +617,17 @@ def create_app(config_name='default'):
             'headteacher': [
                 '/headteacher/', '/admin/', '/universal/', '/permission/',
                 '/manage_teachers', '/analytics', '/staff/', '/school_setup/',
-                '/subject_config/', '/bulk_assignments/', '/missing_routes/'
+                '/subject_config/', '/bulk_assignments/', '/missing_routes/',
+                '/fees/'  # Fee management module
             ],
             'classteacher': [
                 '/classteacher/', '/manage_students', '/collaborative_marks',
-                '/analytics_api/', '/bulk_assignments/'
+                '/analytics_api/', '/bulk_assignments/',
+                '/fees/'  # Fee management module
             ],
             'teacher': [
-                '/teacher/', '/upload_marks', '/view_marks', '/analytics_api/'
+                '/teacher/', '/upload_marks', '/view_marks', '/analytics_api/',
+                '/fees/'  # Fee management module
             ]
         }
 
