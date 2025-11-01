@@ -680,11 +680,11 @@ def generate_invoices():
             flash('No students found for the selected criteria.', 'warning')
             return redirect(url_for('fees.generate_invoices'))
         
-    generated_count = 0
-    skipped_count = 0
-    skipped_existing_count = 0
-    skipped_no_accounts_count = 0
-    total_students_considered = 0
+        generated_count = 0
+        skipped_count = 0
+        skipped_existing_count = 0
+        skipped_no_accounts_count = 0
+        total_students_considered = 0
         
         # Get the starting invoice number ONCE before the loop
         year = datetime.now().year
