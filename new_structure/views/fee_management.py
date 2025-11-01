@@ -234,8 +234,10 @@ def record_payment():
                     flash(f'✅ Payment of KES {amount} recorded and fully allocated!', 'success')
             
             elif allocation_mode == 'manual':
-                # Manual mode - just record payment, admin will allocate later
-                flash(f'✅ Payment of KES {amount} recorded. Please allocate manually to specific fees.', 'warning')
+                # Manual mode - redirect to manual allocation page
+                db.session.commit()  # Commit payment first
+                flash(f'✅ Payment of KES {amount} recorded. Now allocate to specific fees.', 'info')
+                return redirect(url_for('fees.allocate_payment_manual', payment_id=payment.id))
             
             # Auto-generate receipt for this payment
             from new_structure.models.fee_management import Receipt
@@ -845,3 +847,106 @@ def delete_invoices_bulk():
         flash(f'Error deleting invoices: {str(e)}', 'danger')
     
     return redirect(url_for('fees.invoice_list'))
+
+
+@fee_bp.route('/payment/<int:payment_id>/allocate', methods=['GET', 'POST'])
+@fee_access_required
+def allocate_payment_manual(payment_id):
+    """Manually allocate payment to specific fee accounts"""
+    payment = Payment.query.get_or_404(payment_id)
+    student = Student.query.get(payment.student_id)
+    
+    # Get all fee accounts with outstanding balance
+    accounts = StudentFeeAccount.query.filter_by(
+        student_id=student.id
+    ).join(FeeStructure).order_by(FeeStructure.allocation_priority).all()
+    
+    # Calculate already allocated amount
+    already_allocated = sum(alloc.amount_allocated for alloc in payment.allocations)
+    remaining_amount = payment.amount - already_allocated
+    
+    if request.method == 'POST':
+        try:
+            total_allocated = Decimal('0')
+            
+            # Process each allocation input
+            for account in accounts:
+                amount_key = f'amount_{account.id}'
+                amount_str = request.form.get(amount_key, '0').strip()
+                
+                if amount_str and float(amount_str) > 0:
+                    allocated_amount = Decimal(amount_str)
+                    
+                    # Validate: can't allocate more than balance
+                    if allocated_amount > account.balance:
+                        flash(f'Cannot allocate KES {allocated_amount} to {account.fee_structure.fee_type_name} - balance is only KES {account.balance}', 'danger')
+                        return redirect(url_for('fees.allocate_payment_manual', payment_id=payment_id))
+                    
+                    # Validate: can't exceed remaining payment amount
+                    if total_allocated + allocated_amount > remaining_amount:
+                        flash(f'Total allocation exceeds remaining payment amount (KES {remaining_amount})', 'danger')
+                        return redirect(url_for('fees.allocate_payment_manual', payment_id=payment_id))
+                    
+                    # Create allocation
+                    allocation = PaymentAllocation(
+                        payment_id=payment.id,
+                        student_fee_account_id=account.id,
+                        amount_allocated=allocated_amount
+                    )
+                    db.session.add(allocation)
+                    
+                    # Update account
+                    account.amount_paid += allocated_amount
+                    account.balance -= allocated_amount
+                    if account.balance <= 0:
+                        account.status = 'paid'
+                    elif account.amount_paid > 0:
+                        account.status = 'partial'
+                    account.last_payment_date = datetime.utcnow()
+                    
+                    total_allocated += allocated_amount
+            
+            # Handle any remaining unallocated amount as credit
+            final_remaining = remaining_amount - total_allocated
+            if final_remaining > 0:
+                credit = StudentCreditBalance(
+                    student_id=student.id,
+                    payment_id=payment.id,
+                    credit_amount=final_remaining,
+                    remaining_credit=final_remaining,
+                    status='available',
+                    notes=f'Unallocated amount from payment {payment.reference or payment.id}'
+                )
+                db.session.add(credit)
+                flash(f'✅ Allocated KES {total_allocated}. KES {final_remaining} kept as credit.', 'success')
+            else:
+                flash(f'✅ Payment fully allocated: KES {total_allocated}', 'success')
+            
+            # Generate receipt
+            from new_structure.models.fee_management import Receipt
+            if not payment.receipt:
+                receipt_number = f"RCP-{datetime.utcnow().year}-{payment.id:05d}"
+                receipt = Receipt(
+                    receipt_number=receipt_number,
+                    payment_id=payment.id,
+                    issued_by=session.get('teacher_id'),
+                    issued_at=datetime.utcnow()
+                )
+                db.session.add(receipt)
+            
+            db.session.commit()
+            return redirect(url_for('fees.student_fees', student_id=student.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error allocating payment: {str(e)}', 'danger')
+    
+    # GET request
+    payment_method = PaymentMethod.query.get(payment.method_id)
+    
+    return render_template('fees/allocate_payment.html',
+                         payment=payment,
+                         student=student,
+                         accounts=accounts,
+                         payment_method=payment_method,
+                         remaining_amount=remaining_amount)

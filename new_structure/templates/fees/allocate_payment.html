@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allocate Payment - Fee Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .payment-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            margin-bottom: 30px;
+        }
+        .payment-info h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .info-value {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        thead {
+            background: #667eea;
+            color: white;
+        }
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        .priority-badge {
+            background: #6c757d;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-pending {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        input[type="number"] {
+            width: 120px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        .remaining-amount {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .fee-description {
+            font-size: 13px;
+            color: #666;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Manual Payment Allocation</h1>
+        <p class="subtitle">Allocate payment amounts to specific fee accounts</p>
+
+        <!-- Payment Information -->
+        <div class="payment-info">
+            <h3>Payment Details</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Student:</span>
+                    <span class="info-value">{{ student.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Admission No:</span>
+                    <span class="info-value">{{ student.admission_number }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Payment Amount:</span>
+                    <span class="info-value">KES {{ "{:,.2f}".format(payment.amount) }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Payment Method:</span>
+                    <span class="info-value">{{ payment_method.name if payment_method else 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Reference:</span>
+                    <span class="info-value">{{ payment.reference or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Payment Date:</span>
+                    <span class="info-value">{{ payment.payment_date.strftime('%d %b %Y') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remaining Amount -->
+        <div class="remaining-amount">
+            Amount to Allocate: <span id="remainingDisplay">KES {{ "{:,.2f}".format(remaining_amount) }}</span>
+        </div>
+
+        <!-- Allocation Instructions -->
+        <div class="alert alert-info">
+            📝 <strong>Instructions:</strong> Enter the amount you want to allocate to each fee below. 
+            The total must not exceed KES {{ "{:,.2f}".format(remaining_amount) }}. 
+            Any unallocated amount will be kept as credit for future fees.
+        </div>
+
+        <!-- Allocation Form -->
+        <div class="card">
+            <form method="POST" action="{{ url_for('fees.allocate_payment_manual', payment_id=payment.id) }}" id="allocationForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Fee Type</th>
+                            <th>Current Balance</th>
+                            <th>Status</th>
+                            <th>Amount to Allocate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in accounts %}
+                        <tr>
+                            <td>
+                                <span class="priority-badge">{{ account.fee_structure.allocation_priority }}</span>
+                            </td>
+                            <td>
+                                <strong>{{ account.fee_structure.fee_type_name }}</strong>
+                                {% if account.fee_structure.description %}
+                                <div class="fee-description">{{ account.fee_structure.description }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>KES {{ "{:,.2f}".format(account.balance) }}</strong>
+                            </td>
+                            <td>
+                                {% if account.status == 'paid' %}
+                                <span class="status-badge status-paid">Paid</span>
+                                {% elif account.status == 'partial' %}
+                                <span class="status-badge status-partial">Partial</span>
+                                {% else %}
+                                <span class="status-badge status-pending">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if account.balance > 0 %}
+                                <input 
+                                    type="number" 
+                                    name="amount_{{ account.id }}" 
+                                    class="allocation-input"
+                                    data-account-id="{{ account.id }}"
+                                    data-max-balance="{{ account.balance }}"
+                                    step="0.01" 
+                                    min="0" 
+                                    max="{{ account.balance }}"
+                                    placeholder="0.00"
+                                />
+                                {% else %}
+                                <span style="color: #999;">Fully paid</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 18px; font-weight: bold;">
+                        Total Allocating: <span id="totalAllocating" style="color: #007bff;">KES 0.00</span>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('fees.student_fees', student_id=student.id) }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">✓ Confirm Allocation</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const remainingAmount = {{ remaining_amount }};
+        const inputs = document.querySelectorAll('.allocation-input');
+        const totalDisplay = document.getElementById('totalAllocating');
+        const remainingDisplay = document.getElementById('remainingDisplay');
+
+        function updateTotals() {
+            let total = 0;
+            inputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+
+            totalDisplay.textContent = 'KES ' + total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            
+            const remaining = remainingAmount - total;
+            remainingDisplay.textContent = 'KES ' + remaining.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            
+            // Highlight if over
+            if (remaining < 0) {
+                remainingDisplay.style.color = '#dc3545';
+            } else {
+                remainingDisplay.style.color = '#333';
+            }
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener('input', updateTotals);
+        });
+
+        // Validate before submit
+        document.getElementById('allocationForm').addEventListener('submit', function(e) {
+            let total = 0;
+            inputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+
+            if (total > remainingAmount) {
+                e.preventDefault();
+                alert(`Total allocation (KES ${total.toFixed(2)}) exceeds available amount (KES ${remainingAmount.toFixed(2)})`);
+                return false;
+            }
+
+            if (total === 0) {
+                e.preventDefault();
+                alert('Please allocate at least some amount to fee accounts.');
+                return false;
+            }
+
+            return confirm(`Allocate KES ${total.toFixed(2)} to the selected fees?`);
+        });
+    </script>
+</body>
+</html>
