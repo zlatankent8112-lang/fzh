@@ -193,6 +193,17 @@
 
       <h1>{{ student.name }} - Fee Account</h1>
 
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="background: {% if category == 'success' %}#d4edda{% elif category == 'error' or category == 'danger' %}#f8d7da{% elif category == 'warning' %}#fff3cd{% else %}#d1ecf1{% endif %}; border: 1px solid {% if category == 'success' %}#c3e6cb{% elif category == 'error' or category == 'danger' %}#f5c6cb{% elif category == 'warning' %}#ffeeba{% else %}#bee5eb{% endif %}; color: {% if category == 'success' %}#155724{% elif category == 'error' or category == 'danger' %}#721c24{% elif category == 'warning' %}#856404{% else %}#0c5460{% endif %}; padding: 15px 20px; border-radius: 6px; margin-bottom: 20px;">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
       <!-- Student Info -->
       <div class="row">
         <div class="col-12">
@@ -241,38 +252,65 @@
       {% if credit_balances %}
       <div class="row">
         <div class="col-12">
-          <div class="card" style="background: #d4edda; border-left: 4px solid #28a745;">
-            <div class="card-header" style="background: #c3e6cb;">
-              <h5 style="margin: 0; color: #155724;">💰 Credit Balance (Overpayment)</h5>
+          <div
+            class="card"
+            style="background: #d4edda; border-left: 4px solid #28a745"
+          >
+            <div class="card-header" style="background: #c3e6cb">
+              <h5 style="margin: 0; color: #155724">
+                💰 Credit Balance (Overpayment)
+              </h5>
             </div>
-            <p style="margin-bottom: 15px; color: #155724;">
-              <strong>Total Available Credit: KES {{ "{:,.2f}".format(total_credit) }}</strong>
+            <p style="margin-bottom: 15px; color: #155724">
+              <strong
+                >Total Available Credit: KES {{ "{:,.2f}".format(total_credit)
+                }}</strong
+              >
             </p>
-            <p style="margin-bottom: 15px;">
-              This credit can be applied to future term fees{% if siblings %} or transferred to a sibling{% endif %}.
+            <p style="margin-bottom: 15px">
+              This credit can be applied to future term fees{% if siblings %} or
+              transferred to a sibling{% endif %}.
             </p>
-            
+
             {% if siblings %}
-            <div style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
-              <h6 style="margin-top: 0;">Transfer Credit to Sibling:</h6>
-              <p style="margin-bottom: 10px; font-size: 14px;">Siblings in the system:</p>
-              <ul style="margin: 0; padding-left: 20px;">
+            <div
+              style="
+                background: white;
+                padding: 15px;
+                border-radius: 4px;
+                margin-top: 10px;
+              "
+            >
+              <h6 style="margin-top: 0">Transfer Credit to Sibling:</h6>
+              <p style="margin-bottom: 10px; font-size: 14px">
+                Siblings in the system:
+              </p>
+              <ul style="margin: 0; padding-left: 20px">
                 {% for sibling in siblings %}
-                <li style="margin-bottom: 5px;">
-                  {{ sibling.name }} ({{ sibling.admission_number }}) - Grade {{ sibling.grade.name if sibling.grade else 'N/A' }}
-                  <a href="#" class="btn btn-sm btn-primary" onclick="alert('Credit transfer feature coming soon!'); return false;">Transfer Credit</a>
+                <li style="margin-bottom: 5px">
+                  {{ sibling.name }} ({{ sibling.admission_number }}) - Grade {{
+                  sibling.grade.name if sibling.grade else 'N/A' }}
+                  <a
+                    href="#"
+                    class="btn btn-sm btn-primary"
+                    onclick="alert('Credit transfer feature coming soon!'); return false;"
+                    >Transfer Credit</a
+                  >
                 </li>
                 {% endfor %}
               </ul>
-              <p style="margin-top: 10px; font-size: 12px; color: #666;">
-                <em>Note: Credit transfers require parent authorization and admin approval.</em>
+              <p style="margin-top: 10px; font-size: 12px; color: #666">
+                <em
+                  >Note: Credit transfers require parent authorization and admin
+                  approval.</em
+                >
               </p>
             </div>
             {% endif %}
-            
-            <div style="margin-top: 15px;">
+
+            <div style="margin-top: 15px">
               <strong>Credit Details:</strong>
-              <table style="margin-top: 10px;">
+              <table style="margin-top: 10px">
                 <thead>
                   <tr>
                     <th>Created Date</th>
@@ -285,11 +323,21 @@
                 <tbody>
                   {% for credit in credit_balances %}
                   <tr>
-                    <td>{{ credit.created_at.strftime('%Y-%m-%d %H:%M') if credit.created_at else 'N/A' }}</td>
+                    <td>
+                      {{ credit.created_at.strftime('%Y-%m-%d %H:%M') if
+                      credit.created_at else 'N/A' }}
+                    </td>
                     <td>KES {{ "{:,.2f}".format(credit.credit_amount) }}</td>
                     <td>KES {{ "{:,.2f}".format(credit.remaining_credit) }}</td>
-                    <td><span class="badge bg-success">{{ credit.status }}</span></td>
-                    <td><small>{{ credit.notes[:50] }}{% if credit.notes|length > 50 %}...{% endif %}</small></td>
+                    <td>
+                      <span class="badge bg-success">{{ credit.status }}</span>
+                    </td>
+                    <td>
+                      <small
+                        >{{ credit.notes[:50] }}{% if credit.notes|length > 50
+                        %}...{% endif %}</small
+                      >
+                    </td>
                   </tr>
                   {% endfor %}
                 </tbody>
