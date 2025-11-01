@@ -374,19 +374,23 @@
                   <td>{{ receipt.issue_date.strftime('%d %b %Y') }}</td>
                   <td>KES {{ "{:,.2f}".format(receipt.payment.amount) }}</td>
                   <td>
-                    {% set payment_method = receipt.payment.payment_method %}
-                    {{ payment_method.name if payment_method else 'N/A' }}
+                    {% set payment_method = receipt.payment.payment_method %} {{
+                    payment_method.name if payment_method else 'N/A' }}
                   </td>
                   <td>
-                    <a href="{{ url_for('fees.view_receipt', receipt_id=receipt.id) }}" 
-                       class="btn btn-sm btn-info" 
-                       title="View Receipt">
+                    <a
+                      href="{{ url_for('fees.view_receipt', receipt_id=receipt.id) }}"
+                      class="btn btn-sm btn-info"
+                      title="View Receipt"
+                    >
                       👁️ View
                     </a>
-                    <a href="{{ url_for('fees.print_receipt', receipt_id=receipt.id) }}" 
-                       class="btn btn-sm btn-secondary" 
-                       target="_blank"
-                       title="Print Receipt">
+                    <a
+                      href="{{ url_for('fees.print_receipt', receipt_id=receipt.id) }}"
+                      class="btn btn-sm btn-secondary"
+                      target="_blank"
+                      title="Print Receipt"
+                    >
                       🖨️ Print
                     </a>
                   </td>

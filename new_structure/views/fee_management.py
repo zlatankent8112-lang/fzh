@@ -552,3 +552,195 @@ def verify_receipt(receipt_number):
                          payment=payment,
                          student=student,
                          payment_method=payment_method)
+
+
+# ============================================================================
+# INVOICE MANAGEMENT ROUTES
+# ============================================================================
+
+@fee_bp.route('/invoices')
+@fee_access_required
+def invoice_list():
+    """View all invoices with filters"""
+    from new_structure.models.fee_management import FeeInvoice
+    
+    # Get filter parameters
+    status = request.args.get('status', '')
+    grade_id = request.args.get('grade_id', type=int)
+    term = request.args.get('term', '')
+    academic_year = request.args.get('academic_year', '')
+    
+    # Base query
+    query = FeeInvoice.query.join(Student)
+    
+    # Apply filters
+    if status:
+        query = query.filter(FeeInvoice.status == status)
+    if grade_id:
+        query = query.filter(Student.grade_id == grade_id)
+    if term:
+        query = query.filter(FeeInvoice.term == term)
+    if academic_year:
+        query = query.filter(FeeInvoice.academic_year == academic_year)
+    
+    # Order by most recent
+    invoices = query.order_by(FeeInvoice.issue_date.desc()).all()
+    
+    # Get all grades for filter dropdown
+    grades = Grade.query.order_by(Grade.name).all()
+    
+    # Get unique terms and academic years
+    terms = db.session.query(FeeInvoice.term).distinct().all()
+    academic_years = db.session.query(FeeInvoice.academic_year).distinct().all()
+    
+    return render_template('fees/invoice_list.html',
+                         invoices=invoices,
+                         grades=grades,
+                         terms=[t[0] for t in terms],
+                         academic_years=[ay[0] for ay in academic_years],
+                         current_status=status,
+                         current_grade_id=grade_id,
+                         current_term=term,
+                         current_academic_year=academic_year)
+
+
+@fee_bp.route('/invoice/<int:invoice_id>')
+@fee_access_required
+def view_invoice(invoice_id):
+    """View individual invoice"""
+    from new_structure.models.fee_management import FeeInvoice
+    
+    invoice = FeeInvoice.query.get_or_404(invoice_id)
+    student = Student.query.get(invoice.student_id)
+    
+    # Get all fee accounts for this student, term, and academic year
+    accounts = StudentFeeAccount.query.filter_by(
+        student_id=student.id,
+        term=invoice.term,
+        academic_year=invoice.academic_year
+    ).join(FeeStructure).order_by(FeeStructure.allocation_priority).all()
+    
+    # Calculate totals
+    total_fees = sum(acc.total_amount for acc in accounts)
+    total_paid = sum(acc.amount_paid for acc in accounts)
+    balance = sum(acc.balance for acc in accounts)
+    
+    # Get payment history for this invoice period
+    payments = Payment.query.filter_by(student_id=student.id).order_by(Payment.payment_date.desc()).all()
+    
+    return render_template('fees/invoice_view.html',
+                         invoice=invoice,
+                         student=student,
+                         accounts=accounts,
+                         total_fees=total_fees,
+                         total_paid=total_paid,
+                         balance=balance,
+                         payments=payments)
+
+
+@fee_bp.route('/invoice/generate', methods=['GET', 'POST'])
+@fee_access_required
+def generate_invoices():
+    """Generate invoices for students"""
+    from new_structure.models.fee_management import FeeInvoice
+    from new_structure.models.user import Teacher
+    
+    if request.method == 'POST':
+        grade_id = request.form.get('grade_id', type=int)
+        term = request.form.get('term')
+        academic_year = request.form.get('academic_year')
+        due_date_str = request.form.get('due_date')
+        
+        if not all([term, academic_year, due_date_str]):
+            flash('Please provide all required fields.', 'warning')
+            return redirect(url_for('fees.generate_invoices'))
+        
+        due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+        
+        # Get students to generate invoices for
+        students_query = Student.query
+        if grade_id:
+            students_query = students_query.filter_by(grade_id=grade_id)
+        
+        students = students_query.all()
+        
+        if not students:
+            flash('No students found for the selected criteria.', 'warning')
+            return redirect(url_for('fees.generate_invoices'))
+        
+        generated_count = 0
+        skipped_count = 0
+        
+        for student in students:
+            # Check if invoice already exists
+            existing = FeeInvoice.query.filter_by(
+                student_id=student.id,
+                term=term,
+                academic_year=academic_year
+            ).first()
+            
+            if existing:
+                skipped_count += 1
+                continue
+            
+            # Get student's fee accounts for this term
+            accounts = StudentFeeAccount.query.filter_by(
+                student_id=student.id,
+                term=term,
+                academic_year=academic_year
+            ).all()
+            
+            if not accounts:
+                skipped_count += 1
+                continue
+            
+            total_amount = sum(acc.total_amount for acc in accounts)
+            
+            # Generate invoice number: INV-YYYY-NNNNN
+            year = datetime.now().year
+            last_invoice = FeeInvoice.query.filter(
+                FeeInvoice.invoice_number.like(f'INV-{year}-%')
+            ).order_by(FeeInvoice.id.desc()).first()
+            
+            if last_invoice:
+                last_num = int(last_invoice.invoice_number.split('-')[-1])
+                invoice_number = f'INV-{year}-{last_num + 1:05d}'
+            else:
+                invoice_number = f'INV-{year}-00001'
+            
+            # Create invoice
+            invoice = FeeInvoice(
+                invoice_number=invoice_number,
+                student_id=student.id,
+                academic_year=academic_year,
+                term=term,
+                issue_date=date.today(),
+                due_date=due_date,
+                total_amount=total_amount,
+                status='issued',
+                generated_by=session.get('user_id')
+            )
+            
+            db.session.add(invoice)
+            generated_count += 1
+        
+        try:
+            db.session.commit()
+            flash(f'Successfully generated {generated_count} invoice(s). Skipped {skipped_count} (already exists or no fees).', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error generating invoices: {str(e)}', 'danger')
+        
+        return redirect(url_for('fees.invoice_list'))
+    
+    # GET request - show form
+    grades = Grade.query.order_by(Grade.name).all()
+    
+    # Get unique terms and academic years from fee structures
+    terms = db.session.query(FeeStructure.term).distinct().all()
+    academic_years = db.session.query(FeeStructure.academic_year).distinct().all()
+    
+    return render_template('fees/invoice_generate.html',
+                         grades=grades,
+                         terms=[t[0] for t in terms],
+                         academic_years=[ay[0] for ay in academic_years])

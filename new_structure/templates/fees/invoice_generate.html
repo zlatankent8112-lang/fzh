@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Invoices - Hillview School</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .help-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .info-box li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>📄 Generate Fee Invoices</h1>
+            <p class="subtitle">Create invoices for students for a specific term and academic year</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <label for="grade_id">Grade (Optional)</label>
+                    <select name="grade_id" id="grade_id" class="form-control">
+                        <option value="">All Grades</option>
+                        {% for grade in grades %}
+                        <option value="{{ grade.id }}">{{ grade.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Leave blank to generate for all grades</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="academic_year">Academic Year *</label>
+                    <select name="academic_year" id="academic_year" class="form-control" required>
+                        <option value="">Select Academic Year</option>
+                        {% for year in academic_years %}
+                        <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Select the academic year for these invoices</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="term">Term *</label>
+                    <select name="term" id="term" class="form-control" required>
+                        <option value="">Select Term</option>
+                        {% for term in terms %}
+                        <option value="{{ term }}">{{ term }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="help-text">Select the term for these invoices</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="due_date">Payment Due Date *</label>
+                    <input type="date" name="due_date" id="due_date" class="form-control" required>
+                    <div class="help-text">Date by which fees should be paid</div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success">✓ Generate Invoices</button>
+                    <a href="{{ url_for('fees.invoice_list') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+
+            <div class="info-box">
+                <h3>ℹ️ How it works:</h3>
+                <ul>
+                    <li><strong>Invoice Number:</strong> Auto-generated in format INV-YYYY-NNNNN</li>
+                    <li><strong>Total Amount:</strong> Calculated from student's fee accounts for the selected term</li>
+                    <li><strong>Duplicate Prevention:</strong> System will skip students who already have an invoice for the same term/year</li>
+                    <li><strong>No Fee Accounts:</strong> Students without fee accounts for this term will be skipped</li>
+                    <li><strong>Status:</strong> All new invoices start with "Issued" status</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set default due date to 30 days from now
+        const dueDateInput = document.getElementById('due_date');
+        const today = new Date();
+        today.setDate(today.getDate() + 30);
+        dueDateInput.value = today.toISOString().split('T')[0];
+    </script>
+</body>
+</html>

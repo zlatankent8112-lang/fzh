@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fee Invoices - Hillview School</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            margin: 0;
+            color: #333;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .filters form {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-issued {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .badge-paid {
+            background-color: #28a745;
+            color: white;
+        }
+        .badge-partial {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .badge-overdue {
+            background-color: #dc3545;
+            color: white;
+        }
+        .badge-canceled {
+            background-color: #6c757d;
+            color: white;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>📄 Fee Invoices</h1>
+                <p style="margin: 5px 0 0 0; color: #666;">Manage and track all student invoices</p>
+            </div>
+            <div>
+                <a href="{{ url_for('fees.generate_invoices') }}" class="btn btn-success">➕ Generate Invoices</a>
+                <a href="{{ url_for('fees.index') }}" class="btn btn-secondary">← Back to Fee Management</a>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value">{{ invoices|length }}</div>
+                <div class="stat-label">Total Invoices</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <div class="stat-value">{{ invoices|selectattr('status', 'equalto', 'issued')|list|length }}</div>
+                <div class="stat-label">Issued</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #28a745;">
+                <div class="stat-value">{{ invoices|selectattr('status', 'equalto', 'paid')|list|length }}</div>
+                <div class="stat-label">Paid</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #dc3545;">
+                <div class="stat-value">{{ invoices|selectattr('status', 'equalto', 'overdue')|list|length }}</div>
+                <div class="stat-label">Overdue</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <form method="GET">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status">
+                        <option value="">All Statuses</option>
+                        <option value="issued" {% if current_status == 'issued' %}selected{% endif %}>Issued</option>
+                        <option value="partially_paid" {% if current_status == 'partially_paid' %}selected{% endif %}>Partially Paid</option>
+                        <option value="paid" {% if current_status == 'paid' %}selected{% endif %}>Paid</option>
+                        <option value="overdue" {% if current_status == 'overdue' %}selected{% endif %}>Overdue</option>
+                        <option value="canceled" {% if current_status == 'canceled' %}selected{% endif %}>Canceled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Grade</label>
+                    <select name="grade_id">
+                        <option value="">All Grades</option>
+                        {% for grade in grades %}
+                        <option value="{{ grade.id }}" {% if current_grade_id == grade.id %}selected{% endif %}>{{ grade.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Term</label>
+                    <select name="term">
+                        <option value="">All Terms</option>
+                        {% for term in terms %}
+                        <option value="{{ term }}" {% if current_term == term %}selected{% endif %}>{{ term }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Academic Year</label>
+                    <select name="academic_year">
+                        <option value="">All Years</option>
+                        {% for year in academic_years %}
+                        <option value="{{ year }}" {% if current_academic_year == year %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">🔍 Filter</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Invoice Table -->
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Student</th>
+                        <th>Grade</th>
+                        <th>Term/Year</th>
+                        <th>Issue Date</th>
+                        <th>Due Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in invoices %}
+                    <tr>
+                        <td><strong>{{ invoice.invoice_number }}</strong></td>
+                        <td>
+                            {{ invoice.student.name }}<br>
+                            <small style="color: #666;">{{ invoice.student.admission_number }}</small>
+                        </td>
+                        <td>
+                            {% if invoice.student.grade %}
+                                {{ invoice.student.grade.name }}
+                                {% if invoice.student.stream %}{{ invoice.student.stream.name }}{% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ invoice.term }}<br>
+                            <small style="color: #666;">{{ invoice.academic_year }}</small>
+                        </td>
+                        <td>{{ invoice.issue_date.strftime('%d %b %Y') }}</td>
+                        <td>
+                            {% if invoice.due_date %}
+                                {{ invoice.due_date.strftime('%d %b %Y') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td><strong>KES {{ "{:,.2f}".format(invoice.total_amount) }}</strong></td>
+                        <td>
+                            <span class="badge badge-{{ invoice.status.replace('_', '-') }}">
+                                {{ invoice.status.replace('_', ' ').title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('fees.view_invoice', invoice_id=invoice.id) }}" class="btn btn-sm btn-primary">View</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
+                            No invoices found. Click "Generate Invoices" to create new ones.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -402,13 +402,17 @@
           >
           {% endif %}
         </div>
-        <div style="text-align: center;">
+        <div style="text-align: center">
           <strong>Scan to Verify</strong><br />
-          <img src="{{ url_for('fees.receipt_qr', receipt_id=receipt.id) }}" 
-               alt="QR Code" 
-               style="width: 100px; height: 100px; margin: 10px 0;">
+          <img
+            src="{{ url_for('fees.receipt_qr', receipt_id=receipt.id) }}"
+            alt="QR Code"
+            style="width: 100px; height: 100px; margin: 10px 0"
+          />
           <br />
-          <small style="color: #666; font-size: 10px;">{{ receipt.receipt_number }}</small>
+          <small style="color: #666; font-size: 10px"
+            >{{ receipt.receipt_number }}</small
+          >
         </div>
         <div class="signature">
           <div class="signature-line"></div>
