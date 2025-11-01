@@ -126,11 +126,13 @@ def student_fees(student_id):
     ).all()
     total_credit = sum(credit.remaining_credit for credit in credit_balances)
     
-    # Get siblings (same parent)
-    siblings = Student.query.filter(
-        Student.id != student_id,
-        Student.parent_id == student.parent_id
-    ).all() if student.parent_id else []
+    # Get siblings (same parent contact - if parent_contact matches)
+    siblings = []
+    if hasattr(student, 'parent_contact') and student.parent_contact:
+        siblings = Student.query.filter(
+            Student.id != student_id,
+            Student.parent_contact == student.parent_contact
+        ).all()
     
     return render_template('fees/student_fees.html',
                          student=student,
