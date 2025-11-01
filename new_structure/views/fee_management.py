@@ -563,6 +563,7 @@ def verify_receipt(receipt_number):
 def invoice_list():
     """View all invoices with filters"""
     from new_structure.models.fee_management import FeeInvoice
+    from sqlalchemy.orm import joinedload
     
     # Get filter parameters
     status = request.args.get('status', '')
@@ -571,8 +572,11 @@ def invoice_list():
     term = request.args.get('term', '')
     academic_year = request.args.get('academic_year', '')
     
-    # Base query
-    query = FeeInvoice.query.join(Student)
+    # Base query with eager loading of student, grade, and stream
+    query = FeeInvoice.query.join(Student).options(
+        joinedload(FeeInvoice.student).joinedload(Student.grade),
+        joinedload(FeeInvoice.student).joinedload(Student.stream)
+    )
     
     # Apply filters
     if status:
@@ -621,9 +625,10 @@ def invoice_list():
 def view_invoice(invoice_id):
     """View individual invoice"""
     from new_structure.models.fee_management import FeeInvoice
+    from sqlalchemy.orm import joinedload
     
     invoice = FeeInvoice.query.get_or_404(invoice_id)
-    student = Student.query.get(invoice.student_id)
+    student = Student.query.options(joinedload(Student.grade), joinedload(Student.stream)).get(invoice.student_id)
     
     # Get all fee accounts for this student, term, and academic year
     accounts = StudentFeeAccount.query.filter_by(
@@ -781,3 +786,62 @@ def generate_invoices():
                          grades=grades,
                          terms=[t[0] for t in terms],
                          academic_years=[ay[0] for ay in academic_years])
+
+
+@fee_bp.route('/invoice/<int:invoice_id>/delete', methods=['POST'])
+@fee_access_required
+def delete_invoice(invoice_id):
+    """Delete a single invoice"""
+    from new_structure.models.fee_management import FeeInvoice
+    
+    invoice = FeeInvoice.query.get_or_404(invoice_id)
+    invoice_number = invoice.invoice_number
+    
+    try:
+        db.session.delete(invoice)
+        db.session.commit()
+        flash(f'Invoice {invoice_number} deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting invoice: {str(e)}', 'danger')
+    
+    return redirect(url_for('fees.invoice_list'))
+
+
+@fee_bp.route('/invoices/delete-bulk', methods=['POST'])
+@fee_access_required
+def delete_invoices_bulk():
+    """Delete multiple invoices"""
+    from new_structure.models.fee_management import FeeInvoice
+    
+    # Get filter parameters for bulk delete
+    term = request.form.get('term')
+    academic_year = request.form.get('academic_year')
+    grade_id = request.form.get('grade_id', type=int)
+    
+    if not term or not academic_year:
+        flash('Please specify term and academic year for bulk delete.', 'warning')
+        return redirect(url_for('fees.invoice_list'))
+    
+    # Build query
+    query = FeeInvoice.query.filter_by(term=term, academic_year=academic_year)
+    
+    if grade_id:
+        query = query.join(Student).filter(Student.grade_id == grade_id)
+    
+    # Get count before deleting
+    count = query.count()
+    
+    if count == 0:
+        flash('No invoices found matching the criteria.', 'warning')
+        return redirect(url_for('fees.invoice_list'))
+    
+    try:
+        query.delete(synchronize_session=False)
+        db.session.commit()
+        flash(f'Successfully deleted {count} invoice(s) for {term} {academic_year}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting invoices: {str(e)}', 'danger')
+    
+    return redirect(url_for('fees.invoice_list'))
