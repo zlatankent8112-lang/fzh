@@ -157,15 +157,22 @@
       </p>
 
       <div class="alert alert-info">
-        💡 <strong>How it works:</strong><br>
-        <strong>1. Common Settings:</strong> Set defaults for all fees (academic year, term, frequency, level)<br>
-        <strong>2. Individual Fees:</strong> Each fee can override term & frequency if needed<br>
-        <strong>3. Examples:</strong><br>
-        &nbsp;&nbsp;&nbsp;• <strong>Registration Fee</strong> → Override frequency to "One-Time", check Optional<br>
-        &nbsp;&nbsp;&nbsp;• <strong>Swimming</strong> → Override term to "Term 1", check Optional<br>
-        &nbsp;&nbsp;&nbsp;• <strong>Tuition</strong> → Use common settings (All Terms, Per Term), keep Mandatory<br>
-        &nbsp;&nbsp;&nbsp;• <strong>Coding/Robotics</strong> → Check Optional (parent can choose)<br>
-        <strong>4. Flexibility:</strong> Mix mandatory fees (Tuition, Lunch) with optional activities (Swimming, Coding) in one go!
+        💡 <strong>How it works:</strong><br />
+        <strong>1. Common Settings:</strong> Set defaults for all fees (academic
+        year, term, frequency, level)<br />
+        <strong>2. Individual Fees:</strong> Each fee can override term &
+        frequency if needed<br />
+        <strong>3. Examples:</strong><br />
+        &nbsp;&nbsp;&nbsp;• <strong>Registration Fee</strong> → Override
+        frequency to "One-Time", check Optional<br />
+        &nbsp;&nbsp;&nbsp;• <strong>Swimming</strong> → Override term to "Term
+        1", check Optional<br />
+        &nbsp;&nbsp;&nbsp;• <strong>Tuition</strong> → Use common settings (All
+        Terms, Per Term), keep Mandatory<br />
+        &nbsp;&nbsp;&nbsp;• <strong>Coding/Robotics</strong> → Check Optional
+        (parent can choose)<br />
+        <strong>4. Flexibility:</strong> Mix mandatory fees (Tuition, Lunch)
+        with optional activities (Swimming, Coding) in one go!
       </div>
 
       <div class="card">
@@ -223,17 +230,17 @@
                 <label for="education_level">🎓 Educational Level *</label>
                 <select id="education_level" name="education_level" required>
                   <option value="">Select Level...</option>
-                  <option value="pre_primary">Pre-Primary (PP1-PP2)</option>
-                  <option value="lower_primary">
+                  <option value="pre_primary" {% if prefill_education_level == 'pre_primary' %}selected{% endif %}>Pre-Primary (PP1-PP2)</option>
+                  <option value="lower_primary" {% if prefill_education_level == 'lower_primary' %}selected{% endif %}>
                     Lower Primary (Grade 1-3)
                   </option>
-                  <option value="upper_primary">
+                  <option value="upper_primary" {% if prefill_education_level == 'upper_primary' %}selected{% endif %}>
                     Upper Primary (Grade 4-6)
                   </option>
-                  <option value="junior_secondary">
+                  <option value="junior_secondary" {% if prefill_education_level == 'junior_secondary' %}selected{% endif %}>
                     Junior Secondary (Grade 7-9)
                   </option>
-                  <option value="senior_secondary">
+                  <option value="senior_secondary" {% if prefill_education_level == 'senior_secondary' %}selected{% endif %}>
                     Senior Secondary (Grade 10-12)
                   </option>
                 </select>

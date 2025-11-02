@@ -164,16 +164,16 @@
         </div>
         <div>
           <a
-            href="{{ url_for('fees.bulk_create_fee_structure') }}"
+            href="{{ url_for('fees.bulk_create_fee_structure', education_level=request.args.get('education_level')) }}"
             class="btn btn-success"
             style="background: #28a745; margin-right: 10px;"
-            >📋 Bulk Create Fees</a
+            >📋 Bulk Create Fees{% if request.args.get('education_level') %} for {{ request.args.get('education_level')|replace('_', ' ')|title }}{% endif %}</a
           >
           <a
-            href="{{ url_for('fees.create_fee_structure') }}"
+            href="{{ url_for('fees.create_fee_structure', education_level=request.args.get('education_level')) }}"
             class="btn btn-success"
             style="background: #17a2b8;"
-            >➕ Add Single Fee</a
+            >➕ Add Single Fee{% if request.args.get('education_level') %} for {{ request.args.get('education_level')|replace('_', ' ')|title }}{% endif %}</a
           >
           <a href="{{ url_for('fees.index') }}" class="btn btn-secondary"
             style="margin-left: 10px;"

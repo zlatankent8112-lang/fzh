@@ -91,6 +91,29 @@ def create_fee_structure():
     if request.method == 'POST':
         try:
             teacher_id = session.get('teacher_id')
+            
+            # Check for duplicates
+            fee_name = request.form['fee_type_name'].strip()
+            academic_year = request.form['academic_year']
+            term = request.form.get('term') or None
+            education_level = request.form.get('education_level')
+            frequency = request.form.get('frequency', 'per_term')
+            grade_id = request.form.get('grade_id') or None
+            
+            existing = FeeStructure.query.filter_by(
+                fee_type_name=fee_name,
+                academic_year=academic_year,
+                term=term,
+                education_level=education_level,
+                frequency=frequency,
+                grade_id=grade_id
+            ).first()
+            
+            if existing:
+                flash(f'⚠️ A fee structure with this name, academic year, term, frequency, and education level already exists!', 'warning')
+                grades = Grade.query.order_by(Grade.name).all()
+                return render_template('fees/create_structure.html', grades=grades, fee=None, form_data=request.form)
+            
             # Parse applies_to_grades if provided
             applies_to_grades = request.form.get('applies_to_grades', '').strip()
             if applies_to_grades:
@@ -127,8 +150,12 @@ def create_fee_structure():
             db.session.rollback()
             flash(f'Error creating fee structure: {str(e)}', 'danger')
     
+    # Pre-fill education level from query parameter if provided
+    education_level_param = request.args.get('education_level')
+    
     grades = Grade.query.order_by(Grade.name).all()
-    return render_template('fees/create_structure.html', grades=grades, fee=None)
+    return render_template('fees/create_structure.html', grades=grades, fee=None, 
+                          prefill_education_level=education_level_param)
 
 
 @fee_bp.route('/structures/bulk-create', methods=['GET', 'POST'])
@@ -179,11 +206,27 @@ def bulk_create_fee_structure():
                 fee_data[index]['optional'] = f'fees[{index}][optional]' in request.form
             
             # Create each fee structure
+            duplicates_found = []
             for index, fee_info in fee_data.items():
                 if 'name' in fee_info and 'amount' in fee_info:
                     # Use individual fee settings or fall back to common settings
                     fee_term = fee_info.get('term') if fee_info.get('term') else term
                     fee_frequency = fee_info.get('frequency') if fee_info.get('frequency') else frequency
+                    
+                    # Check for duplicates
+                    fee_name = fee_info['name'].strip()
+                    existing = FeeStructure.query.filter_by(
+                        fee_type_name=fee_name,
+                        academic_year=academic_year,
+                        term=fee_term,
+                        education_level=education_level,
+                        frequency=fee_frequency,
+                        grade_id=grade_id
+                    ).first()
+                    
+                    if existing:
+                        duplicates_found.append(fee_name)
+                        continue  # Skip this duplicate
                     
                     # If optional is checked, it's not mandatory
                     is_optional = fee_info.get('optional', False)
@@ -214,10 +257,15 @@ def bulk_create_fee_structure():
             db.session.commit()
             
             # Create success message
+            if duplicates_found:
+                flash(f'⚠️ Skipped {len(duplicates_found)} duplicate(s): {", ".join(duplicates_found)}', 'warning')
+            
             if fees_created == 1:
                 flash(f'✅ Created {fees_created} fee structure: {fee_names[0]}', 'success')
-            else:
+            elif fees_created > 1:
                 flash(f'✅ Successfully created {fees_created} fee structures: {", ".join(fee_names)}', 'success')
+            elif not duplicates_found:
+                flash('❌ No fee structures were created', 'danger')
             
             return redirect(url_for('fees.fee_structures'))
             
@@ -225,8 +273,12 @@ def bulk_create_fee_structure():
             db.session.rollback()
             flash(f'Error creating fee structures: {str(e)}', 'danger')
     
+    # Pre-fill education level from query parameter if provided
+    education_level_param = request.args.get('education_level')
+    
     grades = Grade.query.order_by(Grade.name).all()
-    return render_template('fees/bulk_create_structure.html', grades=grades)
+    return render_template('fees/bulk_create_structure.html', grades=grades, 
+                          prefill_education_level=education_level_param)
 
 
 @fee_bp.route('/structures/<int:fee_id>/edit', methods=['GET', 'POST'])
