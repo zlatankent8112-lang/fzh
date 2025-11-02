@@ -308,6 +308,10 @@ def edit_fee_structure(fee_id):
             else:
                 fee.applies_to_grades = None
             
+            # Handle optional checkbox (overrides mandatory)
+            is_optional = request.form.get('optional') == 'on'
+            is_mandatory_checked = request.form.get('is_mandatory') == 'on'
+            
             fee.fee_type_name = request.form['fee_type_name']
             fee.description = request.form.get('description')
             fee.amount = Decimal(request.form['amount'])
@@ -319,7 +323,7 @@ def edit_fee_structure(fee_id):
             fee.frequency = request.form.get('frequency', 'per_term')
             fee.allocation_priority = int(request.form.get('allocation_priority', 1))
             fee.allow_partial_payment = request.form.get('allow_partial_payment') == 'on'
-            fee.is_mandatory = request.form.get('is_mandatory') == 'on'
+            fee.is_mandatory = is_mandatory_checked and not is_optional  # Optional overrides mandatory
             fee.is_refundable = request.form.get('is_refundable') == 'on'
             fee.is_active = request.form.get('is_active') == 'on'
             
@@ -331,7 +335,7 @@ def edit_fee_structure(fee_id):
             flash(f'Error updating fee structure: {str(e)}', 'danger')
     
     grades = Grade.query.order_by(Grade.name).all()
-    return render_template('fees/create_structure.html', grades=grades, fee=fee, 
+    return render_template('fees/edit_structure.html', grades=grades, fee=fee, 
                           applies_to_grades_str=applies_to_grades_str)
 
 
