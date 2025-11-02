@@ -308,7 +308,7 @@
                         type="text" 
                         id="applies_to_grades" 
                         name="applies_to_grades"
-                        value="{% if fee and fee.applies_to_grades %}{{ fee.applies_to_grades }}{% endif %}"
+                        value="{{ applies_to_grades_str if applies_to_grades_str is defined else '' }}"
                         placeholder="e.g., 1,2,3 for Grade 1-3 or 4,5,6,7,8,9 for Grade 4-9"
                     />
                     <div class="form-text">

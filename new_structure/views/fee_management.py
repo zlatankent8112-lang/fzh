@@ -285,7 +285,17 @@ def bulk_create_fee_structure():
 @fee_access_required
 def edit_fee_structure(fee_id):
     """Edit an existing fee structure"""
+    import json
     fee = FeeStructure.query.get_or_404(fee_id)
+    
+    # Parse applies_to_grades JSON to comma-separated string for editing
+    applies_to_grades_str = ''
+    if fee.applies_to_grades:
+        try:
+            grade_list = json.loads(fee.applies_to_grades)
+            applies_to_grades_str = ','.join(map(str, grade_list))
+        except:
+            applies_to_grades_str = ''
     
     if request.method == 'POST':
         try:
@@ -321,7 +331,8 @@ def edit_fee_structure(fee_id):
             flash(f'Error updating fee structure: {str(e)}', 'danger')
     
     grades = Grade.query.order_by(Grade.name).all()
-    return render_template('fees/create_structure.html', grades=grades, fee=fee)
+    return render_template('fees/create_structure.html', grades=grades, fee=fee, 
+                          applies_to_grades_str=applies_to_grades_str)
 
 
 @fee_bp.route('/structures/<int:fee_id>/delete', methods=['POST'])
