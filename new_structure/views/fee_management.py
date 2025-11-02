@@ -482,11 +482,16 @@ def record_payment():
             reference = request.form.get('reference', '')
             allocation_mode = request.form.get('allocation_mode', 'auto')
             
-            # Get student
+            # Get student - their grade is already in the database
             student = Student.query.get_or_404(student_id)
+            
+            if not student.grade:
+                flash(f'⚠️ Student {student.name} has no grade assigned. Please assign a grade first.', 'warning')
+                return redirect(url_for('fees.record_payment'))
             
             # Auto-create fee accounts if they don't exist (for current term)
             # This allows recording payments even before invoices are generated
+            # Uses the student's grade from the database to find applicable fee structures
             current_term = request.form.get('term', 'Term 1')
             current_year = request.form.get('academic_year', str(datetime.utcnow().year))
             

@@ -85,12 +85,40 @@ class FeeStructure(db.Model):
     @classmethod
     def get_active_fees_for_grade(cls, grade_id, term, academic_year):
         """Get all active fees for a specific grade and term"""
-        return cls.query.filter_by(
-            grade_id=grade_id,
-            term=term,
-            academic_year=academic_year,
-            is_active=True
-        ).all()
+        from new_structure.models.user import Grade
+        
+        # Get the grade to determine education level
+        grade = Grade.query.get(grade_id)
+        if not grade:
+            return []
+        
+        # Map grade name to education level
+        grade_name = grade.name.upper()
+        if 'PP' in grade_name or 'PRE' in grade_name:
+            education_level = 'pre_primary'
+        elif any(num in grade_name for num in ['1', '2', '3', '4', '5', '6']):
+            education_level = 'upper_primary'
+        elif any(num in grade_name for num in ['7', '8', '9', '10', '11', '12']):
+            education_level = 'junior_secondary'
+        else:
+            education_level = None
+        
+        # Get fees by education level (since grade_id is NULL in fee_structure)
+        if education_level:
+            return cls.query.filter_by(
+                education_level=education_level,
+                term=term,
+                academic_year=academic_year,
+                is_active=True
+            ).all()
+        else:
+            # Fallback to grade_id matching (for legacy/specific grade fees)
+            return cls.query.filter_by(
+                grade_id=grade_id,
+                term=term,
+                academic_year=academic_year,
+                is_active=True
+            ).all()
     
     @classmethod
     def get_school_wide_fees(cls, term, academic_year):
@@ -131,13 +159,8 @@ class FeeStructure(db.Model):
     @classmethod
     def get_fees_by_priority(cls, grade_id, term, academic_year):
         """Get active fees sorted by allocation priority (for auto-allocation)"""
-        # Get grade-specific fees
-        grade_fees = cls.query.filter_by(
-            grade_id=grade_id,
-            term=term,
-            academic_year=academic_year,
-            is_active=True
-        ).order_by(cls.allocation_priority.asc()).all()
+        # Use the updated get_active_fees_for_grade which handles education_level mapping
+        grade_fees = cls.get_active_fees_for_grade(grade_id, term, academic_year)
         
         # Get school-wide fees
         school_fees = cls.query.filter_by(
