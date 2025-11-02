@@ -8510,3 +8510,10 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-11-02 21:33:20,217 - INFO - b0d16cba7f4b42db85b9f8f78e1e1a80 - new_structure - GET /fees/api/payment-stats - Page not found: http://127.0.0.1:8080/fees/api/payment-stats - 127.0.0.1
 2025-11-02 21:34:07,456 - INFO - 44a8f37fa7f9456681f41de547fd057a - new_structure - GET /fees/api/payment-stats - Page not found: http://127.0.0.1:8080/fees/api/payment-stats - 127.0.0.1
 2025-11-02 21:37:09,497 - INFO - 9ca1eb8000fa439682947ff609157d41 - new_structure - GET /fees/api/payment-stats - Page not found: http://127.0.0.1:8080/fees/api/payment-stats - 127.0.0.1
+2025-11-02 22:21:54,737 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 22:21:56,695 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 22:21:57,700 - INFO - 8665d3b90d1d4812b6eac1df9403f768 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-02 22:22:56,452 - INFO - 79e7044877d1471ca921173f428bf049 - new_structure - GET /fees/api/payment-stats - Page not found: http://127.0.0.1:8080/fees/api/payment-stats - 127.0.0.1
+2025-11-02 22:31:14,156 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 22:31:16,083 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 22:31:39,401 - INFO - 5a8389cbd76b452a850d1020988a781d - new_structure - GET /fees/api/payment-stats - Page not found: http://127.0.0.1:8080/fees/api/payment-stats - 127.0.0.1

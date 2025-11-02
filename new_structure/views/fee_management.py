@@ -611,19 +611,32 @@ def record_payment():
             flash(f'Error recording payment: {str(e)}', 'error')
     
     # GET request - show form
-    students_raw = Student.query.order_by(Student.name).all()
+    # Fetch ALL students with their grades and streams properly joined
+    from new_structure.models.user import Grade
+    from new_structure.models.academic import Stream
+    
+    students_raw = Student.query\
+        .outerjoin(Grade, Student.grade_id == Grade.id)\
+        .outerjoin(Stream, Student.stream_id == Stream.id)\
+        .add_columns(
+            Grade.name.label('grade_name'),
+            Stream.name.label('stream_name')
+        )\
+        .order_by(Grade.name, Stream.name, Student.name)\
+        .all()
+    
     payment_methods = PaymentMethod.query.filter_by(is_active=True).all()
     
-    # Convert students to serializable format for autocomplete
-    students = [
-        {
+    # Convert students to serializable format with proper grade and stream info
+    students = []
+    for s, grade_name, stream_name in students_raw:
+        students.append({
             'id': s.id,
             'name': s.name,
             'admission_number': s.admission_number,
-            'grade': s.grade.name if s.grade else 'N/A'
-        }
-        for s in students_raw
-    ]
+            'grade': grade_name if grade_name else 'No Grade',
+            'stream': stream_name if stream_name else ''
+        })
     
     # Get current year for default selection
     current_year = datetime.utcnow().year

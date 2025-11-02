@@ -331,19 +331,32 @@
                 value="{{ csrf_token() }}"
               />
               <div class="form-group">
-                <label for="student_id">Student *</label>
-                <select id="student_id" name="student_id" required>
+                <label for="student_search">Search Student *</label>
+                <input
+                  type="text"
+                  id="student_search"
+                  class="form-control"
+                  placeholder="Type name, admission number, or grade..."
+                  autocomplete="off"
+                  style="margin-bottom: 10px;"
+                />
+                <select id="student_id" name="student_id" required size="8" style="height: 200px;">
                   <option value="">Select a student...</option>
                   {% for student in students %}
                   <option
                     value="{{ student.id }}"
                     data-grade="{{ student.grade }}"
+                    data-stream="{{ student.stream }}"
+                    data-name="{{ student.name }}"
+                    data-admission="{{ student.admission_number }}"
                   >
-                    {{ student.name }} ({{ student.admission_number }}) - {{
-                    student.grade }}
+                    {{ student.name }} ({{ student.admission_number }}) - {{ student.grade }}{% if student.stream %} {{ student.stream }}{% endif %}
                   </option>
                   {% endfor %}
                 </select>
+                <div style="margin-top: 5px; font-size: 12px; color: #666;">
+                  <span id="studentCount">{{ students|length }}</span> students shown
+                </div>
               </div>
 
               <div class="row">
@@ -438,11 +451,11 @@
         <div class="col-4">
           <!-- Student Info Display -->
           <div class="card bg-light" id="studentInfo" style="display: none; margin-bottom: 20px;">
-            <h5>� Student Information</h5>
+            <h5>📋 Student Information</h5>
             <div style="padding: 10px 0;">
               <strong id="infoStudentName"></strong><br>
               <span style="color: #666;">Admission: <span id="infoAdmissionNo"></span></span><br>
-              <span style="color: #666;">Grade: <span id="infoGrade"></span></span>
+              <span style="color: #666;">Grade: <span id="infoGrade"></span> <span id="infoStream"></span></span>
             </div>
           </div>
 
@@ -528,6 +541,35 @@
         }
       });
 
+      // Real-time student search/filter
+      const studentSearch = document.getElementById('student_search');
+      const studentSelect = document.getElementById('student_id');
+      const studentCountSpan = document.getElementById('studentCount');
+      const allOptions = Array.from(studentSelect.options).slice(1); // Skip first "Select..." option
+
+      studentSearch.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        // Clear and re-populate
+        studentSelect.innerHTML = '<option value="">Select a student...</option>';
+
+        allOptions.forEach(option => {
+          const name = option.getAttribute('data-name').toLowerCase();
+          const admission = option.getAttribute('data-admission').toLowerCase();
+          const grade = option.getAttribute('data-grade').toLowerCase();
+          const stream = (option.getAttribute('data-stream') || '').toLowerCase();
+          
+          // Match name, admission number, grade, or stream
+          if (name.includes(query) || admission.includes(query) || grade.includes(query) || stream.includes(query)) {
+            studentSelect.appendChild(option.cloneNode(true));
+            visibleCount++;
+          }
+        });
+
+        studentCountSpan.textContent = visibleCount;
+      });
+
       // Show student info when selected
       document.getElementById("student_id").addEventListener("change", function () {
         const studentId = this.value;
@@ -536,13 +578,15 @@
         
         if (studentId) {
           // Show student info
-          const studentName = selectedOption.textContent.split('(')[0].trim();
-          const admissionNo = selectedOption.textContent.match(/\(([^)]+)\)/)[1];
+          const studentName = selectedOption.getAttribute('data-name');
+          const admissionNo = selectedOption.getAttribute('data-admission');
           const grade = selectedOption.getAttribute('data-grade');
+          const stream = selectedOption.getAttribute('data-stream') || '';
           
           document.getElementById('infoStudentName').textContent = studentName;
           document.getElementById('infoAdmissionNo').textContent = admissionNo;
           document.getElementById('infoGrade').textContent = grade;
+          document.getElementById('infoStream').textContent = stream;
           studentInfoCard.style.display = 'block';
           
           // Fetch balance
