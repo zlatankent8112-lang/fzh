@@ -335,8 +335,12 @@
                 <select id="student_id" name="student_id" required>
                   <option value="">Select a student...</option>
                   {% for student in students %}
-                  <option value="{{ student.id }}" data-grade="{{ student.grade }}">
-                    {{ student.name }} ({{ student.admission_number }}) - {{ student.grade }}
+                  <option
+                    value="{{ student.id }}"
+                    data-grade="{{ student.grade }}"
+                  >
+                    {{ student.name }} ({{ student.admission_number }}) - {{
+                    student.grade }}
                   </option>
                   {% endfor %}
                 </select>
@@ -357,9 +361,15 @@
                   <div class="form-group">
                     <label for="academic_year">Academic Year *</label>
                     <select id="academic_year" name="academic_year" required>
-                      <option value="{{ current_year }}">{{ current_year }}</option>
-                      <option value="{{ current_year - 1 }}">{{ current_year - 1 }}</option>
-                      <option value="{{ current_year + 1 }}">{{ current_year + 1 }}</option>
+                      <option value="{{ current_year }}">
+                        {{ current_year }}
+                      </option>
+                      <option value="{{ current_year - 1 }}">
+                        {{ current_year - 1 }}
+                      </option>
+                      <option value="{{ current_year + 1 }}">
+                        {{ current_year + 1 }}
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -426,17 +436,23 @@
         </div>
 
         <div class="col-4">
+          <!-- Student Info Display -->
+          <div class="card bg-light" id="studentInfo" style="display: none; margin-bottom: 20px;">
+            <h5>� Student Information</h5>
+            <div style="padding: 10px 0;">
+              <strong id="infoStudentName"></strong><br>
+              <span style="color: #666;">Admission: <span id="infoAdmissionNo"></span></span><br>
+              <span style="color: #666;">Grade: <span id="infoGrade"></span></span>
+            </div>
+          </div>
+
           <div class="card bg-light">
             <h5>💡 Tips</h5>
             <ul>
-              <li>Select the student first</li>
-              <li>Enter the exact amount received</li>
-              <li>
-                <strong>Auto mode:</strong> Quick processing, pays by priority
-              </li>
-              <li>
-                <strong>Manual mode:</strong> You choose which fees to pay
-              </li>
+              <li><strong>Student:</strong> Grade is automatically detected</li>
+              <li><strong>Term/Year:</strong> Select which billing period</li>
+              <li><strong>Auto mode:</strong> Pays by priority (Tuition first)</li>
+              <li><strong>Manual mode:</strong> You choose which fees</li>
               <li>Receipt generated automatically</li>
             </ul>
           </div>
@@ -512,20 +528,32 @@
         }
       });
 
-      // Student balance check
-      document
-        .getElementById("student_id")
-        .addEventListener("change", function () {
-          const studentId = this.value;
-          if (studentId) {
-            fetch(`/fees/api/student/${studentId}/balance`)
-              .then((res) => res.json())
-              .then((data) =>
-                console.log("Student balance:", data.total_balance)
-              )
-              .catch((err) => console.error("Error fetching balance:", err));
-          }
-        });
+      // Show student info when selected
+      document.getElementById("student_id").addEventListener("change", function () {
+        const studentId = this.value;
+        const selectedOption = this.options[this.selectedIndex];
+        const studentInfoCard = document.getElementById('studentInfo');
+        
+        if (studentId) {
+          // Show student info
+          const studentName = selectedOption.textContent.split('(')[0].trim();
+          const admissionNo = selectedOption.textContent.match(/\(([^)]+)\)/)[1];
+          const grade = selectedOption.getAttribute('data-grade');
+          
+          document.getElementById('infoStudentName').textContent = studentName;
+          document.getElementById('infoAdmissionNo').textContent = admissionNo;
+          document.getElementById('infoGrade').textContent = grade;
+          studentInfoCard.style.display = 'block';
+          
+          // Fetch balance
+          fetch(`/fees/api/student/${studentId}/balance`)
+            .then((res) => res.json())
+            .then((data) => console.log("Student balance:", data.total_balance))
+            .catch((err) => console.error("Error fetching balance:", err));
+        } else {
+          studentInfoCard.style.display = 'none';
+        }
+      });
 
       // Load stats
       fetch('/fees/api/payment-stats')
