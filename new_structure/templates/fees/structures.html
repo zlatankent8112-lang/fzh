@@ -83,6 +83,35 @@
         color: #856404;
         border-left: 4px solid #ffc107;
       }
+      .nav-menu {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .nav-menu a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        transition: all 0.3s;
+        font-weight: 500;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-menu a:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+      .nav-menu a.active {
+        background: rgba(255, 255, 255, 0.3);
+      }
       .btn-sm {
         padding: 5px 10px;
         font-size: 12px;
@@ -180,6 +209,31 @@
   </head>
   <body>
     <div class="container">
+      <!-- Navigation Menu -->
+      <div class="nav-menu">
+        <a href="{{ url_for('fees.index') }}">
+          🏠 Dashboard
+        </a>
+        <a href="{{ url_for('fees.fee_structures') }}" class="active">
+          📋 Fee Structures
+        </a>
+        <a href="{{ url_for('fees.record_payment') }}">
+          💵 Record Payment
+        </a>
+        <a href="{{ url_for('fees.payment_list') }}">
+          📊 Payment History
+        </a>
+        <a href="{{ url_for('fees.invoice_list') }}">
+          📄 Invoices
+        </a>
+        <a href="{{ url_for('fees.generate_invoice') }}">
+          ➕ Generate Invoice
+        </a>
+        <a href="{{ url_for('fees.receipt_list') }}">
+          🧾 Receipts
+        </a>
+      </div>
+
       <div class="header">
         <div>
           <h1>💰 Fee Structures</h1>
