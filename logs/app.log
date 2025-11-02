@@ -8468,3 +8468,39 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-11-02 18:55:20,915 - INFO - b4e454f0a9f64587b649c5fe5a229173 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
 2025-11-02 19:15:43,163 - INFO - 90f9a51ac52441d5b802f1c13577897f - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
 2025-11-02 19:15:47,990 - WARNING - 41702d6613994c91a32061fdb8b05c0a - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-02 20:05:59,258 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 20:06:02,251 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 20:06:33,042 - INFO - 8884cdfd889b4709934b8d75b6fa8cd2 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 20:06:46,867 - INFO - cd2f9bfc690242d2a3bbbc667308d69f - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-02 20:06:51,431 - WARNING - 8ad973b73e97480cbc7959f37c660975 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-02 20:07:00,989 - INFO - 910d0183aeb447dd9d74a9af0a08da7d - new_structure - GET /fees/ - Page not found: http://127.0.0.1:8080/fees/ - 127.0.0.1
+2025-11-02 20:07:07,430 - INFO - 1a99038b875346c19c75f4d7dea96615 - new_structure - GET /fees - Page not found: http://127.0.0.1:8080/fees - 127.0.0.1
+2025-11-02 20:08:04,525 - INFO - 4949b378e0ca4253bc0f09e0e7466e82 - new_structure - GET /fees/ - Page not found: http://127.0.0.1:8080/fees/ - 127.0.0.1
+2025-11-02 20:08:13,488 - INFO - b9492f6ae77d4b7db43ea072080a4b23 - new_structure - GET /fees/ - Page not found: http://127.0.0.1:8080/fees/ - 127.0.0.1
+2025-11-02 20:16:57,180 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 20:16:57,646 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-11-02 20:16:57,693 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-02 20:17:32,229 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 20:17:32,705 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-11-02 20:17:32,735 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-02 20:17:33,179 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 20:20:28,036 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 20:20:28,498 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-11-02 20:20:28,529 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-02 20:20:28,988 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 20:35:26,244 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 20:35:28,356 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 20:35:36,419 - WARNING - b0e8d70ccb3d46d8a37634959a3a5ade - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-02 20:36:05,043 - INFO - 158d51b6bcb84b06aa05bbcd1dc583ab - new_structure - GET /fees/ - Page not found: http://127.0.0.1:8080/fees/ - 127.0.0.1
+2025-11-02 20:36:10,658 - INFO - bb21b9e22ed845dea8005c3fc7ada9fe - new_structure - GET /fees - Page not found: http://127.0.0.1:8080/fees - 127.0.0.1
+2025-11-02 20:36:40,600 - INFO - 7c08fab59e1e417291dc6091cc64d503 - new_structure - GET /fees/payment/record - Page not found: http://127.0.0.1:8080/fees/payment/record - 127.0.0.1
+2025-11-02 20:37:03,859 - INFO - 12de1cb8af8041e8b84944abba3b6094 - new_structure - GET /fees - Page not found: http://127.0.0.1:8080/fees - 127.0.0.1
+2025-11-02 20:45:10,538 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 20:45:12,712 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 20:45:13,040 - INFO - 655c29e41fba4a2ba4c60b034d4bad5c - new_structure - GET /fees - Page not found: http://127.0.0.1:8080/fees - 127.0.0.1
+2025-11-02 20:54:26,301 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 20:54:28,709 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 20:58:12,729 - WARNING - 2734fb2d34f64edbb5c20bd6f7076c96 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
