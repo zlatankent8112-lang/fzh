@@ -164,11 +164,19 @@
         </div>
         <div>
           <a
+            href="{{ url_for('fees.bulk_create_fee_structure') }}"
+            class="btn btn-success"
+            style="background: #28a745; margin-right: 10px;"
+            >📋 Bulk Create Fees</a
+          >
+          <a
             href="{{ url_for('fees.create_fee_structure') }}"
             class="btn btn-success"
-            >➕ Add New Fee Type</a
+            style="background: #17a2b8;"
+            >➕ Add Single Fee</a
           >
           <a href="{{ url_for('fees.index') }}" class="btn btn-secondary"
+            style="margin-left: 10px;"
             >← Back to Dashboard</a
           >
         </div>

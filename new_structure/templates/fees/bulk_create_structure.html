@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bulk Create Fee Structures - Hillview School</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-bottom: 20px;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #555;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #007bff;
+      }
+      .row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      .col-4 {
+        flex: 1;
+      }
+      .fee-row {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+      .fee-row-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .fee-number {
+        background: #007bff;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+      .remove-btn {
+        margin-left: auto;
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .remove-btn:hover {
+        opacity: 0.8;
+      }
+      .add-fee-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+      .add-fee-btn:hover {
+        opacity: 0.9;
+      }
+      .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
+      .btn:hover {
+        opacity: 0.9;
+      }
+      .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .alert-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+      }
+      .form-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>➕ Bulk Create Fee Structures</h1>
+      <p class="subtitle">
+        Create multiple fees at once for a specific educational level or grade
+      </p>
+
+      <div class="alert alert-info">
+        💡 <strong>Tip:</strong> This tool helps you quickly set up all fee
+        types for an educational level or grade. Add as many fees as needed, and
+        they'll all be created with the same academic year, term, and target
+        level/grade.
+      </div>
+
+      <div class="card">
+        <form
+          method="POST"
+          action="{{ url_for('fees.bulk_create_fee_structure') }}"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          <h3 style="margin-bottom: 20px">
+            📋 Common Settings (Apply to All Fees)
+          </h3>
+
+          <div class="row">
+            <div class="col-4">
+              <div class="form-group">
+                <label for="academic_year">Academic Year *</label>
+                <input
+                  type="text"
+                  id="academic_year"
+                  name="academic_year"
+                  value="2025-2026"
+                  placeholder="e.g., 2025-2026"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label for="term">Term</label>
+                <select id="term" name="term">
+                  <option value="">All Terms</option>
+                  <option value="Term 1">Term 1</option>
+                  <option value="Term 2">Term 2</option>
+                  <option value="Term 3">Term 3</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label for="frequency">Payment Frequency *</label>
+                <select id="frequency" name="frequency" required>
+                  <option value="per_term">📅 Per Term</option>
+                  <option value="annual">📆 Annual</option>
+                  <option value="one_time">🎯 One-Time</option>
+                  <option value="monthly">📊 Monthly</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-4">
+              <div class="form-group">
+                <label for="education_level">🎓 Educational Level *</label>
+                <select id="education_level" name="education_level" required>
+                  <option value="">Select Level...</option>
+                  <option value="pre_primary">Pre-Primary (PP1-PP2)</option>
+                  <option value="lower_primary">
+                    Lower Primary (Grade 1-3)
+                  </option>
+                  <option value="upper_primary">
+                    Upper Primary (Grade 4-6)
+                  </option>
+                  <option value="junior_secondary">
+                    Junior Secondary (Grade 7-9)
+                  </option>
+                  <option value="senior_secondary">
+                    Senior Secondary (Grade 10-12)
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label for="grade_id">Specific Grade (Optional)</label>
+                <select id="grade_id" name="grade_id">
+                  <option value="">All Grades in Level</option>
+                  {% for grade in grades %}
+                  <option value="{{ grade.id }}">{{ grade.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label for="applies_to_grades"
+                  >Specific Grades (Optional)</label
+                >
+                <input
+                  type="text"
+                  id="applies_to_grades"
+                  name="applies_to_grades"
+                  placeholder="e.g., 1,2,3 or 4,5,6,7,8,9"
+                />
+                <div class="form-text">Comma-separated grade numbers</div>
+              </div>
+            </div>
+          </div>
+
+          <hr
+            style="margin: 30px 0; border: none; border-top: 2px solid #dee2e6"
+          />
+
+          <h3 style="margin-bottom: 20px">💰 Fee Types to Create</h3>
+
+          <div id="fee-rows-container">
+            <!-- Fee rows will be added here -->
+          </div>
+
+          <button type="button" class="add-fee-btn" onclick="addFeeRow()">
+            ➕ Add Fee Type
+          </button>
+
+          <hr
+            style="margin: 30px 0; border: none; border-top: 2px solid #dee2e6"
+          />
+
+          <div style="margin-top: 30px">
+            <button type="submit" class="btn btn-primary">
+              ✓ Create All Fee Structures
+            </button>
+            <a
+              href="{{ url_for('fees.fee_structures') }}"
+              class="btn btn-secondary"
+              >Cancel</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      let feeCounter = 0;
+
+      // Add initial fee row on page load
+      window.addEventListener("DOMContentLoaded", function () {
+        addFeeRow();
+        addFeeRow();
+        addFeeRow(); // Start with 3 rows
+      });
+
+      function addFeeRow() {
+        feeCounter++;
+        const container = document.getElementById("fee-rows-container");
+
+        const feeRow = document.createElement("div");
+        feeRow.className = "fee-row";
+        feeRow.id = `fee-row-${feeCounter}`;
+
+        feeRow.innerHTML = `
+                <div class="fee-row-header">
+                    <div class="fee-number">${feeCounter}</div>
+                    <strong style="color: #333;">Fee ${feeCounter}</strong>
+                    <button type="button" class="remove-btn" onclick="removeFeeRow(${feeCounter})">
+                        ✕ Remove
+                    </button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label>Fee Type Name *</label>
+                            <input 
+                                type="text" 
+                                name="fees[${feeCounter}][name]" 
+                                placeholder="e.g., Tuition Fee"
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label>Category *</label>
+                            <select name="fees[${feeCounter}][category]" required>
+                                <option value="tuition">📚 Tuition</option>
+                                <option value="meals">🍽️ Meals</option>
+                                <option value="transport">🚌 Transport</option>
+                                <option value="activities">⚽ Activities</option>
+                                <option value="remedial">📖 Remedial</option>
+                                <option value="admission">🎓 Admission</option>
+                                <option value="caution">💰 Caution</option>
+                                <option value="admin">📝 Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label>Amount (KES) *</label>
+                            <input 
+                                type="number" 
+                                name="fees[${feeCounter}][amount]" 
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                                required
+                            />
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label>Priority *</label>
+                            <input 
+                                type="number" 
+                                name="fees[${feeCounter}][priority]" 
+                                value="${feeCounter}"
+                                min="1"
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input 
+                                type="text" 
+                                name="fees[${feeCounter}][description]" 
+                                placeholder="Optional description"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group" style="padding-top: 28px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                <input 
+                                    type="checkbox" 
+                                    name="fees[${feeCounter}][mandatory]" 
+                                    checked
+                                    style="width: auto; margin: 0;"
+                                />
+                                Mandatory
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; margin-top: 5px;">
+                                <input 
+                                    type="checkbox" 
+                                    name="fees[${feeCounter}][refundable]"
+                                    style="width: auto; margin: 0;"
+                                />
+                                Refundable
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        container.appendChild(feeRow);
+      }
+
+      function removeFeeRow(id) {
+        const row = document.getElementById(`fee-row-${id}`);
+        if (row) {
+          row.remove();
+        }
+
+        // Renumber remaining rows
+        const container = document.getElementById("fee-rows-container");
+        const rows = container.querySelectorAll(".fee-row");
+        rows.forEach((row, index) => {
+          const number = row.querySelector(".fee-number");
+          const header = row.querySelector(".fee-row-header strong");
+          if (number && header) {
+            number.textContent = index + 1;
+            header.textContent = `Fee ${index + 1}`;
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -131,6 +131,95 @@ def create_fee_structure():
     return render_template('fees/create_structure.html', grades=grades, fee=None)
 
 
+@fee_bp.route('/structures/bulk-create', methods=['GET', 'POST'])
+@fee_access_required
+def bulk_create_fee_structure():
+    """Bulk create multiple fee structures at once"""
+    if request.method == 'POST':
+        try:
+            import json
+            teacher_id = session.get('teacher_id')
+            
+            # Get common settings
+            academic_year = request.form['academic_year']
+            term = request.form.get('term') or None
+            frequency = request.form.get('frequency', 'per_term')
+            education_level = request.form.get('education_level')
+            grade_id = request.form.get('grade_id') or None
+            applies_to_grades_str = request.form.get('applies_to_grades', '').strip()
+            
+            # Parse applies_to_grades if provided
+            applies_to_grades_json = None
+            if applies_to_grades_str:
+                grade_list = [int(g.strip()) for g in applies_to_grades_str.split(',') if g.strip().isdigit()]
+                applies_to_grades_json = json.dumps(grade_list) if grade_list else None
+            
+            # Get all fee entries from form
+            fees_created = 0
+            fee_names = []
+            
+            # Parse the fees array from form data
+            fee_data = {}
+            for key in request.form.keys():
+                if key.startswith('fees['):
+                    # Extract fee index and field name: fees[1][name] -> index=1, field=name
+                    import re
+                    match = re.match(r'fees\[(\d+)\]\[(\w+)\]', key)
+                    if match:
+                        index = match.group(1)
+                        field = match.group(2)
+                        if index not in fee_data:
+                            fee_data[index] = {}
+                        fee_data[index][field] = request.form[key]
+            
+            # Also check for checkbox fields (they won't appear if unchecked)
+            for index in fee_data.keys():
+                fee_data[index]['mandatory'] = f'fees[{index}][mandatory]' in request.form
+                fee_data[index]['refundable'] = f'fees[{index}][refundable]' in request.form
+            
+            # Create each fee structure
+            for index, fee_info in fee_data.items():
+                if 'name' in fee_info and 'amount' in fee_info:
+                    fee = FeeStructure(
+                        fee_type_name=fee_info['name'],
+                        description=fee_info.get('description'),
+                        amount=Decimal(fee_info['amount']),
+                        academic_year=academic_year,
+                        term=term,
+                        grade_id=grade_id,
+                        education_level=education_level,
+                        category=fee_info.get('category', 'tuition'),
+                        frequency=frequency,
+                        applies_to_grades=applies_to_grades_json,
+                        allocation_priority=int(fee_info.get('priority', index)),
+                        allow_partial_payment=True,  # Default to true
+                        is_mandatory=fee_info.get('mandatory', True),
+                        is_refundable=fee_info.get('refundable', False),
+                        is_active=True,
+                        created_by=teacher_id
+                    )
+                    db.session.add(fee)
+                    fees_created += 1
+                    fee_names.append(fee_info['name'])
+            
+            db.session.commit()
+            
+            # Create success message
+            if fees_created == 1:
+                flash(f'✅ Created {fees_created} fee structure: {fee_names[0]}', 'success')
+            else:
+                flash(f'✅ Successfully created {fees_created} fee structures: {", ".join(fee_names)}', 'success')
+            
+            return redirect(url_for('fees.fee_structures'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating fee structures: {str(e)}', 'danger')
+    
+    grades = Grade.query.order_by(Grade.name).all()
+    return render_template('fees/bulk_create_structure.html', grades=grades)
+
+
 @fee_bp.route('/structures/<int:fee_id>/edit', methods=['GET', 'POST'])
 @fee_access_required
 def edit_fee_structure(fee_id):
