@@ -128,16 +128,65 @@
       .back-link:hover {
         text-decoration: underline;
       }
+      /* Enhanced Navigation Menu */
       .nav-menu {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 8px;
         padding: 15px 20px;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      .nav-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+      }
+      .nav-search {
+        display: flex;
+        align-items: center;
+        background: rgba(255,255,255,0.15);
+        border-radius: 20px;
+        padding: 8px 15px;
+        flex: 0 0 300px;
+      }
+      .nav-search input {
+        background: none;
+        border: none;
+        color: white;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+      }
+      .nav-search input::placeholder {
+        color: rgba(255,255,255,0.7);
+      }
+      .nav-stats {
+        display: flex;
+        gap: 20px;
+        color: white;
+      }
+      .nav-stat {
+        text-align: center;
+      }
+      .nav-stat-value {
+        font-size: 18px;
+        font-weight: bold;
+        display: block;
+      }
+      .nav-stat-label {
+        font-size: 11px;
+        opacity: 0.8;
+        text-transform: uppercase;
+      }
+      .nav-links {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
       }
-      .nav-menu a {
+      .nav-links a {
         color: white;
         text-decoration: none;
         padding: 10px 20px;
@@ -150,12 +199,41 @@
         align-items: center;
         gap: 8px;
       }
-      .nav-menu a:hover {
+      .nav-links a:hover {
         background: rgba(255, 255, 255, 0.2);
         transform: translateY(-2px);
       }
-      .nav-menu a.active {
+      .nav-links a.active {
         background: rgba(255, 255, 255, 0.3);
+      }
+      /* Breadcrumb */
+      .breadcrumb {
+        background: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+      .breadcrumb a {
+        color: #007bff;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb-separator {
+        color: #999;
+      }
+      .breadcrumb-current {
+        color: #666;
+        font-weight: 600;
       }
     </style>
   </head>
@@ -165,26 +243,70 @@
         >← Back to Dashboard</a
       >
 
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a href="{{ url_for('admin.dashboard') }}">🏠 Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">💰 Fee Management</span>
+      </div>
+
       <h1>💰 Fee Management Dashboard</h1>
 
-      <!-- Navigation Menu -->
+      <!-- Enhanced Navigation Menu -->
       <div class="nav-menu">
-        <a href="{{ url_for('fees.index') }}" class="active">
-          🏠 Dashboard
-        </a>
-        <a href="{{ url_for('fees.fee_structures') }}">
-          📋 Fee Structures
-        </a>
-        <a href="{{ url_for('fees.record_payment') }}">
-          💵 Record Payment
-        </a>
-        <a href="{{ url_for('fees.invoice_list') }}">
-          📄 Invoices
-        </a>
-        <a href="{{ url_for('fees.generate_invoices') }}">
-          ➕ Generate Invoice
-        </a>
+        <!-- Search and Stats Header -->
+        <div class="nav-menu-header">
+          <div class="nav-search">
+            <span style="margin-right: 8px;">🔍</span>
+            <input type="text" id="navSearch" placeholder="Search students, invoices, receipts..." onkeyup="handleNavSearch(event)">
+          </div>
+          <div class="nav-stats">
+            <div class="nav-stat">
+              <span class="nav-stat-value">{{ total_fees }}</span>
+              <span class="nav-stat-label">Fee Types</span>
+            </div>
+            <div class="nav-stat">
+              <span class="nav-stat-value">{{ total_invoices }}</span>
+              <span class="nav-stat-label">Invoices</span>
+            </div>
+            <div class="nav-stat">
+              <span class="nav-stat-value">{{ total_payments }}</span>
+              <span class="nav-stat-label">Payments</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="nav-links">
+          <a href="{{ url_for('fees.index') }}" class="active">
+            🏠 Dashboard
+          </a>
+          <a href="{{ url_for('fees.fee_structures') }}">
+            📋 Fee Structures
+          </a>
+          <a href="{{ url_for('fees.record_payment') }}">
+            💵 Record Payment
+          </a>
+          <a href="{{ url_for('fees.invoice_list') }}">
+            📄 Invoices
+          </a>
+          <a href="{{ url_for('fees.generate_invoices') }}">
+            ➕ Generate Invoice
+          </a>
+        </div>
       </div>
+
+      <script>
+        function handleNavSearch(event) {
+          if (event.key === 'Enter') {
+            const query = event.target.value.trim();
+            if (query) {
+              // Redirect to invoice list with search query
+              window.location.href = "{{ url_for('fees.invoice_list') }}" + "?search=" + encodeURIComponent(query);
+            }
+          }
+        }
+      </script>
 
       <!-- Stats Cards -->
       <div class="stats-row">

@@ -9,7 +9,7 @@ from decimal import Decimal
 
 from new_structure.extensions import db
 from new_structure.models.fee_management import (
-    FeeStructure, StudentFeeAccount, PaymentMethod, Payment, PaymentAllocation, StudentCreditBalance
+    FeeStructure, StudentFeeAccount, PaymentMethod, Payment, PaymentAllocation, StudentCreditBalance, Invoice
 )
 from new_structure.models.academic import Student, Grade, Term, Stream
 from new_structure.services import is_authenticated, get_role
@@ -43,6 +43,7 @@ def index():
     total_fees = FeeStructure.query.filter_by(is_active=True).count()
     total_students = Student.query.count()
     total_payments = Payment.query.count()
+    total_invoices = Invoice.query.count()
     
     # Get recent payments
     recent_payments = Payment.query.order_by(Payment.payment_date.desc()).limit(5).all()
@@ -51,6 +52,7 @@ def index():
                          total_fees=total_fees,
                          total_students=total_students,
                          total_payments=total_payments,
+                         total_invoices=total_invoices,
                          recent_payments=recent_payments)
 
 

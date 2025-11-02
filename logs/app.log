@@ -8372,3 +8372,99 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-11-01 18:52:45,873 - WARNING - 4890fc12b6464426b7e63324b027856a - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
 2025-11-01 18:56:57,616 - WARNING - 8d16f3195013431b9a2b41d92197c95c - security - POST /fees/invoice/generate - Bad request: http://127.0.0.1:8080/fees/invoice/generate - 127.0.0.1
 2025-11-01 18:59:14,886 - WARNING - c1464c2ac6324b4a83ef467f6e2197ee - security - POST /fees/invoice/generate - Bad request: http://127.0.0.1:8080/fees/invoice/generate - 127.0.0.1
+2025-11-01 19:05:07,904 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 19:05:09,767 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 19:06:09,253 - WARNING - cf77291540724c07ae0626e6b7fed35d - security - GET /fees/invoice/1 - Forbidden access attempt: http://127.0.0.1:8080/fees/invoice/[REDACTED-PHONE].0.0.1
+2025-11-01 19:07:15,263 - WARNING - 8002206bcd214cdbaab65b00ae74ecae - security - GET /fees/invoice/1 - Forbidden access attempt: http://127.0.0.1:8080/fees/invoice/[REDACTED-PHONE].0.0.1
+2025-11-01 20:32:49,610 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 20:32:51,633 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 20:35:12,894 - INFO - c4dc302e69264d149bdd2caa449f119f - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-01 20:35:24,057 - INFO - 6a39a80c53394426b05cb987cb5792b7 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 20:35:28,528 - WARNING - cdbfcc4f08324dcaade75f2087ea3d0b - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 20:48:40,221 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 20:48:42,992 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 22:25:20,454 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 22:25:25,796 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 22:25:42,904 - INFO - b9ce1e4d6a2f468e8f500cc9d1249069 - new_structure - GET /headteacher/ - Page not found: http://127.0.0.1:8080/headteacher/ - 127.0.0.1
+2025-11-01 22:25:43,054 - INFO - ec8254bda0e941ffb03755332bb053f3 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-01 22:28:30,614 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 22:28:32,360 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 22:28:48,729 - INFO - 47cab700288f47e396db81a3670ca0e3 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-01 22:28:53,337 - WARNING - 73c7c7b53a1e48bfbc963966a79e5b23 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-01 22:37:38,865 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 22:37:40,660 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 22:52:08,179 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 22:52:09,969 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 22:57:34,768 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 22:57:36,691 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 23:18:14,369 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 23:18:16,338 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 23:19:23,538 - WARNING - 71795ee27df043f8acb30b077b5ae05c - security - GET /fees/payment/12/allocate - Forbidden access attempt: http://127.0.0.1:8080/fees/payment/12/allocate - 127.0.0.1
+2025-11-01 23:20:05,504 - WARNING - 76229df854a84398bd21b5c9b5f6c9bc - security - GET /fees/payment/13/allocate - Forbidden access attempt: http://127.0.0.1:8080/fees/payment/13/allocate - 127.0.0.1
+2025-11-01 23:48:36,709 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-01 23:48:39,037 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-01 23:48:46,305 - INFO - 223f53f2a76e4d3caeb2538024184ce8 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-01 23:48:46,942 - INFO - 276da8de5c1342b3a47f0becd22318c4 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 00:04:32,639 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 00:04:34,889 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 00:55:44,071 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 00:55:47,253 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 13:46:31,297 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 13:46:36,402 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 13:46:53,854 - INFO - e587ade1650844c4a57cace946a89a3c - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 13:47:00,083 - INFO - 8b44b4f7547948cd9cd2ed96da48e75a - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-02 13:47:04,528 - WARNING - 8aaf5db353454df088fd8ebf612824f8 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-02 14:07:30,830 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 14:07:33,330 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 14:07:58,152 - INFO - df879b1822984c82a0e13c24d3acf8a4 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 14:18:33,877 - WARNING - d178bc42ee8e402cbaf05235faeac76f - security - GET /fees/structures/10/edit - Forbidden access attempt: http://127.0.0.1:8080/fees/structures/10/edit - 127.0.0.1
+2025-11-02 14:57:03,832 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 14:57:06,140 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 14:57:10,069 - INFO - 689a0e18e6924dd19bb0cb62ff3176df - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-02 14:57:10,836 - INFO - 88e7705794b04155b94fd879cc2419ba - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 14:57:17,469 - WARNING - 38cfceb0a9d24553b5b992ee8c89165b - new_structure.services.auth_service - POST /classteacher_login - Authentication failed for headteacher with role classteacher
+2025-11-02 14:57:17,473 - WARNING - 38cfceb0a9d24553b5b992ee8c89165b - new_structure.services.auth_service - POST /classteacher_login - Authentication failed for headteacher with role teacher
+2025-11-02 14:57:17,586 - INFO - 7bcecece39ec4577befea7e8b04bdba0 - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-02 14:58:57,975 - INFO - 01aac53b15a94f058d31503873cfd8ce - new_structure - GET /fees/structures/ - Page not found: http://127.0.0.1:8080/fees/structures/ - 127.0.0.1
+2025-11-02 14:59:21,504 - INFO - 466c16c8eb56419dbeeda29f0c0293a9 - new_structure - GET /fees/structures/ - Page not found: http://127.0.0.1:8080/fees/structures/ - 127.0.0.1
+2025-11-02 15:11:33,924 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 15:11:36,075 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 15:31:04,800 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 15:31:07,394 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 15:31:11,603 - INFO - f84f6f36ed64472590d93b2f68d3afd1 - new_structure - GET /fees/structures/ - Page not found: http://127.0.0.1:8080/fees/structures/ - 127.0.0.1
+2025-11-02 15:31:16,047 - INFO - ea50eea9c7ce4fb3a60d5e647fd6b44e - new_structure - GET /fees/structures/ - Page not found: http://127.0.0.1:8080/fees/structures/ - 127.0.0.1
+2025-11-02 16:03:52,562 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 16:03:54,851 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 16:04:15,854 - INFO - 3b727650e52349fda239294f1f9bf50f - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 16:15:57,328 - WARNING - 492fcd7b50904b2a8adec8d8ed6987ee - security - POST /fees/structures/16/delete - Forbidden access attempt: http://127.0.0.1:8080/fees/structures/16/delete - 127.0.0.1
+2025-11-02 16:33:21,327 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 16:33:24,303 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 16:33:49,236 - WARNING - feca140f4ea642778048e8dcce0e1de0 - security - GET /fees/structures/11/edit - Forbidden access attempt: http://127.0.0.1:8080/fees/structures/11/edit - 127.0.0.1
+2025-11-02 16:34:41,584 - WARNING - d9cc8648d816467a88ac96b299fcd77e - security - GET /fees/structures/11/edit - Forbidden access attempt: http://127.0.0.1:8080/fees/structures/11/edit - 127.0.0.1
+2025-11-02 16:41:49,965 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 16:41:53,259 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 16:46:20,779 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 16:46:23,435 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 17:03:20,809 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 17:03:23,252 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 17:09:44,078 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 17:09:46,605 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 17:10:46,964 - INFO - 6561c9601baf49c1b08ef7dc50953cb4 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 17:11:08,733 - INFO - d771e4a7981b40ffa0d1757b26634168 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 17:19:01,272 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 17:19:03,537 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 17:19:11,505 - INFO - 9030b93ba6cf468c9b95068348f55562 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 17:33:14,149 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 17:33:16,700 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 17:33:40,474 - INFO - 40feb4f276984d38880388e630a3a104 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 17:53:01,859 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 17:53:04,227 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 17:53:08,285 - INFO - 71211ef776814a7e8e62811ed249b7d9 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 18:40:20,101 - INFO - 5db686eebd3f493ea434c24f6e6de04c - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 18:43:04,597 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 18:43:07,871 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 18:55:14,847 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 18:55:16,638 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 18:55:20,915 - INFO - b4e454f0a9f64587b649c5fe5a229173 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-02 19:15:43,163 - INFO - 90f9a51ac52441d5b802f1c13577897f - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-02 19:15:47,990 - WARNING - 41702d6613994c91a32061fdb8b05c0a - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
