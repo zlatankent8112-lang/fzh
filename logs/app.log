@@ -8504,3 +8504,9 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-11-02 20:54:26,301 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
 2025-11-02 20:54:28,709 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
 2025-11-02 20:58:12,729 - WARNING - 2734fb2d34f64edbb5c20bd6f7076c96 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-02 21:32:36,295 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-02 21:32:44,434 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-02 21:32:52,573 - INFO - 1f3d419cd5f64de482a486f013642e1c - new_structure - GET /fees/api/payment-stats - Page not found: http://127.0.0.1:8080/fees/api/payment-stats - 127.0.0.1
+2025-11-02 21:33:20,217 - INFO - b0d16cba7f4b42db85b9f8f78e1e1a80 - new_structure - GET /fees/api/payment-stats - Page not found: http://127.0.0.1:8080/fees/api/payment-stats - 127.0.0.1
+2025-11-02 21:34:07,456 - INFO - 44a8f37fa7f9456681f41de547fd057a - new_structure - GET /fees/api/payment-stats - Page not found: http://127.0.0.1:8080/fees/api/payment-stats - 127.0.0.1
+2025-11-02 21:37:09,497 - INFO - 9ca1eb8000fa439682947ff609157d41 - new_structure - GET /fees/api/payment-stats - Page not found: http://127.0.0.1:8080/fees/api/payment-stats - 127.0.0.1

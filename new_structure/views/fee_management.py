@@ -482,7 +482,34 @@ def record_payment():
             reference = request.form.get('reference', '')
             allocation_mode = request.form.get('allocation_mode', 'auto')
             
-            # Create payment record first
+            # Get student
+            student = Student.query.get_or_404(student_id)
+            
+            # Auto-create fee accounts if they don't exist (for current term)
+            # This allows recording payments even before invoices are generated
+            current_term = request.form.get('term', 'Term 1')
+            current_year = request.form.get('academic_year', str(datetime.utcnow().year))
+            
+            accounts = StudentFeeAccount.query.filter_by(
+                student_id=student_id,
+                term=current_term,
+                academic_year=current_year
+            ).all()
+            
+            if not accounts:
+                # Auto-create accounts from applicable fee structures
+                accounts = StudentFeeAccount.create_accounts_for_student(
+                    student, 
+                    current_term, 
+                    current_year,
+                    due_date=None
+                )
+                if not accounts:
+                    flash(f'⚠️ No fee structures found for {student.grade.name if student.grade else "this student"}. Please create fee structures first.', 'warning')
+                    return redirect(url_for('fees.record_payment'))
+                flash(f'📋 Created fee accounts for {student.name} - {current_term} {current_year}', 'info')
+            
+            # Create payment record
             payment = Payment(
                 student_id=student_id,
                 method_id=method_id,
@@ -500,7 +527,9 @@ def record_payment():
                 # Get student's outstanding fees by priority
                 accounts = StudentFeeAccount.query.filter(
                     StudentFeeAccount.student_id == student_id,
-                    StudentFeeAccount.balance > 0
+                    StudentFeeAccount.balance > 0,
+                    StudentFeeAccount.term == current_term,
+                    StudentFeeAccount.academic_year == current_year
                 ).join(FeeStructure).order_by(FeeStructure.allocation_priority).all()
                 
                 remaining = amount
@@ -591,9 +620,13 @@ def record_payment():
         for s in students_raw
     ]
     
+    # Get current year for default selection
+    current_year = datetime.utcnow().year
+    
     return render_template('fees/record_payment.html',
                          students=students,
-                         payment_methods=payment_methods)
+                         payment_methods=payment_methods,
+                         current_year=current_year)
 
 
 @fee_bp.route('/reports/balances')
@@ -1182,10 +1215,19 @@ def allocate_payment_manual(payment_id):
     payment = Payment.query.get_or_404(payment_id)
     student = Student.query.get(payment.student_id)
     
-    # Get all fee accounts with outstanding balance
+    # Get all fee accounts - prioritize current term but show all available
     accounts = StudentFeeAccount.query.filter_by(
         student_id=student.id
-    ).join(FeeStructure).order_by(FeeStructure.allocation_priority).all()
+    ).join(FeeStructure).order_by(
+        StudentFeeAccount.academic_year.desc(),
+        StudentFeeAccount.term.desc(),
+        FeeStructure.allocation_priority
+    ).all()
+    
+    # If no accounts exist at all, show helpful message
+    if not accounts:
+        flash(f'⚠️ No fee accounts found for {student.name}. Fee accounts are created when you generate invoices or will be auto-created when recording payments for a specific term.', 'warning')
+        return redirect(url_for('fees.index'))
     
     # Calculate already allocated amount
     already_allocated = sum(alloc.amount_allocated for alloc in payment.allocations)

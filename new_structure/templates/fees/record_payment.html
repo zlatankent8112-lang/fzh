@@ -335,11 +335,34 @@
                 <select id="student_id" name="student_id" required>
                   <option value="">Select a student...</option>
                   {% for student in students %}
-                  <option value="{{ student.id }}">
-                    {{ student.name }} ({{ student.admission_number }})
+                  <option value="{{ student.id }}" data-grade="{{ student.grade }}">
+                    {{ student.name }} ({{ student.admission_number }}) - {{ student.grade }}
                   </option>
                   {% endfor %}
                 </select>
+              </div>
+
+              <div class="row">
+                <div class="col-6">
+                  <div class="form-group">
+                    <label for="term">Term *</label>
+                    <select id="term" name="term" required>
+                      <option value="Term 1">Term 1</option>
+                      <option value="Term 2">Term 2</option>
+                      <option value="Term 3">Term 3</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="form-group">
+                    <label for="academic_year">Academic Year *</label>
+                    <select id="academic_year" name="academic_year" required>
+                      <option value="{{ current_year }}">{{ current_year }}</option>
+                      <option value="{{ current_year - 1 }}">{{ current_year - 1 }}</option>
+                      <option value="{{ current_year + 1 }}">{{ current_year + 1 }}</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div class="form-group">
@@ -423,7 +446,7 @@
 
     <script>
       // Student data for autocomplete
-      const students = {{ students_json|tojson }};
+      const students = {{ students|tojson }};
 
       // Autocomplete functionality
       const searchInput = document.getElementById('navSearch');
