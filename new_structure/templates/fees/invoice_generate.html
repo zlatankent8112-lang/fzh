@@ -100,17 +100,72 @@
         color: #856404;
         border: 1px solid #ffeaa7;
       }
-      /* Navigation Menu */
+      /* Enhanced Navigation Menu */
       .nav-menu {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 8px;
         padding: 15px 20px;
         margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      .nav-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+      }
+      .nav-search {
+        display: flex;
+        align-items: center;
+        background: rgba(255,255,255,0.15);
+        border-radius: 20px;
+        padding: 8px 15px;
+        flex: 0 0 300px;
+      }
+      .nav-search input {
+        background: none;
+        border: none;
+        color: white;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+      }
+      .nav-search input::placeholder {
+        color: rgba(255,255,255,0.7);
+      }
+      .search-shortcut {
+        font-size: 11px;
+        background: rgba(255,255,255,0.2);
+        padding: 2px 6px;
+        border-radius: 3px;
+        margin-left: 8px;
+      }
+      .nav-stats {
+        display: flex;
+        gap: 20px;
+        color: white;
+      }
+      .nav-stat {
+        text-align: center;
+      }
+      .nav-stat-value {
+        font-size: 18px;
+        font-weight: bold;
+        display: block;
+      }
+      .nav-stat-label {
+        font-size: 11px;
+        opacity: 0.8;
+        text-transform: uppercase;
+      }
+      .nav-links {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
       }
-      .nav-menu a {
+      .nav-links a {
         color: white;
         text-decoration: none;
         padding: 10px 20px;
@@ -123,12 +178,41 @@
         align-items: center;
         gap: 8px;
       }
-      .nav-menu a:hover {
+      .nav-links a:hover {
         background: rgba(255, 255, 255, 0.2);
         transform: translateY(-2px);
       }
-      .nav-menu a.active {
+      .nav-links a.active {
         background: rgba(255, 255, 255, 0.3);
+      }
+      /* Breadcrumb */
+      .breadcrumb {
+        background: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+      .breadcrumb a {
+        color: #007bff;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb-separator {
+        color: #999;
+      }
+      .breadcrumb-current {
+        color: #666;
+        font-weight: 600;
       }
       .info-box {
         background-color: #f8f9fa;
@@ -152,13 +236,48 @@
   </head>
   <body>
     <div class="container">
-      <!-- Navigation Menu -->
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a href="{{ url_for('admin.dashboard') }}">🏠 Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="{{ url_for('fees.index') }}">💰 Fee Management</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">➕ Generate Invoice</span>
+      </div>
+
+      <!-- Enhanced Navigation Menu -->
       <div class="nav-menu">
-        <a href="{{ url_for('fees.index') }}">🏠 Dashboard</a>
-        <a href="{{ url_for('fees.fee_structures') }}">📋 Fee Structures</a>
-        <a href="{{ url_for('fees.record_payment') }}">💵 Record Payment</a>
-        <a href="{{ url_for('fees.invoice_list') }}">📄 Invoices</a>
-        <a href="{{ url_for('fees.generate_invoices') }}" class="active">➕ Generate Invoice</a>
+        <!-- Search and Stats Header -->
+        <div class="nav-menu-header">
+          <div class="nav-search">
+            <span style="margin-right: 8px;">🔍</span>
+            <input type="text" id="navSearch" placeholder="Quick access..." autocomplete="off">
+            <span class="search-shortcut">Ctrl+K</span>
+          </div>
+          <div class="nav-stats">
+            <div class="nav-stat">
+              <span class="nav-stat-value" id="gradeCount">{{ grades|length }}</span>
+              <span class="nav-stat-label">Grades</span>
+            </div>
+            <div class="nav-stat">
+              <span class="nav-stat-value" id="studentCount">-</span>
+              <span class="nav-stat-label">Students</span>
+            </div>
+            <div class="nav-stat">
+              <span class="nav-stat-value" id="feeCount">-</span>
+              <span class="nav-stat-label">Fee Types</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="nav-links">
+          <a href="{{ url_for('fees.index') }}">🏠 Dashboard</a>
+          <a href="{{ url_for('fees.fee_structures') }}">📋 Fee Structures</a>
+          <a href="{{ url_for('fees.record_payment') }}">💵 Record Payment</a>
+          <a href="{{ url_for('fees.invoice_list') }}">📄 Invoices</a>
+          <a href="{{ url_for('fees.generate_invoices') }}" class="active">➕ Generate Invoice</a>
+        </div>
       </div>
 
       <div class="card">
@@ -273,6 +392,59 @@
       const today = new Date();
       today.setDate(today.getDate() + 30);
       dueDateInput.value = today.toISOString().split("T")[0];
+      
+      // Keyboard shortcuts
+      const searchInput = document.getElementById('navSearch');
+      
+      document.addEventListener('keydown', function(e) {
+        // Ctrl+K or Cmd+K to focus search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        }
+        
+        // Ctrl+I to jump to invoice list
+        if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+          e.preventDefault();
+          window.location.href = "{{ url_for('fees.invoice_list') }}";
+        }
+        
+        // Ctrl+P to jump to record payment
+        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+          e.preventDefault();
+          window.location.href = "{{ url_for('fees.record_payment') }}";
+        }
+      });
+      
+      // Search redirects
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          const query = this.value.toLowerCase().trim();
+          if (query === 'invoice' || query === 'invoices') {
+            window.location.href = "{{ url_for('fees.invoice_list') }}";
+          } else if (query === 'payment' || query === 'pay') {
+            window.location.href = "{{ url_for('fees.record_payment') }}";
+          } else if (query === 'fee' || query === 'fees') {
+            window.location.href = "{{ url_for('fees.fee_structures') }}";
+          } else if (query === 'dashboard' || query === 'home') {
+            window.location.href = "{{ url_for('fees.index') }}";
+          }
+        }
+      });
+      
+      // Load stats
+      fetch('/fees/api/generation-stats')
+        .then(res => res.json())
+        .then(data => {
+          if (data.student_count !== undefined) {
+            document.getElementById('studentCount').textContent = data.student_count;
+          }
+          if (data.fee_count !== undefined) {
+            document.getElementById('feeCount').textContent = data.fee_count;
+          }
+        })
+        .catch(err => console.error('Error loading stats:', err));
     </script>
   </body>
 </html>

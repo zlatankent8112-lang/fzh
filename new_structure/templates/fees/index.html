@@ -134,7 +134,7 @@
         border-radius: 8px;
         padding: 15px 20px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
       .nav-menu-header {
         display: flex;
@@ -142,12 +142,12 @@
         align-items: center;
         margin-bottom: 15px;
         padding-bottom: 15px;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
       }
       .nav-search {
         display: flex;
         align-items: center;
-        background: rgba(255,255,255,0.15);
+        background: rgba(255, 255, 255, 0.15);
         border-radius: 20px;
         padding: 8px 15px;
         flex: 0 0 300px;
@@ -161,7 +161,7 @@
         font-size: 14px;
       }
       .nav-search input::placeholder {
-        color: rgba(255,255,255,0.7);
+        color: rgba(255, 255, 255, 0.7);
       }
       .nav-stats {
         display: flex;
@@ -216,7 +216,7 @@
         align-items: center;
         gap: 8px;
         font-size: 14px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       }
       .breadcrumb a {
         color: #007bff;
@@ -257,8 +257,13 @@
         <!-- Search and Stats Header -->
         <div class="nav-menu-header">
           <div class="nav-search">
-            <span style="margin-right: 8px;">🔍</span>
-            <input type="text" id="navSearch" placeholder="Search students, invoices, receipts..." onkeyup="handleNavSearch(event)">
+            <span style="margin-right: 8px">🔍</span>
+            <input
+              type="text"
+              id="navSearch"
+              placeholder="Search students, invoices, receipts..."
+              onkeyup="handleNavSearch(event)"
+            />
           </div>
           <div class="nav-stats">
             <div class="nav-stat">
@@ -275,21 +280,15 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Navigation Links -->
         <div class="nav-links">
           <a href="{{ url_for('fees.index') }}" class="active">
             🏠 Dashboard
           </a>
-          <a href="{{ url_for('fees.fee_structures') }}">
-            📋 Fee Structures
-          </a>
-          <a href="{{ url_for('fees.record_payment') }}">
-            💵 Record Payment
-          </a>
-          <a href="{{ url_for('fees.invoice_list') }}">
-            📄 Invoices
-          </a>
+          <a href="{{ url_for('fees.fee_structures') }}"> 📋 Fee Structures </a>
+          <a href="{{ url_for('fees.record_payment') }}"> 💵 Record Payment </a>
+          <a href="{{ url_for('fees.invoice_list') }}"> 📄 Invoices </a>
           <a href="{{ url_for('fees.generate_invoices') }}">
             ➕ Generate Invoice
           </a>
@@ -297,15 +296,60 @@
       </div>
 
       <script>
+        const searchInput = document.getElementById("navSearch");
+
         function handleNavSearch(event) {
-          if (event.key === 'Enter') {
+          if (event.key === "Enter") {
             const query = event.target.value.trim();
             if (query) {
               // Redirect to invoice list with search query
-              window.location.href = "{{ url_for('fees.invoice_list') }}" + "?search=" + encodeURIComponent(query);
+              window.location.href =
+                "{{ url_for('fees.invoice_list') }}" +
+                "?search=" +
+                encodeURIComponent(query);
             }
           }
         }
+
+        // Keyboard shortcuts
+        document.addEventListener("keydown", function (e) {
+          // Ctrl+K or Cmd+K to focus search
+          if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+          }
+
+          // Ctrl+F to jump to fee structures
+          if ((e.ctrlKey || e.metaKey) && e.key === "f") {
+            e.preventDefault();
+            window.location.href = "{{ url_for('fees.fee_structures') }}";
+          }
+
+          // Ctrl+P to jump to record payment
+          if ((e.ctrlKey || e.metaKey) && e.key === "p") {
+            e.preventDefault();
+            window.location.href = "{{ url_for('fees.record_payment') }}";
+          }
+
+          // Ctrl+I to jump to invoices
+          if ((e.ctrlKey || e.metaKey) && e.key === "i") {
+            e.preventDefault();
+            window.location.href = "{{ url_for('fees.invoice_list') }}";
+          }
+
+          // Ctrl+G to jump to generate invoice
+          if ((e.ctrlKey || e.metaKey) && e.key === "g") {
+            e.preventDefault();
+            window.location.href = "{{ url_for('fees.generate_invoices') }}";
+          }
+
+          // Escape to clear search
+          if (e.key === "Escape") {
+            searchInput.value = "";
+            searchInput.blur();
+          }
+        });
       </script>
 
       <!-- Stats Cards -->

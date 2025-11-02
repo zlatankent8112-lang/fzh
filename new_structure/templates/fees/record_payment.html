@@ -98,17 +98,105 @@
       .btn:hover {
         opacity: 0.9;
       }
-      /* Navigation Menu */
+      /* Enhanced Navigation Menu */
       .nav-menu {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 8px;
         padding: 15px 20px;
         margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .nav-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .nav-search {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 8px 15px;
+        flex: 0 0 300px;
+        position: relative;
+      }
+      .nav-search input {
+        background: none;
+        border: none;
+        color: white;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+      }
+      .nav-search input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .search-shortcut {
+        font-size: 11px;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 2px 6px;
+        border-radius: 3px;
+        margin-left: 8px;
+      }
+      .autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 8px;
+        margin-top: 5px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+      }
+      .autocomplete-dropdown.show {
+        display: block;
+      }
+      .autocomplete-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        color: #333;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .autocomplete-item:hover {
+        background: #f8f9fa;
+      }
+      .autocomplete-item:last-child {
+        border-bottom: none;
+      }
+      .autocomplete-item strong {
+        color: #667eea;
+      }
+      .nav-stats {
+        display: flex;
+        gap: 20px;
+        color: white;
+      }
+      .nav-stat {
+        text-align: center;
+      }
+      .nav-stat-value {
+        font-size: 18px;
+        font-weight: bold;
+        display: block;
+      }
+      .nav-stat-label {
+        font-size: 11px;
+        opacity: 0.8;
+        text-transform: uppercase;
+      }
+      .nav-links {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
       }
-      .nav-menu a {
+      .nav-links a {
         color: white;
         text-decoration: none;
         padding: 10px 20px;
@@ -121,12 +209,41 @@
         align-items: center;
         gap: 8px;
       }
-      .nav-menu a:hover {
+      .nav-links a:hover {
         background: rgba(255, 255, 255, 0.2);
         transform: translateY(-2px);
       }
-      .nav-menu a.active {
+      .nav-links a.active {
         background: rgba(255, 255, 255, 0.3);
+      }
+      /* Breadcrumb */
+      .breadcrumb {
+        background: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .breadcrumb a {
+        color: #007bff;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb-separator {
+        color: #999;
+      }
+      .breadcrumb-current {
+        color: #666;
+        font-weight: 600;
       }
       ul {
         padding-left: 20px;
@@ -148,13 +265,58 @@
   </head>
   <body>
     <div class="container">
-      <!-- Navigation Menu -->
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a href="{{ url_for('admin.dashboard') }}">🏠 Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="{{ url_for('fees.index') }}">💰 Fee Management</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">💵 Record Payment</span>
+      </div>
+
+      <!-- Enhanced Navigation Menu -->
       <div class="nav-menu">
-        <a href="{{ url_for('fees.index') }}">🏠 Dashboard</a>
-        <a href="{{ url_for('fees.fee_structures') }}">📋 Fee Structures</a>
-        <a href="{{ url_for('fees.record_payment') }}" class="active">💵 Record Payment</a>
-        <a href="{{ url_for('fees.invoice_list') }}">📄 Invoices</a>
-        <a href="{{ url_for('fees.generate_invoices') }}">➕ Generate Invoice</a>
+        <!-- Search and Stats Header -->
+        <div class="nav-menu-header">
+          <div class="nav-search">
+            <span style="margin-right: 8px">🔍</span>
+            <input
+              type="text"
+              id="navSearch"
+              placeholder="Search students..."
+              autocomplete="off"
+            />
+            <span class="search-shortcut">Ctrl+K</span>
+            <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+          </div>
+          <div class="nav-stats">
+            <div class="nav-stat">
+              <span class="nav-stat-value">{{ students|length }}</span>
+              <span class="nav-stat-label">Students</span>
+            </div>
+            <div class="nav-stat">
+              <span class="nav-stat-value" id="pendingCount">-</span>
+              <span class="nav-stat-label">Pending</span>
+            </div>
+            <div class="nav-stat">
+              <span class="nav-stat-value" id="todayCount">-</span>
+              <span class="nav-stat-label">Today</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="nav-links">
+          <a href="{{ url_for('fees.index') }}">🏠 Dashboard</a>
+          <a href="{{ url_for('fees.fee_structures') }}">📋 Fee Structures</a>
+          <a href="{{ url_for('fees.record_payment') }}" class="active"
+            >💵 Record Payment</a
+          >
+          <a href="{{ url_for('fees.invoice_list') }}">📄 Invoices</a>
+          <a href="{{ url_for('fees.generate_invoices') }}"
+            >➕ Generate Invoice</a
+          >
+        </div>
       </div>
 
       <h1>Record Payment</h1>
@@ -260,6 +422,74 @@
     </div>
 
     <script>
+      // Student data for autocomplete
+      const students = {{ students|tojson }};
+
+      // Autocomplete functionality
+      const searchInput = document.getElementById('navSearch');
+      const dropdown = document.getElementById('autocompleteDropdown');
+
+      searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+
+        if (query.length < 2) {
+          dropdown.classList.remove('show');
+          return;
+        }
+
+        const matches = students.filter(s =>
+          s.name.toLowerCase().includes(query) ||
+          s.admission_number.toLowerCase().includes(query)
+        ).slice(0, 5);
+
+        if (matches.length === 0) {
+          dropdown.classList.remove('show');
+          return;
+        }
+
+        dropdown.innerHTML = matches.map(s => `
+          <div class="autocomplete-item" onclick="selectStudent(${s.id})">
+            <strong>${s.name}</strong><br>
+            <small>${s.admission_number}</small>
+          </div>
+        `).join('');
+
+        dropdown.classList.add('show');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.classList.remove('show');
+        }
+      });
+
+      // Select student from autocomplete
+      function selectStudent(studentId) {
+        document.getElementById('student_id').value = studentId;
+        dropdown.classList.remove('show');
+        searchInput.value = '';
+        // Trigger change event
+        document.getElementById('student_id').dispatchEvent(new Event('change'));
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        // Ctrl+K or Cmd+K to focus search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        }
+
+        // Escape to clear search and close dropdown
+        if (e.key === 'Escape') {
+          searchInput.value = '';
+          dropdown.classList.remove('show');
+        }
+      });
+
+      // Student balance check
       document
         .getElementById("student_id")
         .addEventListener("change", function () {
@@ -273,6 +503,19 @@
               .catch((err) => console.error("Error fetching balance:", err));
           }
         });
+
+      // Load stats
+      fetch('/fees/api/payment-stats')
+        .then(res => res.json())
+        .then(data => {
+          if (data.pending_count !== undefined) {
+            document.getElementById('pendingCount').textContent = data.pending_count;
+          }
+          if (data.today_count !== undefined) {
+            document.getElementById('todayCount').textContent = data.today_count;
+          }
+        })
+        .catch(err => console.error('Error loading stats:', err));
     </script>
   </body>
 </html>
