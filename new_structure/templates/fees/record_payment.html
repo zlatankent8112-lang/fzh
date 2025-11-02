@@ -98,6 +98,36 @@
       .btn:hover {
         opacity: 0.9;
       }
+      /* Navigation Menu */
+      .nav-menu {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .nav-menu a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        transition: all 0.3s;
+        font-weight: 500;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-menu a:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+      .nav-menu a.active {
+        background: rgba(255, 255, 255, 0.3);
+      }
       ul {
         padding-left: 20px;
       }
@@ -118,9 +148,14 @@
   </head>
   <body>
     <div class="container">
-      <a href="{{ url_for('fees.index') }}" class="back-link"
-        >← Back to Fee Dashboard</a
-      >
+      <!-- Navigation Menu -->
+      <div class="nav-menu">
+        <a href="{{ url_for('fees.index') }}">🏠 Dashboard</a>
+        <a href="{{ url_for('fees.fee_structures') }}">📋 Fee Structures</a>
+        <a href="{{ url_for('fees.record_payment') }}" class="active">💵 Record Payment</a>
+        <a href="{{ url_for('fees.invoice_list') }}">📄 Invoices</a>
+        <a href="{{ url_for('fees.generate_invoices') }}">➕ Generate Invoice</a>
+      </div>
 
       <h1>Record Payment</h1>
 
@@ -183,11 +218,15 @@
                   <option value="auto">
                     Auto (Pay highest priority fees first)
                   </option>
-                  <option value="manual">Manual (Choose fees on next page)</option>
+                  <option value="manual">
+                    Manual (Choose fees on next page)
+                  </option>
                 </select>
                 <div class="form-text" id="mode-description">
-                  <strong>Auto:</strong> Payment allocated automatically by priority (Tuition → Transport → Lunch)<br>
-                  <strong>Manual:</strong> After recording, you'll choose which fees to pay and how much
+                  <strong>Auto:</strong> Payment allocated automatically by
+                  priority (Tuition → Transport → Lunch)<br />
+                  <strong>Manual:</strong> After recording, you'll choose which
+                  fees to pay and how much
                 </div>
               </div>
 
@@ -207,8 +246,12 @@
             <ul>
               <li>Select the student first</li>
               <li>Enter the exact amount received</li>
-              <li><strong>Auto mode:</strong> Quick processing, pays by priority</li>
-              <li><strong>Manual mode:</strong> You choose which fees to pay</li>
+              <li>
+                <strong>Auto mode:</strong> Quick processing, pays by priority
+              </li>
+              <li>
+                <strong>Manual mode:</strong> You choose which fees to pay
+              </li>
               <li>Receipt generated automatically</li>
             </ul>
           </div>

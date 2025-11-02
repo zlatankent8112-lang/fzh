@@ -94,6 +94,36 @@
             width: 100%;
             border-collapse: collapse;
         }
+        /* Navigation Menu */
+        .nav-menu {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .nav-menu a.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
         th {
             background-color: #f8f9fa;
             padding: 15px;
@@ -161,6 +191,15 @@
 </head>
 <body>
     <div class="container">
+        <!-- Navigation Menu -->
+        <div class="nav-menu">
+            <a href="{{ url_for('fees.index') }}">🏠 Dashboard</a>
+            <a href="{{ url_for('fees.fee_structures') }}">📋 Fee Structures</a>
+            <a href="{{ url_for('fees.record_payment') }}">💵 Record Payment</a>
+            <a href="{{ url_for('fees.invoice_list') }}" class="active">📄 Invoices</a>
+            <a href="{{ url_for('fees.generate_invoices') }}">➕ Generate Invoice</a>
+        </div>
+
         <!-- Header -->
         <div class="header">
             <div>
