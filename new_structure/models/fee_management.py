@@ -93,13 +93,18 @@ class FeeStructure(db.Model):
             return []
         
         # Map grade name to education level
+        # Education levels: pre_primary, lower_primary, upper_primary, junior_secondary, senior_secondary
         grade_name = grade.name.upper()
         if 'PP' in grade_name or 'PRE' in grade_name:
             education_level = 'pre_primary'
-        elif any(num in grade_name for num in ['1', '2', '3', '4', '5', '6']):
+        elif any(num in grade_name for num in ['1', '2', '3']) and 'GRADE' in grade_name:
+            education_level = 'lower_primary'
+        elif any(num in grade_name for num in ['4', '5', '6']) and 'GRADE' in grade_name:
             education_level = 'upper_primary'
-        elif any(num in grade_name for num in ['7', '8', '9', '10', '11', '12']):
+        elif any(num in grade_name for num in ['7', '8', '9']) and 'GRADE' in grade_name:
             education_level = 'junior_secondary'
+        elif any(num in grade_name for num in ['10', '11', '12']) and 'GRADE' in grade_name:
+            education_level = 'senior_secondary'
         else:
             education_level = None
         
