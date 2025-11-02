@@ -363,6 +363,53 @@ def delete_fee_structure(fee_id):
     return redirect(url_for('fees.fee_structures'))
 
 
+@fee_bp.route('/structures/bulk-delete', methods=['POST'])
+@fee_access_required
+def bulk_delete_fee_structures():
+    """Delete multiple fee structures at once"""
+    try:
+        data = request.get_json()
+        fee_ids = data.get('fee_ids', [])
+        
+        if not fee_ids:
+            return jsonify({'success': False, 'message': 'No fees selected'}), 400
+        
+        deleted_count = 0
+        skipped_count = 0
+        skipped_names = []
+        
+        for fee_id in fee_ids:
+            fee = FeeStructure.query.get(fee_id)
+            if not fee:
+                continue
+            
+            # Check if any student accounts use this fee
+            accounts_count = StudentFeeAccount.query.filter_by(fee_structure_id=fee_id).count()
+            
+            if accounts_count > 0:
+                skipped_count += 1
+                skipped_names.append(fee.fee_type_name)
+            else:
+                db.session.delete(fee)
+                deleted_count += 1
+        
+        db.session.commit()
+        
+        # Set flash message for next page load
+        if deleted_count > 0 and skipped_count == 0:
+            flash(f'✅ Successfully deleted {deleted_count} fee structure(s)!', 'success')
+        elif deleted_count > 0 and skipped_count > 0:
+            flash(f'✅ Deleted {deleted_count} fee(s). ⚠️ Skipped {skipped_count} fee(s) in use: {", ".join(skipped_names)}', 'warning')
+        elif skipped_count > 0:
+            flash(f'⚠️ Cannot delete {skipped_count} fee(s) - they are in use: {", ".join(skipped_names)}', 'warning')
+        
+        return jsonify({'success': True, 'deleted': deleted_count, 'skipped': skipped_count})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
 @fee_bp.route('/student/<int:student_id>')
 @fee_access_required
 def student_fees(student_id):

@@ -58,6 +58,31 @@
         background-color: #6c757d;
         color: white;
       }
+      @keyframes slideIn {
+        from {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border-left: 4px solid #28a745;
+      }
+      .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+      }
+      .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+        border-left: 4px solid #ffc107;
+      }
       .btn-sm {
         padding: 5px 10px;
         font-size: 12px;
@@ -244,6 +269,19 @@
         </form>
       </div>
 
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div style="margin-bottom: 20px;">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px; animation: slideIn 0.3s ease-out;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
       <!-- Info Alert -->
       <div class="alert alert-info">
         📌 <strong>Important:</strong> Fee structures define all fee types
@@ -252,11 +290,25 @@
         allocation order (1 = highest).
       </div>
 
+      <!-- Bulk Actions Bar -->
+      <div id="bulkActionsBar" style="display: none; background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+        <strong>✓ <span id="selectedCount">0</span> fee(s) selected</strong>
+        <button onclick="deleteSelected()" class="btn btn-sm btn-danger" style="margin-left: 15px;">
+          🗑️ Delete Selected
+        </button>
+        <button onclick="clearSelection()" class="btn btn-sm btn-secondary" style="margin-left: 10px;">
+          Clear Selection
+        </button>
+      </div>
+
       <!-- Fee Structures Table -->
       <div class="card">
         <table>
           <thead>
             <tr>
+              <th style="width: 40px;">
+                <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="cursor: pointer;" />
+              </th>
               <th>Priority</th>
               <th>Fee Type</th>
               <th>Category</th>
@@ -272,7 +324,10 @@
           </thead>
           <tbody>
             {% for fee in fees %}
-            <tr>
+            <tr id="fee-row-{{ fee.id }}">
+              <td>
+                <input type="checkbox" class="fee-checkbox" value="{{ fee.id }}" onclick="updateBulkActions()" style="cursor: pointer;" />
+              </td>
               <td>
                 <span class="priority-badge"
                   >{{ fee.allocation_priority }}</span
@@ -397,5 +452,94 @@
         </table>
       </div>
     </div>
+
+    <script>
+      // Toggle select all checkboxes
+      function toggleSelectAll() {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.fee-checkbox');
+        checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        updateBulkActions();
+      }
+
+      // Update bulk actions bar based on selection
+      function updateBulkActions() {
+        const checkboxes = document.querySelectorAll('.fee-checkbox:checked');
+        const bulkBar = document.getElementById('bulkActionsBar');
+        const selectedCount = document.getElementById('selectedCount');
+        
+        selectedCount.textContent = checkboxes.length;
+        bulkBar.style.display = checkboxes.length > 0 ? 'block' : 'none';
+        
+        // Update select all checkbox state
+        const allCheckboxes = document.querySelectorAll('.fee-checkbox');
+        const selectAll = document.getElementById('selectAll');
+        selectAll.checked = checkboxes.length === allCheckboxes.length && allCheckboxes.length > 0;
+      }
+
+      // Clear all selections
+      function clearSelection() {
+        document.querySelectorAll('.fee-checkbox').forEach(cb => cb.checked = false);
+        document.getElementById('selectAll').checked = false;
+        updateBulkActions();
+      }
+
+      // Delete selected fees
+      function deleteSelected() {
+        const checkboxes = document.querySelectorAll('.fee-checkbox:checked');
+        const feeIds = Array.from(checkboxes).map(cb => cb.value);
+        
+        if (feeIds.length === 0) {
+          alert('Please select at least one fee to delete');
+          return;
+        }
+
+        const feeNames = Array.from(checkboxes).map(cb => {
+          const row = cb.closest('tr');
+          return row.querySelector('strong').textContent;
+        });
+
+        const confirmMsg = feeIds.length === 1 
+          ? `Delete "${feeNames[0]}"?`
+          : `Delete ${feeIds.length} fee structures?\n\n${feeNames.join('\n')}`;
+
+        if (!confirm(confirmMsg)) {
+          return;
+        }
+
+        // Send delete request
+        fetch('{{ url_for("fees.bulk_delete_fee_structures") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+          },
+          body: JSON.stringify({ fee_ids: feeIds })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Reload page to show success message and updated list
+            window.location.reload();
+          } else {
+            alert(data.message || 'Error deleting fees');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error deleting fees. Please try again.');
+        });
+      }
+
+      // Auto-hide flash messages after 5 seconds
+      setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert-success, .alert-info');
+        alerts.forEach(alert => {
+          alert.style.transition = 'opacity 0.5s';
+          alert.style.opacity = '0';
+          setTimeout(() => alert.remove(), 500);
+        });
+      }, 5000);
+    </script>
   </body>
 </html>
