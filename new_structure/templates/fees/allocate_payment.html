@@ -250,16 +250,20 @@
                 </td>
                 <td>
                   <strong>{{ account.fee_structure.fee_type_name }}</strong>
-                  <div class="fee-description" style="font-size: 12px; color: #666;">
+                  <div
+                    class="fee-description"
+                    style="font-size: 12px; color: #666"
+                  >
                     {{ account.fee_structure.education_level or 'All Levels' }}
                     {% if account.fee_structure.description %}
-                    <br>{{ account.fee_structure.description }}
-                    {% endif %}
+                    <br />{{ account.fee_structure.description }} {% endif %}
                   </div>
                 </td>
                 <td>
-                  <strong>{{ account.term }}</strong><br>
-                  <span style="font-size: 12px; color: #666;">{{ account.academic_year }}</span>
+                  <strong>{{ account.term }}</strong><br />
+                  <span style="font-size: 12px; color: #666"
+                    >{{ account.academic_year }}</span
+                  >
                 </td>
                 <td>
                   <strong>KES {{ "{:,.2f}".format(account.balance) }}</strong>
