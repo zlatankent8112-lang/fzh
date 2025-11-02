@@ -580,8 +580,17 @@ def record_payment():
     students = Student.query.order_by(Student.name).all()
     payment_methods = PaymentMethod.query.filter_by(is_active=True).all()
     
+    # Convert students to JSON-serializable dictionaries for autocomplete
+    students_data = [{
+        'id': s.id,
+        'name': s.name,
+        'admission_number': s.admission_number,
+        'grade': s.grade.name if s.grade else 'Unknown'
+    } for s in students]
+    
     return render_template('fees/record_payment.html',
                          students=students,
+                         students_json=students_data,
                          payment_methods=payment_methods)
 
 
