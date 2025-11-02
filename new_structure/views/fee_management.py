@@ -176,24 +176,33 @@ def bulk_create_fee_structure():
             for index in fee_data.keys():
                 fee_data[index]['mandatory'] = f'fees[{index}][mandatory]' in request.form
                 fee_data[index]['refundable'] = f'fees[{index}][refundable]' in request.form
+                fee_data[index]['optional'] = f'fees[{index}][optional]' in request.form
             
             # Create each fee structure
             for index, fee_info in fee_data.items():
                 if 'name' in fee_info and 'amount' in fee_info:
+                    # Use individual fee settings or fall back to common settings
+                    fee_term = fee_info.get('term') if fee_info.get('term') else term
+                    fee_frequency = fee_info.get('frequency') if fee_info.get('frequency') else frequency
+                    
+                    # If optional is checked, it's not mandatory
+                    is_optional = fee_info.get('optional', False)
+                    is_mandatory = fee_info.get('mandatory', True) and not is_optional
+                    
                     fee = FeeStructure(
                         fee_type_name=fee_info['name'],
                         description=fee_info.get('description'),
                         amount=Decimal(fee_info['amount']),
                         academic_year=academic_year,
-                        term=term,
+                        term=fee_term,  # Use individual or common
                         grade_id=grade_id,
                         education_level=education_level,
                         category=fee_info.get('category', 'tuition'),
-                        frequency=frequency,
+                        frequency=fee_frequency,  # Use individual or common
                         applies_to_grades=applies_to_grades_json,
                         allocation_priority=int(fee_info.get('priority', index)),
                         allow_partial_payment=True,  # Default to true
-                        is_mandatory=fee_info.get('mandatory', True),
+                        is_mandatory=is_mandatory,  # False if optional
                         is_refundable=fee_info.get('refundable', False),
                         is_active=True,
                         created_by=teacher_id

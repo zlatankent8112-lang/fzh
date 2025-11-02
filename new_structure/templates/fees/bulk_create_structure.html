@@ -157,10 +157,15 @@
       </p>
 
       <div class="alert alert-info">
-        💡 <strong>Tip:</strong> This tool helps you quickly set up all fee
-        types for an educational level or grade. Add as many fees as needed, and
-        they'll all be created with the same academic year, term, and target
-        level/grade.
+        💡 <strong>How it works:</strong><br>
+        <strong>1. Common Settings:</strong> Set defaults for all fees (academic year, term, frequency, level)<br>
+        <strong>2. Individual Fees:</strong> Each fee can override term & frequency if needed<br>
+        <strong>3. Examples:</strong><br>
+        &nbsp;&nbsp;&nbsp;• <strong>Registration Fee</strong> → Override frequency to "One-Time", check Optional<br>
+        &nbsp;&nbsp;&nbsp;• <strong>Swimming</strong> → Override term to "Term 1", check Optional<br>
+        &nbsp;&nbsp;&nbsp;• <strong>Tuition</strong> → Use common settings (All Terms, Per Term), keep Mandatory<br>
+        &nbsp;&nbsp;&nbsp;• <strong>Coding/Robotics</strong> → Check Optional (parent can choose)<br>
+        <strong>4. Flexibility:</strong> Mix mandatory fees (Tuition, Lunch) with optional activities (Swimming, Coding) in one go!
       </div>
 
       <div class="card">
@@ -365,6 +370,31 @@
                 <div class="row">
                     <div class="col-4">
                         <div class="form-group">
+                            <label>Specific Term (Override)</label>
+                            <select name="fees[${feeCounter}][term]">
+                                <option value="">Use Common Term</option>
+                                <option value="Term 1">Term 1 Only</option>
+                                <option value="Term 2">Term 2 Only</option>
+                                <option value="Term 3">Term 3 Only</option>
+                            </select>
+                            <div class="form-text" style="font-size: 11px;">Leave blank to use common term setting</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label>Frequency (Override)</label>
+                            <select name="fees[${feeCounter}][frequency]">
+                                <option value="">Use Common Frequency</option>
+                                <option value="per_term">📅 Per Term</option>
+                                <option value="annual">📆 Annual</option>
+                                <option value="one_time">🎯 One-Time</option>
+                                <option value="monthly">📊 Monthly</option>
+                            </select>
+                            <div class="form-text" style="font-size: 11px;">Override for one-time fees like admission</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
                             <label>Priority *</label>
                             <input 
                                 type="number" 
@@ -375,6 +405,9 @@
                             />
                         </div>
                     </div>
+                </div>
+                
+                <div class="row">
                     <div class="col-4">
                         <div class="form-group">
                             <label>Description</label>
@@ -394,7 +427,7 @@
                                     checked
                                     style="width: auto; margin: 0;"
                                 />
-                                Mandatory
+                                <strong>Mandatory</strong> - All students must pay
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; margin-top: 5px;">
                                 <input 
@@ -402,8 +435,23 @@
                                     name="fees[${feeCounter}][refundable]"
                                     style="width: auto; margin: 0;"
                                 />
-                                Refundable
+                                <strong>Refundable</strong> - Can be refunded
                             </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group" style="padding-top: 28px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                <input 
+                                    type="checkbox" 
+                                    name="fees[${feeCounter}][optional]"
+                                    style="width: auto; margin: 0;"
+                                />
+                                <strong>Optional</strong> - Parent can choose
+                            </label>
+                            <div class="form-text" style="font-size: 11px; margin-top: 5px;">
+                                For activities like Swimming, Coding, Robotics
+                            </div>
                         </div>
                     </div>
                 </div>
