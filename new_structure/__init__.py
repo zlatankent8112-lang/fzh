@@ -912,8 +912,12 @@ def create_app(config_name='default'):
         except:
             return 'N/A'
 
-    # Import the classteacher blueprint
-    from .views.classteacher import classteacher_bp
+    # Import the classteacher blueprint with error handling
+    try:
+        from .views.classteacher import classteacher_bp
+    except ImportError as e:
+        app.logger.warning(f"Classteacher blueprint not available: {e}")
+        classteacher_bp = None
 
     # (Removed duplicate gate_debug_routes; unified earlier.)
 
