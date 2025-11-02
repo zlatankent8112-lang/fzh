@@ -26,9 +26,13 @@
       .col-4 {
         flex: 0 0 calc(33.333% - 13px);
       }
+      .col-6 {
+        flex: 0 0 calc(50% - 10px);
+      }
       @media (max-width: 768px) {
         .col-8,
-        .col-4 {
+        .col-4,
+        .col-6 {
           flex: 0 0 100%;
         }
       }
@@ -261,6 +265,112 @@
       .back-link:hover {
         text-decoration: underline;
       }
+      /* Search Results Dropdown */
+      .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 2px solid #667eea;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        max-height: 400px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: none;
+      }
+      .search-results.show {
+        display: block;
+      }
+      .search-result-item {
+        padding: 12px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s;
+      }
+      .search-result-item:hover {
+        background: #f8f9fa;
+      }
+      .search-result-item:last-child {
+        border-bottom: none;
+      }
+      .search-result-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 15px;
+      }
+      .search-result-details {
+        font-size: 13px;
+        color: #666;
+        margin-top: 3px;
+      }
+      .search-result-admission {
+        color: #667eea;
+        font-weight: 500;
+      }
+      .search-no-results {
+        padding: 15px;
+        text-align: center;
+        color: #999;
+        font-style: italic;
+      }
+      /* Filter Toggle Button */
+      .btn-filter-toggle {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #666;
+        transition: all 0.3s;
+      }
+      .btn-filter-toggle:hover {
+        background: #e9ecef;
+        border-color: #bbb;
+      }
+      .btn-filter-toggle.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+      /* Selected Student Display */
+      .selected-student-display {
+        background: #e7f3ff;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+        display: none;
+      }
+      .selected-student-display.show {
+        display: block;
+      }
+      .selected-student-display .student-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+      }
+      .selected-student-display .student-meta {
+        font-size: 14px;
+        color: #666;
+      }
+      .selected-student-display .btn-change {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 6px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-top: 10px;
+      }
+      .selected-student-display .btn-change:hover {
+        background: #5a6268;
+      }
     </style>
   </head>
   <body>
@@ -330,32 +440,106 @@
                 name="csrf_token"
                 value="{{ csrf_token() }}"
               />
+              <!-- Quick Search with Autocomplete -->
               <div class="form-group">
-                <label for="student_search">Search Student *</label>
-                <input
-                  type="text"
-                  id="student_search"
-                  class="form-control"
-                  placeholder="Type name, admission number, or grade..."
-                  autocomplete="off"
-                  style="margin-bottom: 10px;"
-                />
-                <select id="student_id" name="student_id" required size="8" style="height: 200px;">
-                  <option value="">Select a student...</option>
-                  {% for student in students %}
-                  <option
-                    value="{{ student.id }}"
-                    data-grade="{{ student.grade }}"
-                    data-stream="{{ student.stream }}"
-                    data-name="{{ student.name }}"
-                    data-admission="{{ student.admission_number }}"
+                <label for="student_search">🔍 Search Student *</label>
+                <div style="position: relative">
+                  <input
+                    type="text"
+                    id="student_search"
+                    class="form-control"
+                    placeholder="Type student name or admission number..."
+                    autocomplete="off"
+                    style="
+                      font-size: 16px;
+                      padding: 12px;
+                      border: 2px solid #ddd;
+                    "
+                  />
+                  <div id="searchResults" class="search-results"></div>
+                </div>
+                <div style="margin-top: 5px; font-size: 13px; color: #666">
+                  💡 Start typing (minimum 2 characters) to see matching
+                  students
+                </div>
+              </div>
+
+              <!-- Hidden select for form submission -->
+              <input type="hidden" id="student_id" name="student_id" required />
+
+              <!-- Selected Student Display -->
+              <div id="selectedStudentDisplay" class="selected-student-display">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: start;
+                  "
+                >
+                  <div>
+                    <div class="student-name">
+                      ✓ <span id="selectedName"></span>
+                    </div>
+                    <div class="student-meta">
+                      <strong>Admission:</strong>
+                      <span id="selectedAdmission"></span> |
+                      <strong>Grade:</strong> <span id="selectedGrade"></span
+                      ><span id="selectedStream"></span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn-change"
+                    onclick="clearStudentSelection()"
                   >
-                    {{ student.name }} ({{ student.admission_number }}) - {{ student.grade }}{% if student.stream %} {{ student.stream }}{% endif %}
-                  </option>
-                  {% endfor %}
-                </select>
-                <div style="margin-top: 5px; font-size: 12px; color: #666;">
-                  <span id="studentCount">{{ students|length }}</span> students shown
+                    Change Student
+                  </button>
+                </div>
+              </div>
+
+              <!-- Advanced Filters (Collapsible) -->
+              <div style="margin-top: 20px; margin-bottom: 20px">
+                <button
+                  type="button"
+                  id="toggleFilters"
+                  class="btn-filter-toggle"
+                  onclick="toggleAdvancedFilters()"
+                >
+                  ▼ Advanced Filters (Grade, Stream)
+                </button>
+
+                <div
+                  id="advancedFilters"
+                  style="
+                    display: none;
+                    margin-top: 15px;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-radius: 6px;
+                  "
+                >
+                  <div class="row">
+                    <div class="col-6">
+                      <div class="form-group">
+                        <label for="filter_grade">Filter by Grade</label>
+                        <select id="filter_grade" class="form-control">
+                          <option value="">All Grades</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="form-group">
+                        <label for="filter_stream">Filter by Stream</label>
+                        <select id="filter_stream" class="form-control">
+                          <option value="">All Streams</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="font-size: 12px; color: #666; margin-top: 10px">
+                    <span id="filterCount">0</span> student(s) match your
+                    filters
+                  </div>
                 </div>
               </div>
 
@@ -450,12 +634,21 @@
 
         <div class="col-4">
           <!-- Student Info Display -->
-          <div class="card bg-light" id="studentInfo" style="display: none; margin-bottom: 20px;">
+          <div
+            class="card bg-light"
+            id="studentInfo"
+            style="display: none; margin-bottom: 20px"
+          >
             <h5>📋 Student Information</h5>
-            <div style="padding: 10px 0;">
-              <strong id="infoStudentName"></strong><br>
-              <span style="color: #666;">Admission: <span id="infoAdmissionNo"></span></span><br>
-              <span style="color: #666;">Grade: <span id="infoGrade"></span> <span id="infoStream"></span></span>
+            <div style="padding: 10px 0">
+              <strong id="infoStudentName"></strong><br />
+              <span style="color: #666"
+                >Admission: <span id="infoAdmissionNo"></span></span
+              ><br />
+              <span style="color: #666"
+                >Grade: <span id="infoGrade"></span>
+                <span id="infoStream"></span
+              ></span>
             </div>
           </div>
 
@@ -464,7 +657,9 @@
             <ul>
               <li><strong>Student:</strong> Grade is automatically detected</li>
               <li><strong>Term/Year:</strong> Select which billing period</li>
-              <li><strong>Auto mode:</strong> Pays by priority (Tuition first)</li>
+              <li>
+                <strong>Auto mode:</strong> Pays by priority (Tuition first)
+              </li>
               <li><strong>Manual mode:</strong> You choose which fees</li>
               <li>Receipt generated automatically</li>
             </ul>
@@ -541,54 +736,202 @@
         }
       });
 
-      // Real-time student search/filter
-      const studentSearch = document.getElementById('student_search');
-      const studentSelect = document.getElementById('student_id');
-      const studentCountSpan = document.getElementById('studentCount');
-      const allOptions = Array.from(studentSelect.options).slice(1); // Skip first "Select..." option
+      // Quick Search with Autocomplete
+      const studentSearchInput = document.getElementById('student_search');
+      const studentSearchResults = document.getElementById('searchResults');
+      const studentIdInput = document.getElementById('student_id');
+      const selectedDisplay = document.getElementById('selectedStudentDisplay');
+      let selectedStudent = null;
 
-      studentSearch.addEventListener('input', function() {
+      // Real-time search
+      studentSearchInput.addEventListener('input', function() {
         const query = this.value.toLowerCase().trim();
-        let visibleCount = 0;
 
-        // Clear and re-populate
-        studentSelect.innerHTML = '<option value="">Select a student...</option>';
+        // Clear if less than 2 characters
+        if (query.length < 2) {
+          studentSearchResults.classList.remove('show');
+          return;
+        }
 
-        allOptions.forEach(option => {
-          const name = option.getAttribute('data-name').toLowerCase();
-          const admission = option.getAttribute('data-admission').toLowerCase();
-          const grade = option.getAttribute('data-grade').toLowerCase();
-          const stream = (option.getAttribute('data-stream') || '').toLowerCase();
-          
-          // Match name, admission number, grade, or stream
-          if (name.includes(query) || admission.includes(query) || grade.includes(query) || stream.includes(query)) {
-            studentSelect.appendChild(option.cloneNode(true));
-            visibleCount++;
-          }
-        });
+        // Filter students
+        const matches = students.filter(s =>
+          s.name.toLowerCase().includes(query) ||
+          s.admission_number.toLowerCase().includes(query)
+        ).slice(0, 10); // Show top 10 matches
 
-        studentCountSpan.textContent = visibleCount;
+        // Display results
+        if (matches.length === 0) {
+          studentSearchResults.innerHTML = '<div class="search-no-results">No students found matching "' + query + '"</div>';
+          studentSearchResults.classList.add('show');
+          return;
+        }
+
+        studentSearchResults.innerHTML = matches.map(s => `
+          <div class="search-result-item" onclick="selectStudentFromSearch(${s.id})">
+            <div class="search-result-name">${s.name}</div>
+            <div class="search-result-details">
+              <span class="search-result-admission">${s.admission_number}</span> •
+              ${s.grade}${s.stream ? ' ' + s.stream : ''}
+            </div>
+          </div>
+        `).join('');
+
+        studentSearchResults.classList.add('show');
       });
 
+      // Select student from search results
+      window.selectStudentFromSearch = function(studentId) {
+        selectedStudent = students.find(s => s.id === studentId);
+        if (!selectedStudent) return;
+
+        // Set hidden input
+        studentIdInput.value = selectedStudent.id;
+
+        // Update display
+        document.getElementById('selectedName').textContent = selectedStudent.name;
+        document.getElementById('selectedAdmission').textContent = selectedStudent.admission_number;
+        document.getElementById('selectedGrade').textContent = selectedStudent.grade;
+        document.getElementById('selectedStream').textContent = selectedStudent.stream ? ' ' + selectedStudent.stream : '';
+
+        // Show selected display, hide search results
+        selectedDisplay.classList.add('show');
+        studentSearchResults.classList.remove('show');
+        studentSearchInput.value = selectedStudent.name;
+        studentSearchInput.disabled = true;
+
+        // Update student info card
+        updateStudentInfo(selectedStudent);
+      };
+
+      // Clear selection
+      window.clearStudentSelection = function() {
+        selectedStudent = null;
+        studentIdInput.value = '';
+        selectedDisplay.classList.remove('show');
+        studentSearchInput.value = '';
+        studentSearchInput.disabled = false;
+        studentSearchInput.focus();
+        document.getElementById('studentInfo').style.display = 'none';
+      };
+
+      // Close search results when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!studentSearchInput.contains(e.target) && !studentSearchResults.contains(e.target)) {
+          studentSearchResults.classList.remove('show');
+        }
+      });
+
+      // Advanced Filters
+      const filterGrade = document.getElementById('filter_grade');
+      const filterStream = document.getElementById('filter_stream');
+      const filterCount = document.getElementById('filterCount');
+      let filtersVisible = false;
+
+      // Extract unique grades and streams
+      const grades = [...new Set(students.map(s => s.grade))].filter(g => g && g !== 'No Grade').sort();
+      const streams = [...new Set(students.map(s => s.stream))].filter(s => s).sort();
+
+      // Populate grade dropdown
+      grades.forEach(grade => {
+        const option = document.createElement('option');
+        option.value = grade;
+        option.textContent = grade;
+        filterGrade.appendChild(option);
+      });
+
+      // Populate stream dropdown
+      streams.forEach(stream => {
+        const option = document.createElement('option');
+        option.value = stream;
+        option.textContent = stream;
+        filterStream.appendChild(option);
+      });
+
+      // Toggle advanced filters
+      window.toggleAdvancedFilters = function() {
+        const filtersDiv = document.getElementById('advancedFilters');
+        const toggleBtn = document.getElementById('toggleFilters');
+        filtersVisible = !filtersVisible;
+
+        if (filtersVisible) {
+          filtersDiv.style.display = 'block';
+          toggleBtn.textContent = '▲ Hide Advanced Filters';
+          toggleBtn.classList.add('active');
+        } else {
+          filtersDiv.style.display = 'none';
+          toggleBtn.textContent = '▼ Advanced Filters (Grade, Stream)';
+          toggleBtn.classList.remove('active');
+        }
+      };
+
+      // Apply filters
+      function applyFilters() {
+        const selectedGrade = filterGrade.value;
+        const selectedStream = filterStream.value;
+
+        let filtered = students;
+        if (selectedGrade) {
+          filtered = filtered.filter(s => s.grade === selectedGrade);
+        }
+        if (selectedStream) {
+          filtered = filtered.filter(s => s.stream === selectedStream);
+        }
+
+        filterCount.textContent = filtered.length;
+
+        // Show filtered results in search
+        if (filtered.length > 0) {
+          studentSearchResults.innerHTML = filtered.slice(0, 20).map(s => `
+            <div class="search-result-item" onclick="selectStudentFromSearch(${s.id})">
+              <div class="search-result-name">${s.name}</div>
+              <div class="search-result-details">
+                <span class="search-result-admission">${s.admission_number}</span> •
+                ${s.grade}${s.stream ? ' ' + s.stream : ''}
+              </div>
+            </div>
+          `).join('');
+          studentSearchResults.classList.add('show');
+        }
+      }
+
+      filterGrade.addEventListener('change', applyFilters);
+      filterStream.addEventListener('change', applyFilters);
+
+      // Update student info card
+      function updateStudentInfo(student) {
+        const studentInfoCard = document.getElementById('studentInfo');
+        document.getElementById('infoStudentName').textContent = student.name;
+        document.getElementById('infoAdmissionNo').textContent = student.admission_number;
+        document.getElementById('infoGrade').textContent = student.grade;
+        document.getElementById('infoStream').textContent = student.stream ? ' - ' + student.stream : '';
+        studentInfoCard.style.display = 'block';
+
+        // Fetch balance
+        fetch(`/fees/api/student/${student.id}/balance`)
+          .then(res => res.json())
+          .then(data => console.log('Student balance:', data.total_balance))
+          .catch(err => console.error('Error fetching balance:', err));
+      }
+
       // Show student info when selected
-      document.getElementById("student_id").addEventListener("change", function () {
+      studentSelect.addEventListener("change", function () {
         const studentId = this.value;
         const selectedOption = this.options[this.selectedIndex];
         const studentInfoCard = document.getElementById('studentInfo');
-        
-        if (studentId) {
+
+        if (studentId && selectedOption) {
           // Show student info
           const studentName = selectedOption.getAttribute('data-name');
           const admissionNo = selectedOption.getAttribute('data-admission');
           const grade = selectedOption.getAttribute('data-grade');
           const stream = selectedOption.getAttribute('data-stream') || '';
-          
+
           document.getElementById('infoStudentName').textContent = studentName;
           document.getElementById('infoAdmissionNo').textContent = admissionNo;
           document.getElementById('infoGrade').textContent = grade;
-          document.getElementById('infoStream').textContent = stream;
+          document.getElementById('infoStream').textContent = stream ? ` - ${stream}` : '';
           studentInfoCard.style.display = 'block';
-          
+
           // Fetch balance
           fetch(`/fees/api/student/${studentId}/balance`)
             .then((res) => res.json())

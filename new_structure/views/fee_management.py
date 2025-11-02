@@ -611,30 +611,41 @@ def record_payment():
             flash(f'Error recording payment: {str(e)}', 'error')
     
     # GET request - show form
-    # Fetch ALL students with their grades and streams properly joined
+    # Fetch ALL students using the proper relationships (like manage_students does)
     from new_structure.models.academic import Grade, Stream
     
-    students_raw = Student.query\
-        .outerjoin(Grade, Student.grade_id == Grade.id)\
-        .outerjoin(Stream, Student.stream_id == Stream.id)\
-        .add_columns(
-            Grade.name.label('grade_name'),
-            Stream.name.label('stream_name')
-        )\
-        .order_by(Grade.name, Stream.name, Student.name)\
-        .all()
+    students_raw = Student.query.order_by(Student.name).all()
     
     payment_methods = PaymentMethod.query.filter_by(is_active=True).all()
     
     # Convert students to serializable format with proper grade and stream info
+    # Use the Student model's relationships to access grade and stream directly
     students = []
-    for s, grade_name, stream_name in students_raw:
+    for s in students_raw:
+        # Use the Student model's relationship properties directly
+        grade_name = 'No Grade'
+        stream_name = ''
+        
+        # Access through the relationship (Student.grade relationship)
+        if s.grade:
+            grade_name = s.grade.name
+        
+        # Access through backref from Stream (Student.stream relationship via Stream.students backref)
+        if s.stream_id:
+            stream = Stream.query.get(s.stream_id)
+            if stream:
+                stream_name = stream.name
+        
+        # Debug logging for first 3 students
+        if len(students) < 3:
+            print(f"DEBUG Student: {s.name} - grade_id={s.grade_id}, stream_id={s.stream_id}, grade={grade_name}, stream={stream_name}")
+        
         students.append({
             'id': s.id,
             'name': s.name,
             'admission_number': s.admission_number,
-            'grade': grade_name if grade_name else 'No Grade',
-            'stream': stream_name if stream_name else ''
+            'grade': grade_name,
+            'stream': stream_name
         })
     
     # Get current year for default selection
