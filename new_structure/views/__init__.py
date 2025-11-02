@@ -5,7 +5,14 @@ This file imports and exposes view blueprints for registration with the Flask ap
 from .auth import auth_bp
 from .api_teacher import api_teacher_bp
 from .teacher import teacher_bp
-from .classteacher import classteacher_bp
+# Import classteacher with error handling due to security_helpers dependency
+try:
+    from .classteacher import classteacher_bp
+    classteacher_available = True
+except ImportError as e:
+    print(f"⚠️ Classteacher blueprint not available: {e}")
+    classteacher_bp = None
+    classteacher_available = False
 from .admin import admin_bp
 from .bulk_assignments import bulk_assignments_bp
 from .setup import setup_bp
@@ -52,13 +59,17 @@ except ImportError:
 
 # List of all blueprints to register with the app
 blueprints = [
-    auth_bp, teacher_bp, classteacher_bp, admin_bp,
+    auth_bp, teacher_bp, admin_bp,
     bulk_assignments_bp, setup_bp, staff_bp,
     permission_bp, universal_bp, analytics_api_bp,
     school_setup_bp, subject_config_api, missing_routes_bp,
     mobile_performance_api,
     api_teacher_bp
 ]
+
+# Add classteacher blueprint if available
+if classteacher_available and classteacher_bp:
+    blueprints.append(classteacher_bp)
 
 # Add parent blueprint if available
 if parent_bp_available and parent_simple_bp:
