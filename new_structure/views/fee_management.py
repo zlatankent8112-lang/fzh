@@ -612,8 +612,7 @@ def record_payment():
     
     # GET request - show form
     # Fetch ALL students with their grades and streams properly joined
-    from new_structure.models.user import Grade
-    from new_structure.models.academic import Stream
+    from new_structure.models.academic import Grade, Stream
     
     students_raw = Student.query\
         .outerjoin(Grade, Student.grade_id == Grade.id)\
