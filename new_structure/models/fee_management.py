@@ -33,7 +33,10 @@ class FeeStructure(db.Model):
     # Fee Characteristics
     is_mandatory = db.Column(db.Boolean, default=True)  # Must be paid by all students
     is_boarding = db.Column(db.Boolean, default=False)  # Boarding school fee vs Day school
-    frequency = db.Column(db.String(20), default='termly')  # 'termly', 'annual', 'monthly'
+    frequency = db.Column(db.String(20), default='per_term')  # 'per_term', 'annual', 'one_time', 'monthly'
+    category = db.Column(db.String(50), nullable=True)  # 'tuition', 'meals', 'transport', 'remedial', 'admission', 'caution', 'admin', 'activities'
+    is_refundable = db.Column(db.Boolean, default=False)  # For caution fees, deposits, etc.
+    applies_to_grades = db.Column(db.Text, nullable=True)  # JSON array of grade IDs: "[1,2,3]" for conditional application
     
     # Payment Allocation Settings (HYBRID APPROACH)
     allocation_priority = db.Column(db.Integer, default=1)  # 1 = highest priority (paid first)

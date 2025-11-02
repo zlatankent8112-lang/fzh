@@ -246,6 +246,78 @@
                     <div class="form-text">Each educational level can have different fee structures</div>
                 </div>
 
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="category">📁 Category *</label>
+                            <select id="category" name="category" required>
+                                <option value="">Select Category...</option>
+                                <option value="tuition" {% if fee and fee.category == 'tuition' %}selected{% endif %}>
+                                    📚 Tuition - Core teaching fees
+                                </option>
+                                <option value="meals" {% if fee and fee.category == 'meals' %}selected{% endif %}>
+                                    🍽️ Meals - Lunch, Snacks, Feeding
+                                </option>
+                                <option value="transport" {% if fee and fee.category == 'transport' %}selected{% endif %}>
+                                    🚌 Transport - School bus/van
+                                </option>
+                                <option value="activities" {% if fee and fee.category == 'activities' %}selected{% endif %}>
+                                    ⚽ Activities - Sports, Music, Clubs
+                                </option>
+                                <option value="remedial" {% if fee and fee.category == 'remedial' %}selected{% endif %}>
+                                    📖 Remedial - Extra classes
+                                </option>
+                                <option value="admission" {% if fee and fee.category == 'admission' %}selected{% endif %}>
+                                    🎓 Admission - Registration, New students
+                                </option>
+                                <option value="caution" {% if fee and fee.category == 'caution' %}selected{% endif %}>
+                                    💰 Caution - Refundable deposits
+                                </option>
+                                <option value="admin" {% if fee and fee.category == 'admin' %}selected{% endif %}>
+                                    📝 Admin - Processing, Maintenance
+                                </option>
+                            </select>
+                            <div class="form-text">Organize fees by type</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="frequency">🔄 Payment Frequency *</label>
+                            <select id="frequency" name="frequency" required>
+                                <option value="per_term" {% if not fee or fee.frequency == 'per_term' %}selected{% endif %}>
+                                    📅 Per Term - Paid every term
+                                </option>
+                                <option value="annual" {% if fee and fee.frequency == 'annual' %}selected{% endif %}>
+                                    📆 Annual - Once per year
+                                </option>
+                                <option value="one_time" {% if fee and fee.frequency == 'one_time' %}selected{% endif %}>
+                                    🎯 One-Time - Admission/Registration only
+                                </option>
+                                <option value="monthly" {% if fee and fee.frequency == 'monthly' %}selected{% endif %}>
+                                    📊 Monthly - Paid every month
+                                </option>
+                            </select>
+                            <div class="form-text">How often is this fee charged?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="applies_to_grades">🎯 Specific Grades (Optional)</label>
+                    <input 
+                        type="text" 
+                        id="applies_to_grades" 
+                        name="applies_to_grades"
+                        value="{% if fee and fee.applies_to_grades %}{{ fee.applies_to_grades }}{% endif %}"
+                        placeholder="e.g., 1,2,3 for Grade 1-3 or 4,5,6,7,8,9 for Grade 4-9"
+                    />
+                    <div class="form-text">
+                        💡 <strong>Advanced:</strong> Enter grade numbers separated by commas to apply this fee only to those grades.
+                        Example: "1,2,3" for Snacks (Grade 1-3 only) or "4,5,6,7,8,9" for Feeding (Grade 4-9 only).
+                        Leave blank to use the educational level setting above.
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label style="margin-bottom: 15px;">Settings</label>
                     
@@ -277,6 +349,16 @@
                             {% if not fee or fee.is_active %}checked{% endif %}
                         />
                         <label for="is_active"><strong>Active</strong> - This fee is currently in use</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input 
+                            type="checkbox" 
+                            id="is_refundable" 
+                            name="is_refundable"
+                            {% if fee and fee.is_refundable %}checked{% endif %}
+                        />
+                        <label for="is_refundable"><strong>Refundable</strong> - This fee can be refunded (e.g., caution/deposit fees)</label>
                     </div>
                 </div>
 

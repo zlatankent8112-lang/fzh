@@ -251,7 +251,9 @@
             <tr>
               <th>Priority</th>
               <th>Fee Type</th>
+              <th>Category</th>
               <th>Amount</th>
+              <th>Frequency</th>
               <th>Educational Level</th>
               <th>Term/Year</th>
               <th>Grade</th>
@@ -273,8 +275,45 @@
                 {% if fee.description %}
                 <br /><small style="color: #666">{{ fee.description }}</small>
                 {% endif %}
+                {% if fee.is_refundable %}
+                <br /><span class="badge" style="background: #6c757d; font-size: 10px">💰 Refundable</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if fee.category == 'tuition' %}
+                <span class="badge" style="background: #007bff">📚 Tuition</span>
+                {% elif fee.category == 'meals' %}
+                <span class="badge" style="background: #28a745">🍽️ Meals</span>
+                {% elif fee.category == 'transport' %}
+                <span class="badge" style="background: #ffc107; color: #000">🚌 Transport</span>
+                {% elif fee.category == 'activities' %}
+                <span class="badge" style="background: #17a2b8">⚽ Activities</span>
+                {% elif fee.category == 'remedial' %}
+                <span class="badge" style="background: #6f42c1">📖 Remedial</span>
+                {% elif fee.category == 'admission' %}
+                <span class="badge" style="background: #e83e8c">🎓 Admission</span>
+                {% elif fee.category == 'caution' %}
+                <span class="badge" style="background: #6c757d">💰 Caution</span>
+                {% elif fee.category == 'admin' %}
+                <span class="badge" style="background: #343a40">📝 Admin</span>
+                {% else %}
+                <span style="color: #999">-</span>
+                {% endif %}
               </td>
               <td><strong>KES {{ "{:,.2f}".format(fee.amount) }}</strong></td>
+              <td>
+                {% if fee.frequency == 'per_term' %}
+                <span class="badge" style="background: #007bff">📅 Per Term</span>
+                {% elif fee.frequency == 'annual' %}
+                <span class="badge" style="background: #28a745">📆 Annual</span>
+                {% elif fee.frequency == 'one_time' %}
+                <span class="badge" style="background: #ffc107; color: #000">🎯 One-Time</span>
+                {% elif fee.frequency == 'monthly' %}
+                <span class="badge" style="background: #17a2b8">📊 Monthly</span>
+                {% else %}
+                <span style="color: #999">-</span>
+                {% endif %}
+              </td>
               <td>
                 {% if fee.education_level == 'pre_primary' %}
                 <span class="badge" style="background: #e83e8c">Pre-Primary</span>

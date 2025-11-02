@@ -91,6 +91,16 @@ def create_fee_structure():
     if request.method == 'POST':
         try:
             teacher_id = session.get('teacher_id')
+            # Parse applies_to_grades if provided
+            applies_to_grades = request.form.get('applies_to_grades', '').strip()
+            if applies_to_grades:
+                # Convert comma-separated string to JSON array
+                import json
+                grade_list = [int(g.strip()) for g in applies_to_grades.split(',') if g.strip().isdigit()]
+                applies_to_grades_json = json.dumps(grade_list) if grade_list else None
+            else:
+                applies_to_grades_json = None
+            
             fee = FeeStructure(
                 fee_type_name=request.form['fee_type_name'],
                 description=request.form.get('description'),
@@ -99,9 +109,13 @@ def create_fee_structure():
                 term=request.form.get('term') or None,
                 grade_id=request.form.get('grade_id') or None,
                 education_level=request.form.get('education_level'),
+                category=request.form.get('category'),
+                frequency=request.form.get('frequency', 'per_term'),
+                applies_to_grades=applies_to_grades_json,
                 allocation_priority=int(request.form.get('allocation_priority', 1)),
                 allow_partial_payment=request.form.get('allow_partial_payment') == 'on',
                 is_mandatory=request.form.get('is_mandatory') == 'on',
+                is_refundable=request.form.get('is_refundable') == 'on',
                 is_active=request.form.get('is_active') == 'on',
                 created_by=teacher_id
             )
@@ -125,6 +139,15 @@ def edit_fee_structure(fee_id):
     
     if request.method == 'POST':
         try:
+            # Parse applies_to_grades if provided
+            applies_to_grades = request.form.get('applies_to_grades', '').strip()
+            if applies_to_grades:
+                import json
+                grade_list = [int(g.strip()) for g in applies_to_grades.split(',') if g.strip().isdigit()]
+                fee.applies_to_grades = json.dumps(grade_list) if grade_list else None
+            else:
+                fee.applies_to_grades = None
+            
             fee.fee_type_name = request.form['fee_type_name']
             fee.description = request.form.get('description')
             fee.amount = Decimal(request.form['amount'])
@@ -132,9 +155,12 @@ def edit_fee_structure(fee_id):
             fee.term = request.form.get('term') or None
             fee.grade_id = request.form.get('grade_id') or None
             fee.education_level = request.form.get('education_level')
+            fee.category = request.form.get('category')
+            fee.frequency = request.form.get('frequency', 'per_term')
             fee.allocation_priority = int(request.form.get('allocation_priority', 1))
             fee.allow_partial_payment = request.form.get('allow_partial_payment') == 'on'
             fee.is_mandatory = request.form.get('is_mandatory') == 'on'
+            fee.is_refundable = request.form.get('is_refundable') == 'on'
             fee.is_active = request.form.get('is_active') == 'on'
             
             db.session.commit()
