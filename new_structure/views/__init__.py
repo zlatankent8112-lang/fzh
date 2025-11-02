@@ -53,7 +53,11 @@ email_config_bp_available = False
 try:
     from .fee_management import fee_bp
     fee_bp_available = True
-except ImportError:
+    print("✅ Fee management blueprint imported successfully")
+except ImportError as e:
+    print(f"❌ Failed to import fee management blueprint: {e}")
+    import traceback
+    traceback.print_exc()
     fee_bp = None
     fee_bp_available = False
 
@@ -86,3 +90,6 @@ if email_config_bp_available and email_config_bp:
 # Add fee management blueprint if available
 if fee_bp_available and fee_bp:
     blueprints.append(fee_bp)
+    print(f"✅ Fee blueprint added to registration list (URL prefix: {fee_bp.url_prefix})")
+else:
+    print("❌ Fee blueprint NOT added to registration list")
