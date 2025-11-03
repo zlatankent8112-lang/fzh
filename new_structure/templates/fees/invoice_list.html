@@ -489,11 +489,35 @@
             </form>
         </div>
 
+        <!-- Bulk Actions -->
+        {% if invoices %}
+        <div class="card" style="margin-bottom: 15px; padding: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" style="margin-right: 8px;">
+                    <label for="selectAll" style="font-weight: 600; cursor: pointer;">Select All</label>
+                    <span id="selectedCount" style="margin-left: 10px; color: #666;">(0 selected)</span>
+                </div>
+                <div id="bulkActions" style="display: none;">
+                    <button onclick="bulkSendInvoices('sms')" class="btn btn-success" style="margin-right: 8px;">
+                        📱 Send Selected via SMS
+                    </button>
+                    <button onclick="bulkSendInvoices('email')" class="btn" style="background: #17a2b8; color: white;">
+                        📧 Send Selected via Email
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Invoice Table -->
         <div class="card">
             <table>
                 <thead>
                     <tr>
+                        <th style="width: 40px;">
+                            <input type="checkbox" id="selectAllTable" onchange="toggleSelectAll()" style="cursor: pointer;">
+                        </th>
                         <th>Invoice #</th>
                         <th>Student</th>
                         <th>Grade</th>
@@ -507,7 +531,10 @@
                 </thead>
                 <tbody>
                     {% for invoice in invoices %}
-                    <tr>
+                    <tr id="invoice-row-{{ invoice.id }}">
+                        <td>
+                            <input type="checkbox" class="invoice-checkbox" value="{{ invoice.id }}" onchange="updateBulkActions()" style="cursor: pointer;">
+                        </td>
                         <td><strong>{{ invoice.invoice_number }}</strong></td>
                         <td>
                             {{ invoice.student.name }}<br>
@@ -551,7 +578,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
+                        <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
                             No invoices found. Click "Generate Invoices" to create new ones.
                         </td>
                     </tr>
@@ -563,7 +590,7 @@
     
     <script>
         // Invoice data for autocomplete
-        const invoices = {{ invoices|tojson }};
+        const invoices = {{ invoices_json|tojson }};
         
         // Autocomplete functionality
         const searchInput = document.getElementById('navSearch');
@@ -658,6 +685,93 @@
                 btn.innerHTML = originalText;
                 console.error('Error:', error);
                 alert(`❌ Error sending ${methodName}`);
+            });
+        }
+        
+        // Toggle select all checkboxes
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const selectAllTable = document.getElementById('selectAllTable');
+            const checkboxes = document.querySelectorAll('.invoice-checkbox');
+            
+            // Sync both checkboxes
+            selectAll.checked = selectAllTable.checked;
+            selectAllTable.checked = selectAll.checked;
+            
+            // Update all invoice checkboxes
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateBulkActions();
+        }
+        
+        // Update bulk actions visibility
+        function updateBulkActions() {
+            const checkboxes = document.querySelectorAll('.invoice-checkbox:checked');
+            const bulkActions = document.getElementById('bulkActions');
+            const countSpan = document.getElementById('selectedCount');
+            
+            if (checkboxes.length > 0) {
+                bulkActions.style.display = 'block';
+                countSpan.textContent = `(${checkboxes.length} selected)`;
+            } else {
+                bulkActions.style.display = 'none';
+                countSpan.textContent = '(0 selected)';
+            }
+        }
+        
+        // Bulk send invoices
+        function bulkSendInvoices(method) {
+            const checkboxes = document.querySelectorAll('.invoice-checkbox:checked');
+            const invoiceIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            if (invoiceIds.length === 0) {
+                alert('Please select invoices to send');
+                return;
+            }
+            
+            const methodName = method === 'sms' ? 'SMS' : 'Email';
+            
+            if (!confirm(`Send ${invoiceIds.length} invoice(s) via ${methodName}?`)) {
+                return;
+            }
+            
+            // Show loading indicator
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Sending...';
+            
+            fetch('/fees/invoices/bulk-send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    invoice_ids: invoiceIds,
+                    method: method 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                
+                if (data.success) {
+                    alert(`✅ ${data.message}\n\nSent: ${data.sent_count}\nFailed: ${data.failed_count}`);
+                    
+                    // Uncheck all checkboxes
+                    document.getElementById('selectAll').checked = false;
+                    document.getElementById('selectAllTable').checked = false;
+                    checkboxes.forEach(cb => cb.checked = false);
+                    updateBulkActions();
+                } else {
+                    alert(`❌ Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                console.error('Error:', error);
+                alert(`❌ Error sending invoices via ${methodName}`);
             });
         }
     </script>

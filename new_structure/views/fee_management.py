@@ -1112,8 +1112,21 @@ def invoice_list():
     if not academic_years_from_invoices:
         academic_years_from_invoices = db.session.query(FeeStructure.academic_year).distinct().all()
     
+    # Create JSON-serializable version for autocomplete
+    invoices_json = [{
+        'id': inv.id,
+        'invoice_number': inv.invoice_number,
+        'student': {
+            'name': inv.student.name if inv.student else 'N/A',
+            'admission_number': inv.student.admission_number if inv.student else 'N/A'
+        },
+        'total_amount': float(inv.total_amount),
+        'status': inv.status
+    } for inv in invoices]
+    
     return render_template('fees/invoice_list.html',
                          invoices=invoices,
+                         invoices_json=invoices_json,
                          grades=grades,
                          streams=streams,
                          terms=[t[0] for t in terms_from_invoices if t[0]],
@@ -1368,6 +1381,114 @@ Hillview School
         else:
             return jsonify({'success': False, 'message': 'Invalid method. Use "sms" or "email"'}), 400
     
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@fee_bp.route('/invoices/bulk-send', methods=['POST'])
+@fee_access_required
+def bulk_send_invoices():
+    """Send multiple invoices via SMS or Email"""
+    from new_structure.models.fee_management import FeeInvoice
+    from new_structure.models.parent import Parent, ParentStudent
+    
+    try:
+        data = request.get_json()
+        invoice_ids = data.get('invoice_ids', [])
+        method = data.get('method', 'email')  # 'sms' or 'email'
+        
+        if not invoice_ids:
+            return jsonify({'success': False, 'message': 'No invoices selected'}), 400
+        
+        sent_count = 0
+        failed_count = 0
+        failed_details = []
+        
+        for invoice_id in invoice_ids:
+            try:
+                invoice = FeeInvoice.query.get(invoice_id)
+                if not invoice:
+                    failed_count += 1
+                    failed_details.append(f"Invoice ID {invoice_id}: Not found")
+                    continue
+                
+                student = Student.query.get(invoice.student_id)
+                if not student:
+                    failed_count += 1
+                    failed_details.append(f"{invoice.invoice_number}: Student not found")
+                    continue
+                
+                # Get parent information
+                parent_student = ParentStudent.query.filter_by(student_id=student.id, relationship='parent').first()
+                if not parent_student:
+                    failed_count += 1
+                    failed_details.append(f"{invoice.invoice_number} ({student.name}): No parent linked")
+                    continue
+                
+                parent = Parent.query.get(parent_student.parent_id)
+                if not parent:
+                    failed_count += 1
+                    failed_details.append(f"{invoice.invoice_number} ({student.name}): Parent info not found")
+                    continue
+                
+                # Prepare invoice message
+                message = f"""
+Dear {parent.first_name} {parent.last_name},
+
+Fee Invoice for {student.name}
+Invoice No: {invoice.invoice_number}
+Term: {invoice.term} ({invoice.academic_year})
+Amount: KES {invoice.total_amount:,.2f}
+Due Date: {invoice.due_date.strftime('%d %b %Y') if invoice.due_date else 'N/A'}
+
+Please visit the school or parent portal to make payment.
+
+Hillview School
+                """.strip()
+                
+                if method == 'sms':
+                    # Check if parent has phone number
+                    if not parent.phone:
+                        failed_count += 1
+                        failed_details.append(f"{invoice.invoice_number} ({student.name}): No phone number")
+                        continue
+                    
+                    # TODO: Integrate with actual SMS API
+                    print(f"[BULK SMS] To: {parent.phone} | Invoice: {invoice.invoice_number}")
+                    print(f"[BULK SMS] Message: {message[:100]}...")
+                    sent_count += 1
+                    
+                elif method == 'email':
+                    # Check if parent has email
+                    if not parent.email:
+                        failed_count += 1
+                        failed_details.append(f"{invoice.invoice_number} ({student.name}): No email")
+                        continue
+                    
+                    # TODO: Integrate with actual Email service
+                    print(f"[BULK EMAIL] To: {parent.email} | Invoice: {invoice.invoice_number}")
+                    print(f"[BULK EMAIL] Subject: Fee Invoice #{invoice.invoice_number} - {student.name}")
+                    sent_count += 1
+                
+            except Exception as e:
+                failed_count += 1
+                failed_details.append(f"Invoice ID {invoice_id}: {str(e)}")
+        
+        # Prepare response message
+        message = f"Bulk send completed!"
+        if failed_count > 0:
+            message += f"\n\nFailed invoices:\n" + "\n".join(failed_details[:5])
+            if len(failed_details) > 5:
+                message += f"\n... and {len(failed_details) - 5} more"
+        
+        return jsonify({
+            'success': True,
+            'message': message,
+            'sent_count': sent_count,
+            'failed_count': failed_count,
+            'failed_details': failed_details
+        })
+        
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
