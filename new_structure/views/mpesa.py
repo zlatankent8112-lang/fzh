@@ -5,7 +5,8 @@ Handles M-PESA configuration, STK Push payments, and callbacks.
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from flask_login import login_required, current_user
 from new_structure.extensions import db
-from new_structure.models.fee_management import MpesaConfig, MpesaTransaction, Payment, Student
+from new_structure.models.fee_management import MpesaConfig, MpesaTransaction, Payment
+from new_structure.models.student_management import Student
 from new_structure.utils.mpesa_client import (
     MpesaClient, 
     process_mpesa_callback, 
