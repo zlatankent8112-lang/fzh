@@ -8626,3 +8626,12 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-11-03 14:02:39,795 - INFO - 52f0117760fe436a9cec2f902715f1cc - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
 2025-11-03 14:03:45,935 - INFO - 1fe3a5acb8b64e869f64fabbb3abf0a4 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
 2025-11-03 14:03:50,667 - WARNING - 658410ea1ad34aef97166e061ac5e659 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-03 14:17:35,837 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 14:17:38,258 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 14:18:55,106 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 14:18:57,334 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 14:19:12,946 - INFO - e32fb6eebf7043e186633313ded566b8 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 14:31:20,218 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 14:31:22,443 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 14:45:27,672 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 14:45:30,208 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized

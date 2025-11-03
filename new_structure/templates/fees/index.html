@@ -381,33 +381,166 @@
         </div>
       </div>
 
-      <!-- Recent Payments -->
+      <!-- Payments Section with Filters -->
       <div class="card">
-        <div class="card-header">Recent Payments</div>
-        <div class="card-body">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>💵 Payments ({{ recent_payments|length }})</span>
+          <div>
+            <button onclick="toggleFilters()" class="btn btn-secondary" style="padding: 8px 15px; font-size: 13px;">
+              🔍 Filters
+            </button>
+            <button onclick="bulkDeleteSelected()" id="bulkDeleteBtn" class="btn" style="background: #dc3545; padding: 8px 15px; font-size: 13px; display: none;">
+              🗑️ Delete Selected (<span id="selectedCount">0</span>)
+            </button>
+          </div>
+        </div>
+        
+        <!-- Filters Panel -->
+        <div id="filtersPanel" style="display: none; padding: 20px; background: #f8f9fa; border-bottom: 1px solid #ddd;">
+          <form method="GET" action="{{ url_for('fees.index') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">📅 Term</label>
+              <select name="term" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">All Terms</option>
+                <option value="Term 1" {% if term_filter == 'Term 1' %}selected{% endif %}>Term 1</option>
+                <option value="Term 2" {% if term_filter == 'Term 2' %}selected{% endif %}>Term 2</option>
+                <option value="Term 3" {% if term_filter == 'Term 3' %}selected{% endif %}>Term 3</option>
+              </select>
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">🎓 Grade</label>
+              <select name="grade" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">All Grades</option>
+                {% for grade in grades %}
+                <option value="{{ grade.id }}" {% if grade_filter|string == grade.id|string %}selected{% endif %}>{{ grade.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">👥 Stream</label>
+              <select name="stream" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">All Streams</option>
+                {% for stream in streams %}
+                <option value="{{ stream.id }}" {% if stream_filter|string == stream.id|string %}selected{% endif %}>{{ stream.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">💳 Method</label>
+              <select name="method" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">All Methods</option>
+                <option value="1" {% if method_filter == '1' %}selected{% endif %}>Cash</option>
+                <option value="2" {% if method_filter == '2' %}selected{% endif %}>M-PESA</option>
+                <option value="3" {% if method_filter == '3' %}selected{% endif %}>Bank Transfer</option>
+              </select>
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">📅 From Date</label>
+              <input type="date" name="date_from" value="{{ date_from }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">📅 To Date</label>
+              <input type="date" name="date_to" value="{{ date_to }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">📊 Show</label>
+              <select name="limit" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="20" {% if limit == 20 %}selected{% endif %}>20 payments</option>
+                <option value="50" {% if limit == 50 %}selected{% endif %}>50 payments</option>
+                <option value="100" {% if limit == 100 %}selected{% endif %}>100 payments</option>
+                <option value="200" {% if limit == 200 %}selected{% endif %}>200 payments</option>
+              </select>
+            </div>
+            
+            <div style="display: flex; gap: 10px; align-items: flex-end;">
+              <button type="submit" class="btn btn-primary" style="padding: 8px 20px;">Apply Filters</button>
+              <a href="{{ url_for('fees.index') }}" class="btn btn-secondary" style="padding: 8px 20px;">Clear</a>
+            </div>
+          </form>
+          
+          {% if term_filter or grade_filter or stream_filter or method_filter or date_from or date_to %}
+          <div style="margin-top: 15px; padding: 10px; background: #d1ecf1; border-radius: 4px; font-size: 13px;">
+            ℹ️ Showing {{ recent_payments|length }} filtered payments | Total: <strong>KES {{ "{:,.2f}".format(total_amount) }}</strong>
+          </div>
+          {% endif %}
+        </div>
+        
+        <div class="card-body" style="padding: 0; overflow-x: auto;">
           <table>
             <thead>
               <tr>
+                <th style="width: 40px;">
+                  <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="cursor: pointer;" />
+                </th>
                 <th>Date</th>
                 <th>Student</th>
+                <th>Grade/Stream</th>
+                <th>Term</th>
                 <th>Amount</th>
                 <th>Method</th>
                 <th>Reference</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {% for payment in recent_payments %}
-              <tr>
+              <tr id="payment-row-{{ payment.id }}">
+                <td>
+                  <input type="checkbox" class="payment-checkbox" value="{{ payment.id }}" onclick="updateBulkActions()" style="cursor: pointer;" />
+                </td>
                 <td>{{ payment.payment_date.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>{{ payment.student.name }}</td>
-                <td>KES {{ "{:,.2f}".format(payment.amount) }}</td>
-                <td>{{ payment.method.name if payment.method else 'N/A' }}</td>
+                <td>
+                  <strong>{{ payment.student.name }}</strong><br>
+                  <small style="color: #666;">{{ payment.student.admission_number }}</small>
+                </td>
+                <td>
+                  {% if payment.student.grade %}
+                    {{ payment.student.grade.name }}{% if payment.student.stream %} {{ payment.student.stream.name }}{% endif %}
+                  {% else %}
+                    <span style="color: #999;">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge" style="background: #17a2b8;">{{ payment.term or 'N/A' }}</span>
+                </td>
+                <td><strong>KES {{ "{:,.2f}".format(payment.amount) }}</strong></td>
+                <td>
+                  {% if payment.method %}
+                    {% if payment.method.name == 'Cash' %}
+                      <span class="badge" style="background: #28a745;">💵 Cash</span>
+                    {% elif payment.method.name == 'M-PESA' %}
+                      <span class="badge" style="background: #28a745;">📱 M-PESA</span>
+                    {% elif payment.method.name == 'Bank Transfer' %}
+                      <span class="badge" style="background: #007bff;">🏦 Bank</span>
+                    {% else %}
+                      {{ payment.method.name }}
+                    {% endif %}
+                  {% else %}
+                    <span style="color: #999;">N/A</span>
+                  {% endif %}
+                </td>
                 <td>{{ payment.reference or '-' }}</td>
+                <td style="white-space: nowrap;">
+                  <a href="{{ url_for('fees.edit_payment', payment_id=payment.id) }}" 
+                     class="btn" style="background: #ffc107; color: #000; padding: 5px 10px; font-size: 12px; margin-right: 5px;">
+                    ✏️ Edit
+                  </a>
+                  <button onclick="deletePayment({{ payment.id }})" 
+                          class="btn" style="background: #dc3545; padding: 5px 10px; font-size: 12px;">
+                    🗑️ Delete
+                  </button>
+                </td>
               </tr>
               {% else %}
               <tr>
-                <td colspan="5" class="text-center">
-                  No payments recorded yet
+                <td colspan="9" class="text-center">
+                  No payments found{% if term_filter or grade_filter or stream_filter or method_filter %} with current filters{% endif %}
                 </td>
               </tr>
               {% endfor %}
@@ -416,5 +549,103 @@
         </div>
       </div>
     </div>
+    
+    <script>
+      // Toggle filters panel
+      function toggleFilters() {
+        const panel = document.getElementById('filtersPanel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      }
+      
+      // Toggle select all checkboxes
+      function toggleSelectAll() {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.payment-checkbox');
+        checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        updateBulkActions();
+      }
+      
+      // Update bulk actions visibility
+      function updateBulkActions() {
+        const checkboxes = document.querySelectorAll('.payment-checkbox:checked');
+        const bulkBtn = document.getElementById('bulkDeleteBtn');
+        const countSpan = document.getElementById('selectedCount');
+        
+        if (checkboxes.length > 0) {
+          bulkBtn.style.display = 'inline-block';
+          countSpan.textContent = checkboxes.length;
+        } else {
+          bulkBtn.style.display = 'none';
+        }
+      }
+      
+      // Delete single payment
+      function deletePayment(paymentId) {
+        if (!confirm('Are you sure you want to delete this payment? This will reverse all allocations.')) {
+          return;
+        }
+        
+        fetch(`/fees/payment/${paymentId}/delete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById(`payment-row-${paymentId}`).remove();
+            alert('✅ Payment deleted successfully');
+          } else {
+            alert('❌ Error: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error deleting payment');
+        });
+      }
+      
+      // Bulk delete selected payments
+      function bulkDeleteSelected() {
+        const checkboxes = document.querySelectorAll('.payment-checkbox:checked');
+        const paymentIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        
+        if (paymentIds.length === 0) {
+          alert('Please select payments to delete');
+          return;
+        }
+        
+        if (!confirm(`Are you sure you want to delete ${paymentIds.length} payment(s)? This will reverse all allocations.`)) {
+          return;
+        }
+        
+        fetch('/fees/payments/bulk-delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ payment_ids: paymentIds })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            paymentIds.forEach(id => {
+              const row = document.getElementById(`payment-row-${id}`);
+              if (row) row.remove();
+            });
+            alert(`✅ Successfully deleted ${data.deleted_count} payment(s)`);
+            document.getElementById('selectAll').checked = false;
+            updateBulkActions();
+          } else {
+            alert('❌ Error: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error deleting payments');
+        });
+      }
+    </script>
   </body>
 </html>

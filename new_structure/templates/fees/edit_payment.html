@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Payment - Hillview School</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        .student-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .student-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('fees.index') }}" class="btn btn-secondary">← Back to Payments</a>
+        
+        <h1>✏️ Edit Payment</h1>
+        <p class="subtitle">Modify payment details for {{ student.name }}</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="student-info">
+            <h3>{{ student.name }}</h3>
+            <p style="margin: 5px 0; color: #666;">
+                <strong>Admission No:</strong> {{ student.admission_number }}<br>
+                {% if student.grade %}
+                <strong>Grade:</strong> {{ student.grade.name }}{% if student.stream %} {{ student.stream.name }}{% endif %}<br>
+                {% endif %}
+                <strong>Original Amount:</strong> KES {{ "{:,.2f}".format(payment.amount) }}
+            </p>
+        </div>
+        
+        <div class="alert alert-warning">
+            ⚠️ <strong>Note:</strong> Changing the payment amount will remove existing allocations and re-allocate automatically based on fee priorities.
+        </div>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label>💰 Amount (KES) *</label>
+                <input type="number" name="amount" step="0.01" min="0" value="{{ payment.amount }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label>💳 Payment Method *</label>
+                <select name="method_id" required>
+                    {% for method in payment_methods %}
+                    <option value="{{ method.id }}" {% if payment.method_id == method.id %}selected{% endif %}>
+                        {{ method.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>📝 Reference Number</label>
+                <input type="text" name="reference" value="{{ payment.reference or '' }}" placeholder="e.g., M-PESA code, cheque number">
+            </div>
+            
+            <div class="form-group">
+                <label>📅 Term</label>
+                <select name="term">
+                    <option value="Term 1" {% if payment.term == 'Term 1' %}selected{% endif %}>Term 1</option>
+                    <option value="Term 2" {% if payment.term == 'Term 2' %}selected{% endif %}>Term 2</option>
+                    <option value="Term 3" {% if payment.term == 'Term 3' %}selected{% endif %}>Term 3</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>📆 Academic Year</label>
+                <input type="text" name="academic_year" value="{{ payment.academic_year or '2025-2026' }}" placeholder="e.g., 2025-2026">
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                <a href="{{ url_for('fees.index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -39,21 +39,64 @@ def fee_access_required(f):
 @fee_bp.route('/')
 @fee_access_required
 def index():
-    """Dashboard showing fee management overview"""
+    """Dashboard showing fee management overview with filters"""
     total_fees = FeeStructure.query.filter_by(is_active=True).count()
     total_students = Student.query.count()
-    total_payments = Payment.query.count()
+    total_payments_count = Payment.query.count()
     total_invoices = FeeInvoice.query.count()
     
-    # Get recent payments
-    recent_payments = Payment.query.order_by(Payment.payment_date.desc()).limit(5).all()
+    # Get filters from query parameters
+    term_filter = request.args.get('term', '')
+    grade_filter = request.args.get('grade', '')
+    stream_filter = request.args.get('stream', '')
+    method_filter = request.args.get('method', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
+    limit = int(request.args.get('limit', 20))
+    
+    # Build query for payments
+    query = Payment.query.join(Student)
+    
+    if term_filter:
+        query = query.filter(Payment.term == term_filter)
+    if grade_filter:
+        query = query.join(Student.grade).filter(Grade.id == int(grade_filter))
+    if stream_filter:
+        query = query.join(Student.stream).filter(Stream.id == int(stream_filter))
+    if method_filter:
+        query = query.filter(Payment.method == method_filter)
+    if date_from:
+        from datetime import datetime
+        query = query.filter(Payment.payment_date >= datetime.strptime(date_from, '%Y-%m-%d'))
+    if date_to:
+        from datetime import datetime
+        query = query.filter(Payment.payment_date <= datetime.strptime(date_to, '%Y-%m-%d'))
+    
+    payments = query.order_by(Payment.payment_date.desc()).limit(limit).all()
+    
+    # Get filter options
+    grades = Grade.query.order_by(Grade.name).all()
+    streams = Stream.query.order_by(Stream.name).all()
+    
+    # Calculate total amount from filtered payments
+    total_amount = sum(p.amount for p in payments)
     
     return render_template('fees/index.html',
                          total_fees=total_fees,
                          total_students=total_students,
-                         total_payments=total_payments,
+                         total_payments=total_payments_count,
                          total_invoices=total_invoices,
-                         recent_payments=recent_payments)
+                         recent_payments=payments,
+                         grades=grades,
+                         streams=streams,
+                         term_filter=term_filter,
+                         grade_filter=grade_filter,
+                         stream_filter=stream_filter,
+                         method_filter=method_filter,
+                         date_from=date_from,
+                         date_to=date_to,
+                         limit=limit,
+                         total_amount=total_amount)
 
 
 @fee_bp.route('/structures')
@@ -1397,3 +1440,129 @@ def allocate_payment_manual(payment_id):
                          accounts=accounts,
                          payment_method=payment_method,
                          remaining_amount=remaining_amount)
+
+
+@fee_bp.route('/payment/<int:payment_id>/edit', methods=['GET', 'POST'])
+@fee_access_required
+def edit_payment(payment_id):
+    """Edit an existing payment"""
+    payment = Payment.query.get_or_404(payment_id)
+    student = Student.query.get(payment.student_id)
+    
+    if request.method == 'POST':
+        try:
+            # Get old amount before updating
+            old_amount = payment.amount
+            new_amount = Decimal(request.form['amount'])
+            amount_difference = new_amount - old_amount
+            
+            # Update payment details
+            payment.amount = new_amount
+            payment.method_id = int(request.form['method_id'])
+            payment.reference = request.form.get('reference', '')
+            payment.term = request.form.get('term', payment.term)
+            payment.academic_year = request.form.get('academic_year', payment.academic_year)
+            
+            # If amount changed, need to re-allocate
+            if amount_difference != 0:
+                # Remove existing allocations
+                for allocation in payment.allocations:
+                    account = allocation.fee_account
+                    account.amount_paid -= allocation.amount_allocated
+                    account.balance += allocation.amount_allocated
+                    account.status = 'unpaid' if account.amount_paid == 0 else 'partial'
+                    db.session.delete(allocation)
+                
+                # Auto-allocate new amount
+                from new_structure.models.fee_management import allocate_payment_auto
+                allocate_payment_auto(payment.id)
+            
+            db.session.commit()
+            flash(f'✅ Payment updated successfully', 'success')
+            return redirect(url_for('fees.index'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating payment: {str(e)}', 'danger')
+    
+    # GET request
+    payment_methods = PaymentMethod.query.all()
+    return render_template('fees/edit_payment.html',
+                         payment=payment,
+                         student=student,
+                         payment_methods=payment_methods)
+
+
+@fee_bp.route('/payment/<int:payment_id>/delete', methods=['POST'])
+@fee_access_required
+def delete_payment(payment_id):
+    """Delete a payment and reverse its allocations"""
+    try:
+        payment = Payment.query.get_or_404(payment_id)
+        student_name = payment.student.name if payment.student else 'Unknown'
+        
+        # Reverse all allocations
+        for allocation in payment.allocations:
+            account = allocation.fee_account
+            account.amount_paid -= allocation.amount_allocated
+            account.balance += allocation.amount_allocated
+            account.status = 'unpaid' if account.amount_paid == 0 else 'partial'
+            db.session.delete(allocation)
+        
+        # Delete associated receipt if exists
+        if payment.receipt:
+            db.session.delete(payment.receipt)
+        
+        # Delete payment
+        db.session.delete(payment)
+        db.session.commit()
+        
+        flash(f'✅ Payment for {student_name} deleted successfully', 'success')
+        return jsonify({'success': True, 'message': 'Payment deleted'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@fee_bp.route('/payments/bulk-delete', methods=['POST'])
+@fee_access_required
+def bulk_delete_payments():
+    """Delete multiple payments at once"""
+    try:
+        data = request.get_json()
+        payment_ids = data.get('payment_ids', [])
+        
+        if not payment_ids:
+            return jsonify({'success': False, 'message': 'No payments selected'}), 400
+        
+        deleted_count = 0
+        for payment_id in payment_ids:
+            payment = Payment.query.get(payment_id)
+            if payment:
+                # Reverse allocations
+                for allocation in payment.allocations:
+                    account = allocation.fee_account
+                    account.amount_paid -= allocation.amount_allocated
+                    account.balance += allocation.amount_allocated
+                    account.status = 'unpaid' if account.amount_paid == 0 else 'partial'
+                    db.session.delete(allocation)
+                
+                # Delete receipt
+                if payment.receipt:
+                    db.session.delete(payment.receipt)
+                
+                # Delete payment
+                db.session.delete(payment)
+                deleted_count += 1
+        
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': f'Successfully deleted {deleted_count} payment(s)',
+            'deleted_count': deleted_count
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
