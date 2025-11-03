@@ -1,203 +1,230 @@
-{% extends "base.html" %}
-
-{% block title %}Transaction Details - M-PESA{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Transaction Details - M-PESA{%
+endblock %} {% block content %}
 <div class="container-fluid mt-4">
-    <!-- Back Button -->
-    <div class="mb-3">
-        <a href="{{ url_for('mpesa.transactions') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Transactions
-        </a>
+  <!-- Back Button -->
+  <div class="mb-3">
+    <a href="{{ url_for('mpesa.transactions') }}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left me-2"></i>Back to Transactions
+    </a>
+  </div>
+
+  <div class="row">
+    <!-- Transaction Details -->
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-receipt me-2"></i>Transaction Details
+          </h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered">
+            <tr>
+              <th width="30%">Transaction ID</th>
+              <td><code>{{ transaction.id }}</code></td>
+            </tr>
+            <tr>
+              <th>Checkout Request ID</th>
+              <td>
+                {% if transaction.checkout_request_id %}
+                <code>{{ transaction.checkout_request_id }}</code>
+                {% else %}
+                <span class="text-muted">Not available</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>Status</th>
+              <td>
+                {% if transaction.status == 'success' %}
+                <span class="badge bg-success fs-6">
+                  <i class="fas fa-check-circle me-1"></i>Success
+                </span>
+                {% elif transaction.status == 'pending' %}
+                <span class="badge bg-warning fs-6">
+                  <i class="fas fa-clock me-1"></i>Pending
+                </span>
+                {% elif transaction.status == 'failed' %}
+                <span class="badge bg-danger fs-6">
+                  <i class="fas fa-times-circle me-1"></i>Failed
+                </span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>Phone Number</th>
+              <td><strong>{{ transaction.phone_number }}</strong></td>
+            </tr>
+            <tr>
+              <th>Amount</th>
+              <td>
+                <strong class="text-success fs-5"
+                  >KES {{ "{:,.2f}".format(transaction.amount) }}</strong
+                >
+              </td>
+            </tr>
+            <tr>
+              <th>M-PESA Receipt</th>
+              <td>
+                {% if transaction.mpesa_receipt_number %}
+                <code class="fs-5">{{ transaction.mpesa_receipt_number }}</code>
+                {% else %}
+                <span class="text-muted">Not available</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>Transaction Date</th>
+              <td>
+                {% if transaction.transaction_date %} {{
+                transaction.transaction_date.strftime('%Y-%m-%d %H:%M:%S') }} {%
+                else %}
+                <span class="text-muted">Not available</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>Created At</th>
+              <td>
+                {{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') if
+                transaction.created_at else 'N/A' }}
+              </td>
+            </tr>
+            <tr>
+              <th>Account Reference</th>
+              <td>{{ transaction.account_reference or 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Description</th>
+              <td>{{ transaction.transaction_desc or 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Result Code</th>
+              <td>
+                {% if transaction.result_code %}
+                <code>{{ transaction.result_code }}</code>
+                {% else %}
+                <span class="text-muted">Not available</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>Result Description</th>
+              <td>{{ transaction.result_desc or 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Callback Received</th>
+              <td>
+                {% if transaction.callback_received %}
+                <span class="badge bg-success"
+                  ><i class="fas fa-check me-1"></i>Yes</span
+                >
+                {% else %}
+                <span class="badge bg-warning"
+                  ><i class="fas fa-times me-1"></i>No</span
+                >
+                {% endif %}
+              </td>
+            </tr>
+          </table>
+
+          <!-- Linked Student -->
+          {% if transaction.student %}
+          <div class="alert alert-info mt-3">
+            <h6 class="alert-heading">
+              <i class="fas fa-user-graduate me-2"></i>Linked Student
+            </h6>
+            <p class="mb-0">
+              <strong>{{ transaction.student.full_name }}</strong><br />
+              <small
+                >Admission Number: {{ transaction.student.admission_number or
+                'N/A' }}</small
+              >
+            </p>
+          </div>
+          {% endif %}
+
+          <!-- Linked Payment -->
+          {% if transaction.payment %}
+          <div class="alert alert-success mt-3">
+            <h6 class="alert-heading">
+              <i class="fas fa-check-circle me-2"></i>Payment Recorded
+            </h6>
+            <p class="mb-0">
+              This transaction has been reconciled with Payment #{{
+              transaction.payment_id }}
+            </p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
 
-    <div class="row">
-        <!-- Transaction Details -->
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Transaction Details</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <tr>
-                            <th width="30%">Transaction ID</th>
-                            <td><code>{{ transaction.id }}</code></td>
-                        </tr>
-                        <tr>
-                            <th>Checkout Request ID</th>
-                            <td>
-                                {% if transaction.checkout_request_id %}
-                                    <code>{{ transaction.checkout_request_id }}</code>
-                                {% else %}
-                                    <span class="text-muted">Not available</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td>
-                                {% if transaction.status == 'success' %}
-                                    <span class="badge bg-success fs-6">
-                                        <i class="fas fa-check-circle me-1"></i>Success
-                                    </span>
-                                {% elif transaction.status == 'pending' %}
-                                    <span class="badge bg-warning fs-6">
-                                        <i class="fas fa-clock me-1"></i>Pending
-                                    </span>
-                                {% elif transaction.status == 'failed' %}
-                                    <span class="badge bg-danger fs-6">
-                                        <i class="fas fa-times-circle me-1"></i>Failed
-                                    </span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Phone Number</th>
-                            <td><strong>{{ transaction.phone_number }}</strong></td>
-                        </tr>
-                        <tr>
-                            <th>Amount</th>
-                            <td><strong class="text-success fs-5">KES {{ "{:,.2f}".format(transaction.amount) }}</strong></td>
-                        </tr>
-                        <tr>
-                            <th>M-PESA Receipt</th>
-                            <td>
-                                {% if transaction.mpesa_receipt_number %}
-                                    <code class="fs-5">{{ transaction.mpesa_receipt_number }}</code>
-                                {% else %}
-                                    <span class="text-muted">Not available</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Transaction Date</th>
-                            <td>
-                                {% if transaction.transaction_date %}
-                                    {{ transaction.transaction_date.strftime('%Y-%m-%d %H:%M:%S') }}
-                                {% else %}
-                                    <span class="text-muted">Not available</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Created At</th>
-                            <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.created_at else 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Account Reference</th>
-                            <td>{{ transaction.account_reference or 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Description</th>
-                            <td>{{ transaction.transaction_desc or 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Result Code</th>
-                            <td>
-                                {% if transaction.result_code %}
-                                    <code>{{ transaction.result_code }}</code>
-                                {% else %}
-                                    <span class="text-muted">Not available</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Result Description</th>
-                            <td>{{ transaction.result_desc or 'N/A' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Callback Received</th>
-                            <td>
-                                {% if transaction.callback_received %}
-                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Yes</span>
-                                {% else %}
-                                    <span class="badge bg-warning"><i class="fas fa-times me-1"></i>No</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    </table>
-
-                    <!-- Linked Student -->
-                    {% if transaction.student %}
-                    <div class="alert alert-info mt-3">
-                        <h6 class="alert-heading"><i class="fas fa-user-graduate me-2"></i>Linked Student</h6>
-                        <p class="mb-0">
-                            <strong>{{ transaction.student.full_name }}</strong><br>
-                            <small>Admission Number: {{ transaction.student.admission_number or 'N/A' }}</small>
-                        </p>
-                    </div>
-                    {% endif %}
-
-                    <!-- Linked Payment -->
-                    {% if transaction.payment %}
-                    <div class="alert alert-success mt-3">
-                        <h6 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Payment Recorded</h6>
-                        <p class="mb-0">
-                            This transaction has been reconciled with Payment #{{ transaction.payment_id }}
-                        </p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+    <!-- Callback Data -->
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header bg-dark text-white">
+          <h6 class="mb-0"><i class="fas fa-code me-2"></i>Callback Data</h6>
         </div>
-
-        <!-- Callback Data -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <h6 class="mb-0"><i class="fas fa-code me-2"></i>Callback Data</h6>
-                </div>
-                <div class="card-body">
-                    {% if callback_data %}
-                    <pre class="bg-light p-3" style="max-height: 500px; overflow-y: auto; font-size: 0.8rem;">{{ callback_data | tojson(indent=2) }}</pre>
-                    {% else %}
-                    <p class="text-muted">No callback data received yet</p>
-                    {% endif %}
-
-                    {% if transaction.status == 'pending' %}
-                    <button class="btn btn-warning btn-sm w-100 mt-3" onclick="checkStatus()">
-                        <i class="fas fa-sync me-2"></i>Check Status Now
-                    </button>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="card-body">
+          {% if callback_data %}
+          <pre
+            class="bg-light p-3"
+            style="max-height: 500px; overflow-y: auto; font-size: 0.8rem"
+          >
+{{ callback_data | tojson(indent=2) }}</pre
+          >
+          {% else %}
+          <p class="text-muted">No callback data received yet</p>
+          {% endif %} {% if transaction.status == 'pending' %}
+          <button
+            class="btn btn-warning btn-sm w-100 mt-3"
+            onclick="checkStatus()"
+          >
+            <i class="fas fa-sync me-2"></i>Check Status Now
+          </button>
+          {% endif %}
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-function checkStatus() {
-    if (!confirm('Query M-PESA for the current status of this transaction?')) {
-        return;
+  function checkStatus() {
+    if (!confirm("Query M-PESA for the current status of this transaction?")) {
+      return;
     }
 
     const btn = event.target;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking...';
 
-    fetch('{{ url_for("mpesa.check_transaction_status", transaction_id=transaction.id) }}', {
-        method: 'POST',
+    fetch(
+      '{{ url_for("mpesa.check_transaction_status", transaction_id=transaction.id) }}',
+      {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
         if (data.success) {
-            alert('✅ ' + data.message);
-            location.reload();
+          alert("✅ " + data.message);
+          location.reload();
         } else {
-            alert('❌ ' + data.message);
+          alert("❌ " + data.message);
         }
-    })
-    .catch(error => {
-        alert('Error: ' + error);
-    })
-    .finally(() => {
+      })
+      .catch((error) => {
+        alert("Error: " + error);
+      })
+      .finally(() => {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-sync me-2"></i>Check Status Now';
-    });
-}
+      });
+  }
 </script>
 {% endblock %}
