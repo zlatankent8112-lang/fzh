@@ -502,24 +502,6 @@
               Clear All Filters
             </a>
           </div>
-          
-          <!-- Quick Action: Duplicate to All Terms -->
-          <div style="padding: 15px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #17a2b8;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <strong style="color: #333;">🔄 Quick Action:</strong>
-                <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">
-                  Duplicate all "All Terms" fees for {{ current_level|replace('_', ' ')|title }} into separate Term 1, Term 2, and Term 3 fee structures
-                </p>
-              </div>
-              <button 
-                onclick="duplicateFeesToAllTerms('{{ current_level }}')" 
-                class="btn btn-primary"
-                style="white-space: nowrap; background: #17a2b8; border: none;">
-                📋 Duplicate to All Terms
-              </button>
-            </div>
-          </div>
           {% endif %}
         </form>
       </div>
@@ -856,45 +838,6 @@
       }
 
       // Duplicate fees to all terms
-      function duplicateFeesToAllTerms(educationLevel) {
-        if (!confirm(`This will duplicate all "All Terms" fees for ${educationLevel.replace('_', ' ')} into separate Term 1, Term 2, and Term 3 fee structures.\n\nAre you sure you want to continue?`)) {
-          return;
-        }
-
-        // Show loading state
-        const button = event.target;
-        const originalText = button.innerHTML;
-        button.innerHTML = '⏳ Duplicating...';
-        button.disabled = true;
-
-        // Send request to backend
-        fetch('{{ url_for("fees.duplicate_fees_to_all_terms") }}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token() }}'
-          },
-          body: JSON.stringify({ education_level: educationLevel })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert(`✅ Success!\n\n${data.message}\n\nCreated: ${data.created_count} fee structures\nDeactivated: ${data.deactivated_count} "All Terms" fees`);
-            window.location.reload();
-          } else {
-            alert(`❌ Error:\n\n${data.message}`);
-            button.innerHTML = originalText;
-            button.disabled = false;
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Error duplicating fees. Please try again.');
-          button.innerHTML = originalText;
-          button.disabled = false;
-        });
-      }
-
       // Auto-hide flash messages after 5 seconds
       setTimeout(() => {
         const alerts = document.querySelectorAll('.alert-success, .alert-info');

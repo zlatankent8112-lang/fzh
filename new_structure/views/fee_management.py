@@ -194,6 +194,10 @@ def bulk_create_fee_structure():
             grade_id = request.form.get('grade_id') or None
             applies_to_grades_str = request.form.get('applies_to_grades', '').strip()
             
+            # Check if "Create for all terms" checkbox is checked
+            create_for_all_terms = request.form.get('create_for_all_terms') == 'true'
+            terms_to_create = ['Term 1', 'Term 2', 'Term 3'] if create_for_all_terms else [term]
+            
             # Parse applies_to_grades if provided
             applies_to_grades_json = None
             if applies_to_grades_str:
@@ -229,49 +233,66 @@ def bulk_create_fee_structure():
             for index, fee_info in fee_data.items():
                 if 'name' in fee_info and 'amount' in fee_info:
                     # Use individual fee settings or fall back to common settings
-                    fee_term = fee_info.get('term') if fee_info.get('term') else term
+                    # If individual fee has specific term, use that (override "create for all terms")
+                    has_specific_term = fee_info.get('term') and fee_info.get('term').strip()
+                    
+                    if has_specific_term:
+                        # This fee has a specific term override, create only for that term
+                        terms_for_this_fee = [fee_info.get('term')]
+                    else:
+                        # Use the common term settings (either single term or all 3 terms)
+                        terms_for_this_fee = terms_to_create
+                    
                     fee_frequency = fee_info.get('frequency') if fee_info.get('frequency') else frequency
-                    
-                    # Check for duplicates
                     fee_name = fee_info['name'].strip()
-                    existing = FeeStructure.query.filter_by(
-                        fee_type_name=fee_name,
-                        academic_year=academic_year,
-                        term=fee_term,
-                        education_level=education_level,
-                        frequency=fee_frequency,
-                        grade_id=grade_id
-                    ).first()
                     
-                    if existing:
-                        duplicates_found.append(fee_name)
-                        continue  # Skip this duplicate
-                    
-                    # If optional is checked, it's not mandatory
-                    is_optional = fee_info.get('optional', False)
-                    is_mandatory = fee_info.get('mandatory', True) and not is_optional
-                    
-                    fee = FeeStructure(
-                        fee_type_name=fee_info['name'],
-                        description=fee_info.get('description'),
-                        amount=Decimal(fee_info['amount']),
-                        academic_year=academic_year,
-                        term=fee_term,  # Use individual or common
-                        grade_id=grade_id,
-                        education_level=education_level,
-                        category=fee_info.get('category', 'tuition'),
-                        frequency=fee_frequency,  # Use individual or common
-                        applies_to_grades=applies_to_grades_json,
-                        allocation_priority=int(fee_info.get('priority', index)),
-                        allow_partial_payment=True,  # Default to true
-                        is_mandatory=is_mandatory,  # False if optional
-                        is_refundable=fee_info.get('refundable', False),
-                        is_active=True,
-                        created_by=teacher_id
-                    )
-                    db.session.add(fee)
-                    fees_created += 1
-                    fee_names.append(fee_info['name'])
+                    # Create fee for each term
+                    for fee_term in terms_for_this_fee:
+                        # Check for duplicates
+                        existing = FeeStructure.query.filter_by(
+                            fee_type_name=fee_name,
+                            academic_year=academic_year,
+                            term=fee_term,
+                            education_level=education_level,
+                            frequency=fee_frequency,
+                            grade_id=grade_id
+                        ).first()
+                        
+                        if existing:
+                            dup_name = f"{fee_name} ({fee_term})" if create_for_all_terms else fee_name
+                            duplicates_found.append(dup_name)
+                            continue  # Skip this duplicate
+                        
+                        # If optional is checked, it's not mandatory
+                        is_optional = fee_info.get('optional', False)
+                        is_mandatory = fee_info.get('mandatory', True) and not is_optional
+                        
+                        fee = FeeStructure(
+                            fee_type_name=fee_info['name'],
+                            description=fee_info.get('description'),
+                            amount=Decimal(fee_info['amount']),
+                            academic_year=academic_year,
+                            term=fee_term,
+                            grade_id=grade_id,
+                            education_level=education_level,
+                            category=fee_info.get('category', 'tuition'),
+                            frequency=fee_frequency,
+                            applies_to_grades=applies_to_grades_json,
+                            allocation_priority=int(fee_info.get('priority', index)),
+                            allow_partial_payment=True,  # Default to true
+                            is_mandatory=is_mandatory,  # False if optional
+                            is_refundable=fee_info.get('refundable', False),
+                            is_active=True,
+                            created_by=teacher_id
+                        )
+                        db.session.add(fee)
+                        fees_created += 1
+                        
+                        # Add to fee_names (show term if creating for all terms)
+                        if create_for_all_terms and not has_specific_term:
+                            fee_names.append(f"{fee_info['name']} ({fee_term})")
+                        else:
+                            fee_names.append(fee_info['name'])
             
             db.session.commit()
             
@@ -427,81 +448,6 @@ def bulk_delete_fee_structures():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
-
-
-@fee_bp.route('/structures/duplicate-to-all-terms', methods=['POST'])
-@fee_access_required
-def duplicate_fees_to_all_terms():
-    """Duplicate all 'All Terms' fees for an education level into separate Term 1, 2, 3 structures"""
-    try:
-        data = request.get_json()
-        education_level = data.get('education_level')
-        
-        if not education_level:
-            return jsonify({'success': False, 'message': 'No education level specified'}), 400
-        
-        # Get all "All Terms" fees for this education level
-        base_fees = FeeStructure.query.filter_by(
-            education_level=education_level,
-            is_active=True
-        ).filter(
-            (FeeStructure.term == None) | (FeeStructure.term == 'All Terms')
-        ).all()
-        
-        if not base_fees:
-            return jsonify({
-                'success': False, 
-                'message': f'No "All Terms" fees found for {education_level.replace("_", " ").title()}'
-            }), 404
-        
-        # Deactivate old "All Terms" fees
-        deactivated_count = 0
-        for fee in base_fees:
-            fee.is_active = False
-            deactivated_count += 1
-        
-        # Create new term-specific fees
-        terms = ['Term 1', 'Term 2', 'Term 3']
-        created_count = 0
-        
-        for term in terms:
-            for base_fee in base_fees:
-                new_fee = FeeStructure(
-                    fee_type_name=base_fee.fee_type_name,
-                    description=base_fee.description,
-                    amount=base_fee.amount,
-                    academic_year=base_fee.academic_year,
-                    term=term,
-                    education_level=base_fee.education_level,
-                    is_mandatory=base_fee.is_mandatory,
-                    is_boarding=base_fee.is_boarding,
-                    frequency=base_fee.frequency,
-                    category=base_fee.category,
-                    is_refundable=base_fee.is_refundable,
-                    allocation_priority=base_fee.allocation_priority,
-                    allow_partial_payment=base_fee.allow_partial_payment,
-                    is_active=True,
-                    created_by=session.get('teacher_id')
-                )
-                db.session.add(new_fee)
-                created_count += 1
-        
-        db.session.commit()
-        
-        level_name = education_level.replace('_', ' ').title()
-        return jsonify({
-            'success': True,
-            'message': f'Successfully created term-specific fees for {level_name}',
-            'created_count': created_count,
-            'deactivated_count': deactivated_count,
-            'terms': terms
-        })
-        
-    except Exception as e:
-        db.session.rollback()
-        import traceback
-        traceback.print_exc()
-        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 
 @fee_bp.route('/student/<int:student_id>')

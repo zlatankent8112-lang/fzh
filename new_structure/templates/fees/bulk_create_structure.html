@@ -203,12 +203,21 @@
             <div class="col-4">
               <div class="form-group">
                 <label for="term">Term</label>
-                <select id="term" name="term">
+                <select id="term" name="term" id="termSelect">
                   <option value="">All Terms</option>
                   <option value="Term 1">Term 1</option>
                   <option value="Term 2">Term 2</option>
                   <option value="Term 3">Term 3</option>
                 </select>
+                <div style="margin-top: 10px; padding: 10px; background: #e7f3ff; border-radius: 4px; border-left: 3px solid #007bff;">
+                  <label style="display: flex; align-items: center; margin: 0; cursor: pointer; font-weight: normal;">
+                    <input type="checkbox" id="create_for_all_terms" name="create_for_all_terms" value="true" onchange="toggleTermDuplication()" style="margin-right: 8px; width: auto;">
+                    <span style="font-size: 13px;">
+                      <strong>🔄 Create for all terms</strong><br>
+                      <small style="color: #666;">Automatically creates fees for Term 1, 2, and 3</small>
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
             <div class="col-4">
@@ -314,6 +323,21 @@
         addFeeRow();
         addFeeRow(); // Start with 3 rows
       });
+
+      // Toggle term dropdown when "Create for all terms" is checked
+      function toggleTermDuplication() {
+        const checkbox = document.getElementById('create_for_all_terms');
+        const termSelect = document.getElementById('termSelect');
+        
+        if (checkbox.checked) {
+          termSelect.disabled = true;
+          termSelect.value = '';
+          termSelect.style.opacity = '0.5';
+        } else {
+          termSelect.disabled = false;
+          termSelect.style.opacity = '1';
+        }
+      }
 
       function addFeeRow() {
         feeCounter++;

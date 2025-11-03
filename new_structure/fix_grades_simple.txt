@@ -1,0 +1,30 @@
+"""
+Quick fix script - run with: flask shell < fix_grades.py
+"""
+from new_structure.models.academic import Student, Stream, Grade
+from new_structure.extensions import db
+
+# Find students with stream but no grade
+students = Student.query.filter(
+    Student.stream_id.isnot(None),
+    Student.grade_id.is_(None)
+).all()
+
+print(f"Found {len(students)} students with stream but no grade")
+
+if students:
+    for student in students[:5]:
+        stream = Stream.query.get(student.stream_id)
+        if stream:
+            print(f"{student.name} - Stream: {stream.name} (grade_id will be set to {stream.grade_id})")
+    
+    # Fix all at once
+    for student in students:
+        stream = Stream.query.get(student.stream_id)
+        if stream and stream.grade_id:
+            student.grade_id = stream.grade_id
+    
+    db.session.commit()
+    print(f"✅ Updated {len(students)} students!")
+else:
+    print("All students OK!")
