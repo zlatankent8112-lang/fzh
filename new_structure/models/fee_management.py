@@ -508,26 +508,6 @@ class Receipt(db.Model):
     issuer = db.relationship('Teacher', backref='issued_receipts', lazy=True)
 
 
-class MpesaTransaction(db.Model):
-    """M-PESA transaction log (manual/automated import)."""
-    __tablename__ = 'mpesa_transaction'
-
-    id = db.Column(db.Integer, primary_key=True)
-    transaction_id = db.Column(db.String(50), unique=True, nullable=False)  # e.g., LNB7QW123
-    phone_number = db.Column(db.String(20), nullable=True)
-    amount = db.Column(db.Numeric(10, 2), nullable=False)
-    trans_time = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='received')  # received, matched, applied, failed
-    result_code = db.Column(db.String(10), nullable=True)
-    raw_payload = db.Column(db.Text, nullable=True)
-    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=True)
-
-    payment = db.relationship('Payment', backref='mpesa_transactions', lazy=True)
-
-
-
-
-
 class FeeWaiver(db.Model):
     """Scholarships/discounts record applied to a specific StudentFeeAccount."""
     __tablename__ = 'fee_waiver'
@@ -580,26 +560,6 @@ class Receipt(db.Model):
 
     def __repr__(self):
         return f'<Receipt {self.receipt_number} payment={self.payment_id}>'
-
-
-class MpesaTransaction(db.Model):
-    """M-PESA transactions captured for later reconciliation to Payments."""
-    __tablename__ = 'mpesa_transaction'
-
-    id = db.Column(db.Integer, primary_key=True)
-    mpesa_code = db.Column(db.String(30), unique=True, nullable=False)
-    phone = db.Column(db.String(20), nullable=True)
-    payer_name = db.Column(db.String(100), nullable=True)
-    amount = db.Column(db.Numeric(10, 2), nullable=False)
-    received_at = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='received')  # received | applied | failed
-    raw_payload = db.Column(db.Text, nullable=True)
-    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=True)
-
-    payment = db.relationship('Payment', backref='mpesa_transactions', lazy=True)
-
-    def __repr__(self):
-        return f'<MpesaTransaction {self.mpesa_code} amount=KES{self.amount} status={self.status}>'
 
 
 class StudentCreditBalance(db.Model):

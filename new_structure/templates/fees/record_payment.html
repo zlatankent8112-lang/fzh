@@ -690,7 +690,12 @@
 
               <div class="form-group">
                 <label for="method_id">Payment Method *</label>
-                <select id="method_id" name="method_id" required onchange="toggleMpesaButton()">
+                <select
+                  id="method_id"
+                  name="method_id"
+                  required
+                  onchange="toggleMpesaButton()"
+                >
                   <option value="">Select method...</option>
                   {% for method in payment_methods %}
                   <option value="{{ method.id }}">{{ method.name }}</option>
@@ -699,21 +704,29 @@
               </div>
 
               <!-- M-PESA STK Push Section -->
-              <div class="form-group" id="mpesaSection" style="display: none;">
+              <div class="form-group" id="mpesaSection" style="display: none">
                 <div class="alert alert-info">
                   <i class="fas fa-mobile-alt me-2"></i>
-                  <strong>M-PESA Payment</strong><br>
+                  <strong>M-PESA Payment</strong><br />
                   Enter phone number to send payment request
                 </div>
-                
+
                 <label for="mpesa_phone">M-PESA Phone Number *</label>
-                <input type="text" id="mpesa_phone" class="form-control" 
-                       placeholder="e.g., 0712345678 or 254712345678">
+                <input
+                  type="text"
+                  id="mpesa_phone"
+                  class="form-control"
+                  placeholder="e.g., 0712345678 or 254712345678"
+                />
                 <small class="form-text text-muted">
                   Format: 0712345678 or 254712345678
                 </small>
-                
-                <button type="button" class="btn btn-success mt-3 w-100" onclick="initiateMpesaPayment()">
+
+                <button
+                  type="button"
+                  class="btn btn-success mt-3 w-100"
+                  onclick="initiateMpesaPayment()"
+                >
                   <i class="fas fa-mobile-alt me-2"></i>Send M-PESA Request
                 </button>
               </div>
@@ -1153,7 +1166,7 @@
         const methodSelect = document.getElementById('method_id');
         const mpesaSection = document.getElementById('mpesaSection');
         const selectedMethod = methodSelect.options[methodSelect.selectedIndex].text.toLowerCase();
-        
+
         // Show M-PESA section if "mpesa" or "m-pesa" is selected
         if (selectedMethod.includes('mpesa') || selectedMethod.includes('m-pesa')) {
           mpesaSection.style.display = 'block';
@@ -1202,7 +1215,7 @@
         .then(data => {
           if (data.success) {
             alert('✅ ' + data.message + '\n\nThe payment will be recorded automatically once confirmed.');
-            
+
             // Update reference field with checkout request ID
             if (data.checkout_request_id) {
               document.getElementById('reference').value = data.checkout_request_id;
