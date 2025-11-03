@@ -36,13 +36,14 @@
             font-weight: 600;
             color: #333;
         }
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
             box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
         .btn {
             padding: 10px 20px;
@@ -118,6 +119,7 @@
         </div>
         
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label>💰 Amount (KES) *</label>
                 <input type="number" name="amount" step="0.01" min="0" value="{{ payment.amount }}" required>
@@ -140,17 +142,8 @@
             </div>
             
             <div class="form-group">
-                <label>📅 Term</label>
-                <select name="term">
-                    <option value="Term 1" {% if payment.term == 'Term 1' %}selected{% endif %}>Term 1</option>
-                    <option value="Term 2" {% if payment.term == 'Term 2' %}selected{% endif %}>Term 2</option>
-                    <option value="Term 3" {% if payment.term == 'Term 3' %}selected{% endif %}>Term 3</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>📆 Academic Year</label>
-                <input type="text" name="academic_year" value="{{ payment.academic_year or '2025-2026' }}" placeholder="e.g., 2025-2026">
+                <label>� Notes (Optional)</label>
+                <textarea name="notes" rows="3" style="resize: vertical;">{{ payment.notes or '' }}</textarea>
             </div>
             
             <div style="margin-top: 30px;">

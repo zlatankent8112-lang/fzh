@@ -8635,3 +8635,12 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-11-03 14:31:22,443 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
 2025-11-03 14:45:27,672 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
 2025-11-03 14:45:30,208 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 14:58:44,636 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 14:58:46,849 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 15:12:53,301 - WARNING - a7eb1abcf1144e55a43c174d25cdb2fa - security - POST /fees/payment/21/edit - Bad request: http://127.0.0.1:8080/fees/payment/21/edit - 127.0.0.1
+2025-11-03 15:17:53,679 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 15:17:56,261 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 15:18:25,418 - INFO - d39e4c1a04c748f08de20a641a931556 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 15:21:51,529 - INFO - a5df19aa6a8a4d18a46929e13c0d655f - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 15:28:31,706 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 15:28:33,844 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized

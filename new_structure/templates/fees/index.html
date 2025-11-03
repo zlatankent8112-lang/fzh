@@ -109,11 +109,20 @@
         text-align: left;
         border-bottom: 1px solid #ddd;
       }
-      table th {
-        background: #f8f9fa;
-        font-weight: 600;
+      table thead {
+        background: #667eea;
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 10;
       }
-      table tr:hover {
+      table th {
+        background: #667eea;
+        color: white;
+        font-weight: 600;
+        border-bottom: 2px solid #5568d3;
+      }
+      table tbody tr:hover {
         background: #f8f9fa;
       }
       .text-center {
@@ -235,6 +244,15 @@
         color: #666;
         font-weight: 600;
       }
+      .badge {
+        padding: 4px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        display: inline-block;
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -251,6 +269,17 @@
       </div>
 
       <h1>💰 Fee Management Dashboard</h1>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" style="padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid {% if category == 'success' %}#28a745{% elif category == 'danger' %}#dc3545{% elif category == 'warning' %}#ffc107{% else %}#17a2b8{% endif %};">
+            {{ message|safe }}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
 
       <!-- Enhanced Navigation Menu -->
       <div class="nav-menu">

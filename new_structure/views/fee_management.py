@@ -1456,12 +1456,11 @@ def edit_payment(payment_id):
             new_amount = Decimal(request.form['amount'])
             amount_difference = new_amount - old_amount
             
-            # Update payment details
+            # Update payment details (only fields that exist in Payment model)
             payment.amount = new_amount
             payment.method_id = int(request.form['method_id'])
             payment.reference = request.form.get('reference', '')
-            payment.term = request.form.get('term', payment.term)
-            payment.academic_year = request.form.get('academic_year', payment.academic_year)
+            payment.notes = request.form.get('notes', payment.notes)
             
             # If amount changed, need to re-allocate
             if amount_difference != 0:
@@ -1473,9 +1472,58 @@ def edit_payment(payment_id):
                     account.status = 'unpaid' if account.amount_paid == 0 else 'partial'
                     db.session.delete(allocation)
                 
-                # Auto-allocate new amount
-                from new_structure.models.fee_management import allocate_payment_auto
-                allocate_payment_auto(payment.id)
+                # Auto-allocate new amount using same logic as record_payment
+                # Get student's outstanding fees by priority
+                current_term = "Term 1"  # You can make this dynamic
+                current_year = "2025-2026"
+                
+                accounts = StudentFeeAccount.query.filter(
+                    StudentFeeAccount.student_id == student.id,
+                    StudentFeeAccount.balance > 0,
+                    StudentFeeAccount.term == current_term,
+                    StudentFeeAccount.academic_year == current_year
+                ).join(FeeStructure).order_by(FeeStructure.allocation_priority).all()
+                
+                remaining = new_amount
+                allocated_total = Decimal('0')
+                
+                for acc in accounts:
+                    if remaining <= 0:
+                        break
+                    
+                    allocated = min(remaining, acc.balance)
+                    
+                    # Create allocation
+                    allocation = PaymentAllocation(
+                        payment_id=payment.id,
+                        student_fee_account_id=acc.id,
+                        amount_allocated=allocated
+                    )
+                    db.session.add(allocation)
+                    
+                    # Update account
+                    acc.amount_paid += allocated
+                    acc.balance -= allocated
+                    if acc.balance <= 0:
+                        acc.status = 'paid'
+                    elif acc.amount_paid > 0:
+                        acc.status = 'partial'
+                    acc.last_payment_date = datetime.utcnow()
+                    
+                    remaining -= allocated
+                    allocated_total += allocated
+                
+                # Handle unallocated amount (overpayment/credit)
+                if remaining > 0:
+                    credit = StudentCreditBalance(
+                        student_id=student.id,
+                        payment_id=payment.id,
+                        credit_amount=remaining,
+                        remaining_credit=remaining,
+                        status='available',
+                        notes=f'Credit from edited payment {payment.reference or payment.id}'
+                    )
+                    db.session.add(credit)
             
             db.session.commit()
             flash(f'✅ Payment updated successfully', 'success')
