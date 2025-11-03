@@ -355,8 +355,8 @@ def create_app(config_name='default'):
             if blueprint.name == 'auth':
                 limiter.limit("10 per minute")(blueprint)
             app.register_blueprint(blueprint)
-            # Exempt parent portal from CSRF protection
-            if hasattr(blueprint, 'name') and 'parent' in blueprint.name:
+            # Exempt parent portal and mpesa from CSRF protection
+            if hasattr(blueprint, 'name') and ('parent' in blueprint.name or 'mpesa' in blueprint.name):
                 csrf.exempt(blueprint)
     except Exception as e:
         print(f"⚠️ Blueprint error: {e}")
