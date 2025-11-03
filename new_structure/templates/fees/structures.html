@@ -637,7 +637,8 @@
                 <th style="width: 90px;">Grade</th>
                 <th style="width: 80px;">Status</th>
                 <th style="width: 90px;">Mandatory</th>
-                <th style="width: 130px;">Actions</th>
+                <th style="width: 110px;">Usage</th>
+                <th style="width: 150px;">Actions</th>
               </tr>
             </thead>
           <tbody>
@@ -734,6 +735,20 @@
                 {% endif %}
               </td>
               <td>
+                {% set usage = fee_usage.get(fee.id, {}) %}
+                {% if usage.students_count > 0 %}
+                  <strong style="color: #667eea;">{{ usage.students_count }}</strong> student(s)<br>
+                  {% if usage.students_with_payments > 0 %}
+                    <small style="color: #28a745;">💰 {{ usage.students_with_payments }} paid</small><br>
+                    <small style="color: #666;">KES {{ "{:,.0f}".format(usage.total_collected) }}</small>
+                  {% else %}
+                    <small style="color: #999;">No payments</small>
+                  {% endif %}
+                {% else %}
+                  <span style="color: #999;">Not used</span>
+                {% endif %}
+              </td>
+              <td>
                 <a
                   href="{{ url_for('fees.edit_fee_structure', fee_id=fee.id) }}"
                   class="btn btn-sm btn-primary"
@@ -743,7 +758,7 @@
                   method="POST"
                   action="{{ url_for('fees.delete_fee_structure', fee_id=fee.id) }}"
                   style="display: inline"
-                  onsubmit="return confirm('Delete {{ fee.fee_type_name }}?');"
+                  onsubmit="return confirmDelete('{{ fee.fee_type_name }}', {{ usage.students_count or 0 }}, {{ usage.students_with_payments or 0 }}, {{ usage.total_collected or 0 }});"
                 >
                   <input
                     type="hidden"
@@ -851,7 +866,31 @@
         });
       }
 
-      // Duplicate fees to all terms
+      // Enhanced delete confirmation with usage info
+      function confirmDelete(feeName, studentsCount, studentsWithPayments, totalCollected) {
+        if (studentsCount === 0) {
+          // No usage - simple confirmation
+          return confirm(`Delete "${feeName}"?\n\nThis fee has not been assigned to any students yet.`);
+        }
+        
+        if (studentsWithPayments > 0) {
+          // Has payments - strong warning
+          alert(`🚫 Cannot Delete "${feeName}"!\n\n` +
+                `This fee is currently in use:\n` +
+                `• Assigned to ${studentsCount} student(s)\n` +
+                `• ${studentsWithPayments} student(s) have made payments\n` +
+                `• Total collected: KES ${totalCollected.toLocaleString()}\n\n` +
+                `You must first reverse all payments or deactivate this fee instead.`);
+          return false;
+        }
+        
+        // Has students but no payments - warning confirmation
+        return confirm(`⚠️ Warning: Delete "${feeName}"?\n\n` +
+                      `This fee is assigned to ${studentsCount} student(s).\n` +
+                      `No payments have been made yet.\n\n` +
+                      `Are you sure you want to delete it?`);
+      }
+      
       // Auto-hide flash messages after 5 seconds
       setTimeout(() => {
         const alerts = document.querySelectorAll('.alert-success, .alert-info');

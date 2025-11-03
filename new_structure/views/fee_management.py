@@ -124,7 +124,7 @@ def index():
 @fee_bp.route('/structures')
 @fee_access_required
 def fee_structures():
-    """List all fee structures"""
+    """List all fee structures with usage counts"""
     # Get educational level filter
     current_level = request.args.get('education_level', '')
     current_term = request.args.get('term', '')
@@ -140,6 +140,21 @@ def fee_structures():
         FeeStructure.term,
         FeeStructure.allocation_priority
     ).all()
+    
+    # Calculate usage counts for each fee structure
+    fee_usage = {}
+    for fee in fees:
+        accounts = StudentFeeAccount.query.filter_by(fee_structure_id=fee.id).all()
+        students_count = len(accounts)
+        students_with_payments = sum(1 for acc in accounts if acc.amount_paid > 0)
+        total_collected = sum(acc.amount_paid for acc in accounts)
+        
+        fee_usage[fee.id] = {
+            'students_count': students_count,
+            'students_with_payments': students_with_payments,
+            'total_collected': total_collected,
+            'can_delete': students_count == 0
+        }
     
     # Get unique education levels for stats
     education_levels = db.session.query(FeeStructure.education_level)\
@@ -161,7 +176,8 @@ def fee_structures():
                 }
     
     return render_template('fees/structures.html', 
-                         fees=fees, 
+                         fees=fees,
+                         fee_usage=fee_usage,
                          current_level=current_level,
                          current_term=current_term,
                          education_levels=education_levels,
@@ -447,16 +463,35 @@ def edit_fee_structure(fee_id):
 @fee_bp.route('/structures/<int:fee_id>/delete', methods=['POST'])
 @fee_access_required
 def delete_fee_structure(fee_id):
-    """Delete a fee structure"""
+    """Delete a fee structure with enhanced safety checks"""
     fee = FeeStructure.query.get_or_404(fee_id)
     fee_name = fee.fee_type_name
     
     try:
-        # Check if any student accounts use this fee
-        accounts_count = StudentFeeAccount.query.filter_by(fee_structure_id=fee_id).count()
+        # Enhanced safety checks
+        accounts = StudentFeeAccount.query.filter_by(fee_structure_id=fee_id).all()
+        accounts_count = len(accounts)
         
         if accounts_count > 0:
-            flash(f'⚠️ Cannot delete "{fee_name}". It is used by {accounts_count} student fee account(s). Deactivate it instead.', 'warning')
+            # Check if any of these accounts have payments
+            accounts_with_payments = 0
+            total_payments = Decimal('0')
+            
+            for account in accounts:
+                if account.amount_paid > 0:
+                    accounts_with_payments += 1
+                    total_payments += account.amount_paid
+            
+            if accounts_with_payments > 0:
+                flash(f'🚫 Cannot delete "{fee_name}"!\n\n'
+                      f'• Used by {accounts_count} student(s)\n'
+                      f'• {accounts_with_payments} student(s) have made payments\n'
+                      f'• Total payments: KES {total_payments:,.2f}\n\n'
+                      f'You must first reverse all payments or deactivate this fee instead.', 
+                      'danger')
+            else:
+                flash(f'⚠️ Cannot delete "{fee_name}". It is assigned to {accounts_count} student(s). '
+                      f'You can deactivate it instead to prevent new usage.', 'warning')
         else:
             db.session.delete(fee)
             db.session.commit()
@@ -1381,114 +1416,6 @@ Hillview School
         else:
             return jsonify({'success': False, 'message': 'Invalid method. Use "sms" or "email"'}), 400
     
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-
-@fee_bp.route('/invoices/bulk-send', methods=['POST'])
-@fee_access_required
-def bulk_send_invoices():
-    """Send multiple invoices via SMS or Email"""
-    from new_structure.models.fee_management import FeeInvoice
-    from new_structure.models.parent import Parent, ParentStudent
-    
-    try:
-        data = request.get_json()
-        invoice_ids = data.get('invoice_ids', [])
-        method = data.get('method', 'email')  # 'sms' or 'email'
-        
-        if not invoice_ids:
-            return jsonify({'success': False, 'message': 'No invoices selected'}), 400
-        
-        sent_count = 0
-        failed_count = 0
-        failed_details = []
-        
-        for invoice_id in invoice_ids:
-            try:
-                invoice = FeeInvoice.query.get(invoice_id)
-                if not invoice:
-                    failed_count += 1
-                    failed_details.append(f"Invoice ID {invoice_id}: Not found")
-                    continue
-                
-                student = Student.query.get(invoice.student_id)
-                if not student:
-                    failed_count += 1
-                    failed_details.append(f"{invoice.invoice_number}: Student not found")
-                    continue
-                
-                # Get parent information
-                parent_student = ParentStudent.query.filter_by(student_id=student.id, relationship='parent').first()
-                if not parent_student:
-                    failed_count += 1
-                    failed_details.append(f"{invoice.invoice_number} ({student.name}): No parent linked")
-                    continue
-                
-                parent = Parent.query.get(parent_student.parent_id)
-                if not parent:
-                    failed_count += 1
-                    failed_details.append(f"{invoice.invoice_number} ({student.name}): Parent info not found")
-                    continue
-                
-                # Prepare invoice message
-                message = f"""
-Dear {parent.first_name} {parent.last_name},
-
-Fee Invoice for {student.name}
-Invoice No: {invoice.invoice_number}
-Term: {invoice.term} ({invoice.academic_year})
-Amount: KES {invoice.total_amount:,.2f}
-Due Date: {invoice.due_date.strftime('%d %b %Y') if invoice.due_date else 'N/A'}
-
-Please visit the school or parent portal to make payment.
-
-Hillview School
-                """.strip()
-                
-                if method == 'sms':
-                    # Check if parent has phone number
-                    if not parent.phone:
-                        failed_count += 1
-                        failed_details.append(f"{invoice.invoice_number} ({student.name}): No phone number")
-                        continue
-                    
-                    # TODO: Integrate with actual SMS API
-                    print(f"[BULK SMS] To: {parent.phone} | Invoice: {invoice.invoice_number}")
-                    print(f"[BULK SMS] Message: {message[:100]}...")
-                    sent_count += 1
-                    
-                elif method == 'email':
-                    # Check if parent has email
-                    if not parent.email:
-                        failed_count += 1
-                        failed_details.append(f"{invoice.invoice_number} ({student.name}): No email")
-                        continue
-                    
-                    # TODO: Integrate with actual Email service
-                    print(f"[BULK EMAIL] To: {parent.email} | Invoice: {invoice.invoice_number}")
-                    print(f"[BULK EMAIL] Subject: Fee Invoice #{invoice.invoice_number} - {student.name}")
-                    sent_count += 1
-                
-            except Exception as e:
-                failed_count += 1
-                failed_details.append(f"Invoice ID {invoice_id}: {str(e)}")
-        
-        # Prepare response message
-        message = f"Bulk send completed!"
-        if failed_count > 0:
-            message += f"\n\nFailed invoices:\n" + "\n".join(failed_details[:5])
-            if len(failed_details) > 5:
-                message += f"\n... and {len(failed_details) - 5} more"
-        
-        return jsonify({
-            'success': True,
-            'message': message,
-            'sent_count': sent_count,
-            'failed_count': failed_count,
-            'failed_details': failed_details
-        })
-        
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
