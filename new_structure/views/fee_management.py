@@ -40,10 +40,28 @@ def fee_access_required(f):
 @fee_access_required
 def index():
     """Dashboard showing fee management overview with filters"""
+    from sqlalchemy import func
+    from datetime import date
+    
     total_fees = FeeStructure.query.filter_by(is_active=True).count()
     total_students = Student.query.count()
     total_payments_count = Payment.query.count()
     total_invoices = FeeInvoice.query.count()
+    
+    # Calculate Total Revenue (all payments)
+    total_revenue = db.session.query(func.sum(Payment.amount)).scalar() or Decimal('0')
+    
+    # Calculate Outstanding Balance (total balance across all student fee accounts)
+    total_outstanding = db.session.query(func.sum(StudentFeeAccount.balance)).scalar() or Decimal('0')
+    
+    # Calculate Today's Collections
+    today = date.today()
+    today_collections = db.session.query(func.sum(Payment.amount)).filter(
+        func.date(Payment.payment_date) == today
+    ).scalar() or Decimal('0')
+    today_payments_count = Payment.query.filter(
+        func.date(Payment.payment_date) == today
+    ).count()
     
     # Get filters from query parameters
     term_filter = request.args.get('term', '')
@@ -96,7 +114,11 @@ def index():
                          date_from=date_from,
                          date_to=date_to,
                          limit=limit,
-                         total_amount=total_amount)
+                         total_amount=total_amount,
+                         total_revenue=total_revenue,
+                         total_outstanding=total_outstanding,
+                         today_collections=today_collections,
+                         today_payments_count=today_payments_count)
 
 
 @fee_bp.route('/structures')
@@ -1630,3 +1652,71 @@ def bulk_delete_payments():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@fee_bp.route('/payments/export')
+@fee_access_required
+def export_payments():
+    """Export payments to CSV"""
+    import csv
+    from io import StringIO
+    from flask import make_response
+    from datetime import datetime
+    
+    # Get same filters as index page
+    term_filter = request.args.get('term', '')
+    grade_filter = request.args.get('grade', '')
+    stream_filter = request.args.get('stream', '')
+    method_filter = request.args.get('method', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
+    
+    # Build query with same filters
+    query = Payment.query.join(Student)
+    
+    if grade_filter:
+        query = query.join(Student.grade).filter(Grade.id == int(grade_filter))
+    if stream_filter:
+        query = query.join(Student.stream).filter(Stream.id == int(stream_filter))
+    if method_filter:
+        query = query.filter(Payment.method_id == int(method_filter))
+    if date_from:
+        query = query.filter(Payment.payment_date >= datetime.strptime(date_from, '%Y-%m-%d'))
+    if date_to:
+        query = query.filter(Payment.payment_date <= datetime.strptime(date_to, '%Y-%m-%d'))
+    
+    payments = query.order_by(Payment.payment_date.desc()).all()
+    
+    # Create CSV
+    si = StringIO()
+    writer = csv.writer(si)
+    
+    # Write headers
+    writer.writerow([
+        'Date', 'Time', 'Student Name', 'Admission No', 'Grade', 'Stream',
+        'Amount (KES)', 'Method', 'Reference', 'Recorded By', 'Notes'
+    ])
+    
+    # Write data
+    for payment in payments:
+        writer.writerow([
+            payment.payment_date.strftime('%Y-%m-%d'),
+            payment.payment_date.strftime('%H:%M:%S'),
+            payment.student.name if payment.student else 'N/A',
+            payment.student.admission_number if payment.student else 'N/A',
+            payment.student.grade.name if payment.student and payment.student.grade else 'N/A',
+            payment.student.stream.name if payment.student and payment.student.stream else 'N/A',
+            float(payment.amount),
+            payment.method.name if payment.method else 'N/A',
+            payment.reference or '',
+            payment.recorder.full_name if payment.recorder else 'System',
+            payment.notes or ''
+        ])
+    
+    # Create response
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = f"attachment; filename=payments_export_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    output.headers["Content-type"] = "text/csv"
+    
+    return output
+

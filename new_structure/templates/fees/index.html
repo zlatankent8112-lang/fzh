@@ -397,15 +397,35 @@
         </div>
       </div>
 
+      <!-- Financial Overview -->
+      <div class="stats-row" style="margin-top: 20px;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+          <h5 style="color: white; opacity: 0.9;">💰 Total Revenue</h5>
+          <h2 style="color: white;">KES {{ "{:,.2f}".format(total_revenue) }}</h2>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+          <h5 style="color: white; opacity: 0.9;">📊 Outstanding Balance</h5>
+          <h2 style="color: white;">KES {{ "{:,.2f}".format(total_outstanding) }}</h2>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; cursor: pointer;" onclick="filterToday()">
+          <h5 style="color: white; opacity: 0.9;">📅 Today's Collections</h5>
+          <h2 style="color: white;">KES {{ "{:,.2f}".format(today_collections) }}</h2>
+          <p style="margin: 5px 0 0 0; font-size: 13px; opacity: 0.9;">{{ today_payments_count }} payment(s) • Click to view</p>
+        </div>
+      </div>
+
       <!-- Quick Actions -->
       <div class="card">
         <div class="card-header">Quick Actions</div>
         <div class="card-body">
           <a href="{{ url_for('fees.record_payment') }}" class="btn btn-success"
-            >Record Payment</a
+            >💵 Record Payment</a
           >
           <a href="{{ url_for('fees.balance_report') }}" class="btn btn-info"
-            >Balance Report</a
+            >📊 Balance Report</a
+          >
+          <a href="#" onclick="exportPayments(); return false;" class="btn btn-primary"
+            >📥 Export to Excel</a
           >
         </div>
       </div>
@@ -674,6 +694,22 @@
           console.error('Error:', error);
           alert('Error deleting payments');
         });
+      }
+      
+      // Filter to today's payments
+      function filterToday() {
+        const today = new Date().toISOString().split('T')[0];
+        const url = new URL(window.location.href);
+        url.searchParams.set('date_from', today);
+        url.searchParams.set('date_to', today);
+        window.location.href = url.toString();
+      }
+      
+      // Export payments to Excel (CSV)
+      function exportPayments() {
+        // Get current filters from URL
+        const params = new URLSearchParams(window.location.search);
+        window.location.href = '/fees/payments/export?' + params.toString();
       }
     </script>
   </body>
