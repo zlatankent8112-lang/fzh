@@ -512,6 +512,36 @@
                 </div>
               </div>
 
+              <!-- Outstanding Balance Display -->
+              <div id="balanceDisplay" style="display: none; margin-top: 20px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <div style="font-size: 14px; opacity: 0.9;">💰 Outstanding Balance</div>
+                      <div style="font-size: 32px; font-weight: bold; margin-top: 5px;">KES <span id="outstandingBalance">0.00</span></div>
+                    </div>
+                    <div style="text-align: right;">
+                      <div style="font-size: 13px; opacity: 0.9;">Total Fees</div>
+                      <div style="font-size: 18px; font-weight: 600;">KES <span id="totalFees">0.00</span></div>
+                      <div style="font-size: 13px; opacity: 0.9; margin-top: 8px;">Already Paid</div>
+                      <div style="font-size: 18px; font-weight: 600; color: #90ee90;">KES <span id="totalPaid">0.00</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Fee Breakdown -->
+                <div id="feeBreakdown" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                  <h5 style="margin: 0 0 15px 0; font-size: 14px; color: #666;">📊 Fee Breakdown</h5>
+                  <div id="feeBreakdownList" style="font-size: 13px;"></div>
+                </div>
+
+                <!-- Recent Payments -->
+                <div id="recentPayments" style="background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                  <h5 style="margin: 0 0 15px 0; font-size: 14px; color: #666;">📝 Recent Payments</h5>
+                  <div id="recentPaymentsList" style="font-size: 13px;"></div>
+                </div>
+              </div>
+
               <!-- Advanced Filters (Collapsible) -->
               <div style="margin-top: 20px; margin-bottom: 20px">
                 <button
@@ -810,6 +840,9 @@
 
         // Update student info card
         updateStudentInfo(selectedStudent);
+        
+        // Fetch and display balance & recent payments
+        fetchStudentBalance(studentId);
       };
 
       // Clear selection
@@ -821,6 +854,7 @@
         studentSearchInput.disabled = false;
         studentSearchInput.focus();
         document.getElementById('studentInfo').style.display = 'none';
+        document.getElementById('balanceDisplay').style.display = 'none';
       };
 
       // Close search results when clicking outside
@@ -951,6 +985,71 @@
         }
       });
 
+      // Fetch student balance and recent payments
+      function fetchStudentBalance(studentId) {
+        const term = document.getElementById('term').value;
+        
+        fetch(`/fees/student-balance/${studentId}?term=${term}`)
+          .then(res => res.json())
+          .then(data => {
+            if (!data.success) {
+              console.error('Error:', data.message);
+              return;
+            }
+            
+            // Update balance display
+            document.getElementById('outstandingBalance').textContent = data.total_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalFees').textContent = data.total_fees.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalPaid').textContent = data.total_paid.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            // Update fee breakdown
+            const feeBreakdownList = document.getElementById('feeBreakdownList');
+            if (data.fee_breakdown.length > 0) {
+              feeBreakdownList.innerHTML = data.fee_breakdown.map(fee => `
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                  <div>
+                    <strong>${fee.fee_name}</strong>
+                    <span style="color: ${fee.status === 'paid' ? '#28a745' : fee.status === 'partial' ? '#ffc107' : '#dc3545'}; margin-left: 10px; font-size: 11px;">
+                      ${fee.status.toUpperCase()}
+                    </span>
+                  </div>
+                  <div style="text-align: right;">
+                    <div><strong>KES ${fee.balance.toLocaleString()}</strong></div>
+                    <div style="font-size: 11px; color: #666;">Paid: ${fee.paid.toLocaleString()} / ${fee.total.toLocaleString()}</div>
+                  </div>
+                </div>
+              `).join('');
+            } else {
+              feeBreakdownList.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No fee accounts found for this term</div>';
+            }
+            
+            // Update recent payments
+            const recentPaymentsList = document.getElementById('recentPaymentsList');
+            if (data.recent_payments.length > 0) {
+              recentPaymentsList.innerHTML = data.recent_payments.map(payment => `
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                  <div>
+                    <div><strong>KES ${payment.amount.toLocaleString()}</strong></div>
+                    <div style="font-size: 11px; color: #666;">${payment.date} • ${payment.method}</div>
+                    ${payment.reference ? `<div style="font-size: 11px; color: #999;">Ref: ${payment.reference}</div>` : ''}
+                  </div>
+                  <div style="text-align: right; font-size: 11px; color: #666;">
+                    ${payment.recorded_by}
+                  </div>
+                </div>
+              `).join('');
+            } else {
+              recentPaymentsList.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No previous payments</div>';
+            }
+            
+            // Show balance display
+            document.getElementById('balanceDisplay').style.display = 'block';
+          })
+          .catch(err => {
+            console.error('Error fetching balance:', err);
+          });
+      }
+      
       // Load stats
       fetch('/fees/api/payment-stats')
         .then(res => res.json())

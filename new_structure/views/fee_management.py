@@ -808,6 +808,74 @@ def record_payment():
                          current_year=current_year)
 
 
+@fee_bp.route('/student-balance/<int:student_id>')
+@fee_access_required
+def get_student_balance(student_id):
+    """Get student's outstanding balance and recent payments for record payment UX"""
+    try:
+        student = Student.query.get_or_404(student_id)
+        
+        # Get current term/year
+        year = datetime.utcnow().year
+        current_year = f"{year}-{year + 1}"
+        current_term = request.args.get('term', 'Term 1')
+        
+        # Get all fee accounts for this student
+        accounts = StudentFeeAccount.query.filter_by(
+            student_id=student_id,
+            term=current_term,
+            academic_year=current_year
+        ).join(FeeStructure).order_by(FeeStructure.allocation_priority).all()
+        
+        # Calculate totals
+        total_fees = sum(acc.total_amount for acc in accounts)
+        total_paid = sum(acc.amount_paid for acc in accounts)
+        total_balance = sum(acc.balance for acc in accounts)
+        
+        # Get fee breakdown
+        fee_breakdown = [{
+            'fee_name': acc.fee_structure.fee_type_name,
+            'total': float(acc.total_amount),
+            'paid': float(acc.amount_paid),
+            'balance': float(acc.balance),
+            'status': acc.status,
+            'priority': acc.fee_structure.allocation_priority
+        } for acc in accounts]
+        
+        # Get recent payments (last 10)
+        recent_payments = Payment.query.filter_by(student_id=student_id)\
+            .order_by(Payment.payment_date.desc())\
+            .limit(10).all()
+        
+        payments_list = [{
+            'id': p.id,
+            'date': p.payment_date.strftime('%d %b %Y %I:%M %p'),
+            'amount': float(p.amount),
+            'method': p.method.name if p.method else 'N/A',
+            'reference': p.reference or '',
+            'recorded_by': p.recorder.full_name if p.recorder else 'System'
+        } for p in recent_payments]
+        
+        return jsonify({
+            'success': True,
+            'student_name': student.name,
+            'admission_number': student.admission_number,
+            'grade': student.grade.name if student.grade else 'N/A',
+            'stream': student.stream.name if student.stream else '',
+            'total_fees': float(total_fees),
+            'total_paid': float(total_paid),
+            'total_balance': float(total_balance),
+            'fee_breakdown': fee_breakdown,
+            'recent_payments': payments_list,
+            'has_accounts': len(accounts) > 0
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
 @fee_bp.route('/reports/balances')
 @fee_access_required
 def balance_report():
