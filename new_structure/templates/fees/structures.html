@@ -9,11 +9,12 @@
         font-family: Arial, sans-serif;
         background-color: #f4f6f9;
         margin: 0;
-        padding: 20px;
+        padding: 0;
       }
       .container {
-        max-width: 1400px;
+        max-width: 100%;
         margin: 0 auto;
+        padding: 0 15px;
       }
       .header {
         background: white;
@@ -204,28 +205,39 @@
       table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 13px;
       }
       thead {
         background: #667eea;
         color: white;
       }
       th {
-        padding: 15px;
+        padding: 12px 8px;
         text-align: left;
         font-weight: 600;
+        white-space: nowrap;
+        font-size: 12px;
       }
       td {
-        padding: 15px;
+        padding: 10px 8px;
         border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+      }
+      .table-wrapper {
+        overflow-x: auto;
+        margin: 0 -15px;
+        padding: 0 15px;
       }
       tbody tr:hover {
         background: #f8f9fa;
       }
       .badge {
-        padding: 5px 10px;
-        border-radius: 12px;
-        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 10px;
+        font-size: 11px;
         font-weight: 600;
+        white-space: nowrap;
+        display: inline-block;
       }
       .badge-success {
         background: #d4edda;
@@ -608,25 +620,26 @@
 
       <!-- Fee Structures Table -->
       <div class="card">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 40px;">
-                <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="cursor: pointer;" />
-              </th>
-              <th>Priority</th>
-              <th>Fee Type</th>
-              <th>Category</th>
-              <th>Amount</th>
-              <th>Frequency</th>
-              <th>Educational Level</th>
-              <th>Term/Year</th>
-              <th>Grade</th>
-              <th>Status</th>
-              <th>Mandatory</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 35px;">
+                  <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="cursor: pointer;" />
+                </th>
+                <th style="width: 60px;">Priority</th>
+                <th style="min-width: 180px;">Fee Type</th>
+                <th style="width: 110px;">Category</th>
+                <th style="width: 120px;">Amount</th>
+                <th style="width: 100px;">Frequency</th>
+                <th style="width: 130px;">Level</th>
+                <th style="width: 110px;">Term/Year</th>
+                <th style="width: 90px;">Grade</th>
+                <th style="width: 80px;">Status</th>
+                <th style="width: 90px;">Mandatory</th>
+                <th style="width: 130px;">Actions</th>
+              </tr>
+            </thead>
           <tbody>
             {% for fee in fees %}
             <tr id="fee-row-{{ fee.id }}">
@@ -755,6 +768,7 @@
             {% endfor %}
           </tbody>
         </table>
+        </div> <!-- Close table-wrapper -->
       </div>
       </div> <!-- Close tableView -->
     </div>
