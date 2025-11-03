@@ -450,43 +450,129 @@
         </div>
       </div>
 
-      <!-- Educational Level Filter -->
+      <!-- Filters -->
       <div class="card" style="margin-bottom: 20px;">
-        <form method="GET" style="display: flex; align-items: center; gap: 15px;">
-          <label for="education_level" style="font-weight: 600; margin: 0;">
-            🎓 Filter by Educational Level:
-          </label>
-          <select 
-            id="education_level" 
-            name="education_level" 
-            onchange="this.form.submit()"
-            style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-            <option value="">All Levels</option>
-            <option value="pre_primary" {% if current_level == 'pre_primary' %}selected{% endif %}>
-              Pre-Primary (PP1-PP2)
-            </option>
-            <option value="lower_primary" {% if current_level == 'lower_primary' %}selected{% endif %}>
-              Lower Primary (Grade 1-3)
-            </option>
-            <option value="upper_primary" {% if current_level == 'upper_primary' %}selected{% endif %}>
-              Upper Primary (Grade 4-6)
-            </option>
-            <option value="junior_secondary" {% if current_level == 'junior_secondary' %}selected{% endif %}>
-              Junior Secondary (Grade 7-9)
-            </option>
-            <option value="senior_secondary" {% if current_level == 'senior_secondary' %}selected{% endif %}>
-              Senior Secondary (Grade 10-12)
-            </option>
-          </select>
+        <form method="GET" id="filterForm">
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <label for="education_level" style="font-weight: 600; margin: 0; min-width: 180px;">
+              🎓 Educational Level:
+            </label>
+            <select 
+              id="education_level" 
+              name="education_level" 
+              onchange="document.getElementById('filterForm').submit()"
+              style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+              <option value="">All Levels</option>
+              <option value="pre_primary" {% if current_level == 'pre_primary' %}selected{% endif %}>
+                Pre-Primary (PP1-PP2)
+              </option>
+              <option value="lower_primary" {% if current_level == 'lower_primary' %}selected{% endif %}>
+                Lower Primary (Grade 1-3)
+              </option>
+              <option value="upper_primary" {% if current_level == 'upper_primary' %}selected{% endif %}>
+                Upper Primary (Grade 4-6)
+              </option>
+              <option value="junior_secondary" {% if current_level == 'junior_secondary' %}selected{% endif %}>
+                Junior Secondary (Grade 7-9)
+              </option>
+              <option value="senior_secondary" {% if current_level == 'senior_secondary' %}selected{% endif %}>
+                Senior Secondary (Grade 10-12)
+              </option>
+            </select>
+          </div>
+          
           {% if current_level %}
-          <a href="{{ url_for('fees.fee_structures') }}" 
-             class="btn btn-sm" 
-             style="background: #6c757d; white-space: nowrap;">
-            Clear Filter
-          </a>
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <label for="term" style="font-weight: 600; margin: 0; min-width: 180px;">
+              📅 Term:
+            </label>
+            <select 
+              id="term" 
+              name="term" 
+              onchange="document.getElementById('filterForm').submit()"
+              style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+              <option value="">All Terms</option>
+              <option value="Term 1" {% if current_term == 'Term 1' %}selected{% endif %}>Term 1</option>
+              <option value="Term 2" {% if current_term == 'Term 2' %}selected{% endif %}>Term 2</option>
+              <option value="Term 3" {% if current_term == 'Term 3' %}selected{% endif %}>Term 3</option>
+            </select>
+            <a href="{{ url_for('fees.fee_structures') }}" 
+               class="btn btn-sm" 
+               style="background: #6c757d; white-space: nowrap;">
+              Clear All Filters
+            </a>
+          </div>
           {% endif %}
         </form>
       </div>
+
+      <!-- Term-Based Card View (when education level is selected) -->
+      {% if current_level and fees_by_term and not current_term %}
+      <div style="margin-bottom: 30px;">
+        <h3 style="margin-bottom: 20px; color: #333;">
+          📊 {{ current_level|replace('_', ' ')|title }} Fees by Term
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+          {% for term, data in [('Term 1', fees_by_term.get('Term 1')), ('Term 2', fees_by_term.get('Term 2')), ('Term 3', fees_by_term.get('Term 3'))] %}
+          {% if data %}
+          <div class="card" style="border-left: 4px solid {% if term == 'Term 1' %}#007bff{% elif term == 'Term 2' %}#28a745{% else %}#ffc107{% endif %};">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <h4 style="margin: 0; color: #333;">{{ term }}</h4>
+              <span class="badge" style="background: {% if term == 'Term 1' %}#007bff{% elif term == 'Term 2' %}#28a745{% else %}#ffc107{% endif %}; font-size: 14px; padding: 5px 12px;">
+                {{ data.count }} fees
+              </span>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+              <div style="font-size: 24px; font-weight: bold; color: #333;">
+                KES {{ "{:,.2f}".format(data.total) }}
+              </div>
+              <div style="color: #666; font-size: 13px; margin-top: 5px;">
+                Total Term Fees
+              </div>
+            </div>
+
+            <table style="width: 100%; font-size: 13px;">
+              {% for fee in data.fees %}
+              <tr style="border-bottom: 1px solid #e9ecef;">
+                <td style="padding: 8px 0;">
+                  <span class="priority-badge" style="font-size: 10px;">{{ fee.allocation_priority }}</span>
+                  {{ fee.fee_type_name }}
+                </td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600;">
+                  KES {{ "{:,.0f}".format(fee.amount) }}
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e9ecef; display: flex; gap: 10px;">
+              <a href="{{ url_for('fees.fee_structures', education_level=current_level, term=term) }}" 
+                 class="btn btn-sm btn-primary" style="flex: 1; text-align: center;">
+                View Details
+              </a>
+              <a href="{{ url_for('fees.create_fee_structure', education_level=current_level, term=term) }}" 
+                 class="btn btn-sm btn-success" style="flex: 1; text-align: center;">
+                Add Fee
+              </a>
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center;">
+          <button onclick="document.getElementById('tableView').style.display='block'; this.style.display='none';" 
+                  class="btn btn-secondary">
+            📋 Show Detailed Table View
+          </button>
+        </div>
+      </div>
+
+      <div id="tableView" style="{% if fees_by_term %}display:none;{% endif %}">
+      {% else %}
+      <div id="tableView">
+      {% endif %}
 
       <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
@@ -670,6 +756,7 @@
           </tbody>
         </table>
       </div>
+      </div> <!-- Close tableView -->
     </div>
 
     <script>

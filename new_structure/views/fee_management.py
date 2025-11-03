@@ -62,10 +62,13 @@ def fee_structures():
     """List all fee structures"""
     # Get educational level filter
     current_level = request.args.get('education_level', '')
+    current_term = request.args.get('term', '')
     
     query = FeeStructure.query
     if current_level:
         query = query.filter_by(education_level=current_level)
+    if current_term:
+        query = query.filter_by(term=current_term)
     
     fees = query.order_by(
         FeeStructure.academic_year.desc(),
@@ -80,10 +83,24 @@ def fee_structures():
         .all()
     education_levels = [level[0] for level in education_levels]
     
+    # Group fees by term for card layout
+    fees_by_term = {}
+    if current_level:
+        for term in ['Term 1', 'Term 2', 'Term 3']:
+            term_fees = [f for f in fees if f.term == term and f.is_active]
+            if term_fees:
+                fees_by_term[term] = {
+                    'fees': term_fees,
+                    'total': sum(f.amount for f in term_fees),
+                    'count': len(term_fees)
+                }
+    
     return render_template('fees/structures.html', 
                          fees=fees, 
                          current_level=current_level,
-                         education_levels=education_levels)
+                         current_term=current_term,
+                         education_levels=education_levels,
+                         fees_by_term=fees_by_term)
 
 
 @fee_bp.route('/structures/create', methods=['GET', 'POST'])
