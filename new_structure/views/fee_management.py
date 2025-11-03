@@ -1455,22 +1455,33 @@ def edit_payment(payment_id):
             old_amount = payment.amount
             new_amount = Decimal(request.form['amount'])
             amount_difference = new_amount - old_amount
+            allocation_mode = request.form.get('allocation_mode', 'auto')
             
             # Update payment details (only fields that exist in Payment model)
             payment.amount = new_amount
             payment.method_id = int(request.form['method_id'])
             payment.reference = request.form.get('reference', '')
             payment.notes = request.form.get('notes', payment.notes)
+            payment.allocation_mode = allocation_mode
             
             # If amount changed, need to re-allocate
             if amount_difference != 0:
                 # Remove existing allocations
                 for allocation in payment.allocations:
-                    account = allocation.fee_account
+                    account = allocation.student_fee_account
                     account.amount_paid -= allocation.amount_allocated
                     account.balance += allocation.amount_allocated
                     account.status = 'unpaid' if account.amount_paid == 0 else 'partial'
                     db.session.delete(allocation)
+                
+                # Commit payment changes before re-allocation
+                db.session.commit()
+                
+                # Handle allocation mode
+                if allocation_mode == 'manual':
+                    # Redirect to manual allocation page
+                    flash(f'✅ Payment updated to KES {new_amount}. Now allocate to specific fees.', 'info')
+                    return redirect(url_for('fees.allocate_payment_manual', payment_id=payment.id))
                 
                 # Auto-allocate new amount using same logic as record_payment
                 # Get student's outstanding fees by priority
@@ -1524,10 +1535,15 @@ def edit_payment(payment_id):
                         notes=f'Credit from edited payment {payment.reference or payment.id}'
                     )
                     db.session.add(credit)
-            
-            db.session.commit()
-            flash(f'✅ Payment updated successfully', 'success')
-            return redirect(url_for('fees.index'))
+                
+                db.session.commit()
+                flash(f'✅ Payment updated successfully', 'success')
+                return redirect(url_for('fees.index'))
+            else:
+                # Amount didn't change, just commit the other updates
+                db.session.commit()
+                flash(f'✅ Payment details updated', 'success')
+                return redirect(url_for('fees.index'))
             
         except Exception as e:
             db.session.rollback()

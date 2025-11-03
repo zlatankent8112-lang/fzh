@@ -8644,3 +8644,11 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-11-03 15:21:51,529 - INFO - a5df19aa6a8a4d18a46929e13c0d655f - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
 2025-11-03 15:28:31,706 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
 2025-11-03 15:28:33,844 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 15:36:56,299 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 15:36:58,395 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 15:37:11,403 - INFO - 867ec3ce39e4431ab0eaca68bb7443ab - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 15:46:29,833 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 15:46:31,849 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 15:46:43,060 - INFO - b50c75a6180247f1852ef5bf72a5f84d - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 15:55:16,364 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 15:55:18,549 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized

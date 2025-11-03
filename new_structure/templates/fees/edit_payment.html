@@ -115,11 +115,32 @@
         </div>
         
         <div class="alert alert-warning">
-            ⚠️ <strong>Note:</strong> Changing the payment amount will remove existing allocations and re-allocate automatically based on fee priorities.
+            ⚠️ <strong>Note:</strong> Changing the payment amount will remove existing allocations and re-allocate based on your selected mode.
         </div>
         
         <form method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            <div class="form-group">
+                <label>🎯 Allocation Mode (if amount changes) *</label>
+                <div style="display: flex; gap: 20px; margin-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+                        <input type="radio" name="allocation_mode" value="auto" checked style="width: auto; margin: 0;">
+                        <div>
+                            <strong>🤖 Auto-Allocate</strong><br>
+                            <small style="color: #666;">Automatically allocates to fees by priority</small>
+                        </div>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+                        <input type="radio" name="allocation_mode" value="manual" style="width: auto; margin: 0;">
+                        <div>
+                            <strong>✋ Manual Allocate</strong><br>
+                            <small style="color: #666;">Choose which fees to allocate to</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
             <div class="form-group">
                 <label>💰 Amount (KES) *</label>
                 <input type="number" name="amount" step="0.01" min="0" value="{{ payment.amount }}" required>
