@@ -475,12 +475,18 @@ def record_payment():
     """Record a new payment"""
     if request.method == 'POST':
         try:
+            # Debug logging
+            print("=== PAYMENT RECORDING DEBUG ===")
+            print(f"Form data: {dict(request.form)}")
+            
             teacher_id = session.get('teacher_id')
             student_id = int(request.form['student_id'])
             amount = Decimal(request.form['amount'])
             method_id = int(request.form['method_id'])
             reference = request.form.get('reference', '')
             allocation_mode = request.form.get('allocation_mode', 'auto')
+            
+            print(f"Parsed values - student_id: {student_id}, amount: {amount}, method_id: {method_id}")
             
             # Get student - their grade is already in the database
             student = Student.query.get_or_404(student_id)
@@ -493,7 +499,8 @@ def record_payment():
             # This allows recording payments even before invoices are generated
             # Uses the student's grade from the database to find applicable fee structures
             current_term = request.form.get('term', 'Term 1')
-            current_year = request.form.get('academic_year', str(datetime.utcnow().year))
+            year = datetime.utcnow().year
+            current_year = request.form.get('academic_year', f"{year}-{year + 1}")
             
             accounts = StudentFeeAccount.query.filter_by(
                 student_id=student_id,
@@ -607,8 +614,13 @@ def record_payment():
             return redirect(url_for('fees.student_fees', student_id=student_id))
             
         except Exception as e:
+            import traceback
             db.session.rollback()
-            flash(f'Error recording payment: {str(e)}', 'error')
+            error_trace = traceback.format_exc()
+            print(f"=== ERROR RECORDING PAYMENT ===")
+            print(error_trace)
+            flash(f'Error recording payment: {str(e)}', 'danger')
+            return redirect(url_for('fees.record_payment'))
     
     # GET request - show form
     # Fetch ALL students using the proper relationships (like manage_students does)
@@ -648,8 +660,9 @@ def record_payment():
             'stream': stream_name
         })
     
-    # Get current year for default selection
-    current_year = datetime.utcnow().year
+    # Get current year for default selection in format "2025-2026"
+    year = datetime.utcnow().year
+    current_year = f"{year}-{year + 1}"
     
     return render_template('fees/record_payment.html',
                          students=students,

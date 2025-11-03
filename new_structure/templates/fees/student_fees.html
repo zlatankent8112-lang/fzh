@@ -371,7 +371,7 @@
                 {% for receipt in receipts %}
                 <tr>
                   <td><strong>{{ receipt.receipt_number }}</strong></td>
-                  <td>{{ receipt.issue_date.strftime('%d %b %Y') }}</td>
+                  <td>{{ receipt.issued_at.strftime('%d %b %Y') }}</td>
                   <td>KES {{ "{:,.2f}".format(receipt.payment.amount) }}</td>
                   <td>
                     {% set payment_method = receipt.payment.payment_method %} {{

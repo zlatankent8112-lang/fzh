@@ -85,7 +85,7 @@ class FeeStructure(db.Model):
     @classmethod
     def get_active_fees_for_grade(cls, grade_id, term, academic_year):
         """Get all active fees for a specific grade and term"""
-        from new_structure.models.user import Grade
+        from new_structure.models.academic import Grade
         
         # Get the grade to determine education level
         grade = Grade.query.get(grade_id)
@@ -110,29 +110,37 @@ class FeeStructure(db.Model):
         
         # Get fees by education level (since grade_id is NULL in fee_structure)
         if education_level:
-            return cls.query.filter_by(
-                education_level=education_level,
-                term=term,
-                academic_year=academic_year,
-                is_active=True
+            # Match academic year pattern (e.g., '2025' matches '2025-2026')
+            # Also match fees with term=NULL (All Terms) or specific term
+            from sqlalchemy import or_
+            fees = cls.query.filter(
+                cls.education_level == education_level,
+                cls.is_active == True,
+                or_(cls.term == term, cls.term == None),  # Match specific term or "All Terms"
+                cls.academic_year.like(f'{academic_year}%')  # '2025' matches '2025-2026'
             ).all()
+            return fees
         else:
             # Fallback to grade_id matching (for legacy/specific grade fees)
-            return cls.query.filter_by(
-                grade_id=grade_id,
-                term=term,
-                academic_year=academic_year,
-                is_active=True
+            from sqlalchemy import or_
+            fees = cls.query.filter(
+                cls.grade_id == grade_id,
+                cls.is_active == True,
+                or_(cls.term == term, cls.term == None),
+                cls.academic_year.like(f'{academic_year}%')
             ).all()
+            return fees
     
     @classmethod
     def get_school_wide_fees(cls, term, academic_year):
         """Get fees that apply to all students (no specific grade)"""
-        return cls.query.filter_by(
-            grade_id=None,
-            term=term,
-            academic_year=academic_year,
-            is_active=True
+        from sqlalchemy import or_
+        return cls.query.filter(
+            cls.grade_id == None,
+            cls.education_level == None,
+            cls.is_active == True,
+            or_(cls.term == term, cls.term == None),
+            cls.academic_year.like(f'{academic_year}%')
         ).all()
     
     @classmethod
