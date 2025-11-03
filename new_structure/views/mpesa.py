@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, redirect,
 from flask_login import login_required, current_user
 from new_structure.extensions import db
 from new_structure.models.fee_management import MpesaConfig, MpesaTransaction, Payment
-from new_structure.models.student_management import Student
+from new_structure.models.academic import Student
 from new_structure.utils.mpesa_client import (
     MpesaClient, 
     process_mpesa_callback, 
