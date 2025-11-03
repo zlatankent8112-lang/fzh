@@ -61,6 +61,18 @@ except ImportError as e:
     fee_bp = None
     fee_bp_available = False
 
+# Import M-PESA integration blueprint with error handling
+try:
+    from .mpesa import mpesa_bp
+    mpesa_bp_available = True
+    print("✅ M-PESA blueprint imported successfully")
+except ImportError as e:
+    print(f"❌ Failed to import M-PESA blueprint: {e}")
+    import traceback
+    traceback.print_exc()
+    mpesa_bp = None
+    mpesa_bp_available = False
+
 # List of all blueprints to register with the app
 blueprints = [
     auth_bp, teacher_bp, admin_bp,
@@ -93,3 +105,10 @@ if fee_bp_available and fee_bp:
     print(f"✅ Fee blueprint added to registration list (URL prefix: {fee_bp.url_prefix})")
 else:
     print("❌ Fee blueprint NOT added to registration list")
+
+# Add M-PESA blueprint if available
+if mpesa_bp_available and mpesa_bp:
+    blueprints.append(mpesa_bp)
+    print(f"✅ M-PESA blueprint added to registration list (URL prefix: {mpesa_bp.url_prefix})")
+else:
+    print("❌ M-PESA blueprint NOT added to registration list")

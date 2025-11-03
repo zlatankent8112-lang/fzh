@@ -513,32 +513,97 @@
               </div>
 
               <!-- Outstanding Balance Display -->
-              <div id="balanceDisplay" style="display: none; margin-top: 20px;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div id="balanceDisplay" style="display: none; margin-top: 20px">
+                <div
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #667eea 0%,
+                      #764ba2 100%
+                    );
+                    color: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
+                  "
+                >
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                    "
+                  >
                     <div>
-                      <div style="font-size: 14px; opacity: 0.9;">💰 Outstanding Balance</div>
-                      <div style="font-size: 32px; font-weight: bold; margin-top: 5px;">KES <span id="outstandingBalance">0.00</span></div>
+                      <div style="font-size: 14px; opacity: 0.9">
+                        💰 Outstanding Balance
+                      </div>
+                      <div
+                        style="
+                          font-size: 32px;
+                          font-weight: bold;
+                          margin-top: 5px;
+                        "
+                      >
+                        KES <span id="outstandingBalance">0.00</span>
+                      </div>
                     </div>
-                    <div style="text-align: right;">
-                      <div style="font-size: 13px; opacity: 0.9;">Total Fees</div>
-                      <div style="font-size: 18px; font-weight: 600;">KES <span id="totalFees">0.00</span></div>
-                      <div style="font-size: 13px; opacity: 0.9; margin-top: 8px;">Already Paid</div>
-                      <div style="font-size: 18px; font-weight: 600; color: #90ee90;">KES <span id="totalPaid">0.00</span></div>
+                    <div style="text-align: right">
+                      <div style="font-size: 13px; opacity: 0.9">
+                        Total Fees
+                      </div>
+                      <div style="font-size: 18px; font-weight: 600">
+                        KES <span id="totalFees">0.00</span>
+                      </div>
+                      <div
+                        style="font-size: 13px; opacity: 0.9; margin-top: 8px"
+                      >
+                        Already Paid
+                      </div>
+                      <div
+                        style="
+                          font-size: 18px;
+                          font-weight: 600;
+                          color: #90ee90;
+                        "
+                      >
+                        KES <span id="totalPaid">0.00</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Fee Breakdown -->
-                <div id="feeBreakdown" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-                  <h5 style="margin: 0 0 15px 0; font-size: 14px; color: #666;">📊 Fee Breakdown</h5>
-                  <div id="feeBreakdownList" style="font-size: 13px;"></div>
+                <div
+                  id="feeBreakdown"
+                  style="
+                    background: #f8f9fa;
+                    padding: 15px;
+                    border-radius: 6px;
+                    margin-bottom: 20px;
+                  "
+                >
+                  <h5 style="margin: 0 0 15px 0; font-size: 14px; color: #666">
+                    📊 Fee Breakdown
+                  </h5>
+                  <div id="feeBreakdownList" style="font-size: 13px"></div>
                 </div>
 
                 <!-- Recent Payments -->
-                <div id="recentPayments" style="background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-                  <h5 style="margin: 0 0 15px 0; font-size: 14px; color: #666;">📝 Recent Payments</h5>
-                  <div id="recentPaymentsList" style="font-size: 13px;"></div>
+                <div
+                  id="recentPayments"
+                  style="
+                    background: #fff;
+                    border: 1px solid #ddd;
+                    padding: 15px;
+                    border-radius: 6px;
+                    margin-bottom: 20px;
+                  "
+                >
+                  <h5 style="margin: 0 0 15px 0; font-size: 14px; color: #666">
+                    📝 Recent Payments
+                  </h5>
+                  <div id="recentPaymentsList" style="font-size: 13px"></div>
                 </div>
               </div>
 
@@ -625,12 +690,32 @@
 
               <div class="form-group">
                 <label for="method_id">Payment Method *</label>
-                <select id="method_id" name="method_id" required>
+                <select id="method_id" name="method_id" required onchange="toggleMpesaButton()">
                   <option value="">Select method...</option>
                   {% for method in payment_methods %}
                   <option value="{{ method.id }}">{{ method.name }}</option>
                   {% endfor %}
                 </select>
+              </div>
+
+              <!-- M-PESA STK Push Section -->
+              <div class="form-group" id="mpesaSection" style="display: none;">
+                <div class="alert alert-info">
+                  <i class="fas fa-mobile-alt me-2"></i>
+                  <strong>M-PESA Payment</strong><br>
+                  Enter phone number to send payment request
+                </div>
+                
+                <label for="mpesa_phone">M-PESA Phone Number *</label>
+                <input type="text" id="mpesa_phone" class="form-control" 
+                       placeholder="e.g., 0712345678 or 254712345678">
+                <small class="form-text text-muted">
+                  Format: 0712345678 or 254712345678
+                </small>
+                
+                <button type="button" class="btn btn-success mt-3 w-100" onclick="initiateMpesaPayment()">
+                  <i class="fas fa-mobile-alt me-2"></i>Send M-PESA Request
+                </button>
               </div>
 
               <div class="form-group">
@@ -840,7 +925,7 @@
 
         // Update student info card
         updateStudentInfo(selectedStudent);
-        
+
         // Fetch and display balance & recent payments
         fetchStudentBalance(studentId);
       };
@@ -988,7 +1073,7 @@
       // Fetch student balance and recent payments
       function fetchStudentBalance(studentId) {
         const term = document.getElementById('term').value;
-        
+
         fetch(`/fees/student-balance/${studentId}?term=${term}`)
           .then(res => res.json())
           .then(data => {
@@ -996,12 +1081,12 @@
               console.error('Error:', data.message);
               return;
             }
-            
+
             // Update balance display
             document.getElementById('outstandingBalance').textContent = data.total_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('totalFees').textContent = data.total_fees.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('totalPaid').textContent = data.total_paid.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            
+
             // Update fee breakdown
             const feeBreakdownList = document.getElementById('feeBreakdownList');
             if (data.fee_breakdown.length > 0) {
@@ -1022,7 +1107,7 @@
             } else {
               feeBreakdownList.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No fee accounts found for this term</div>';
             }
-            
+
             // Update recent payments
             const recentPaymentsList = document.getElementById('recentPaymentsList');
             if (data.recent_payments.length > 0) {
@@ -1041,7 +1126,7 @@
             } else {
               recentPaymentsList.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No previous payments</div>';
             }
-            
+
             // Show balance display
             document.getElementById('balanceDisplay').style.display = 'block';
           })
@@ -1049,7 +1134,7 @@
             console.error('Error fetching balance:', err);
           });
       }
-      
+
       // Load stats
       fetch('/fees/api/payment-stats')
         .then(res => res.json())
@@ -1062,6 +1147,83 @@
           }
         })
         .catch(err => console.error('Error loading stats:', err));
+
+      // M-PESA Functions
+      function toggleMpesaButton() {
+        const methodSelect = document.getElementById('method_id');
+        const mpesaSection = document.getElementById('mpesaSection');
+        const selectedMethod = methodSelect.options[methodSelect.selectedIndex].text.toLowerCase();
+        
+        // Show M-PESA section if "mpesa" or "m-pesa" is selected
+        if (selectedMethod.includes('mpesa') || selectedMethod.includes('m-pesa')) {
+          mpesaSection.style.display = 'block';
+        } else {
+          mpesaSection.style.display = 'none';
+        }
+      }
+
+      function initiateMpesaPayment() {
+        const studentId = document.getElementById('student_id').value;
+        const amount = document.getElementById('amount').value;
+        const phone = document.getElementById('mpesa_phone').value;
+
+        // Validation
+        if (!studentId) {
+          alert('Please select a student first');
+          return;
+        }
+
+        if (!amount || parseFloat(amount) <= 0) {
+          alert('Please enter a valid amount');
+          return;
+        }
+
+        if (!phone) {
+          alert('Please enter M-PESA phone number');
+          return;
+        }
+
+        // Disable button and show loading
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending request...';
+
+        // Send STK Push request
+        const formData = new FormData();
+        formData.append('student_id', studentId);
+        formData.append('amount', amount);
+        formData.append('phone_number', phone);
+
+        fetch('{{ url_for("mpesa.stk_push") }}', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('✅ ' + data.message + '\n\nThe payment will be recorded automatically once confirmed.');
+            
+            // Update reference field with checkout request ID
+            if (data.checkout_request_id) {
+              document.getElementById('reference').value = data.checkout_request_id;
+            }
+
+            // Optionally redirect to transactions page
+            if (confirm('Go to M-PESA transactions page to monitor status?')) {
+              window.location.href = '{{ url_for("mpesa.transactions") }}';
+            }
+          } else {
+            alert('❌ Payment request failed:\n\n' + data.message);
+          }
+        })
+        .catch(error => {
+          alert('Error sending payment request: ' + error);
+        })
+        .finally(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-mobile-alt me-2"></i>Send M-PESA Request';
+        });
+      }
     </script>
   </body>
 </html>

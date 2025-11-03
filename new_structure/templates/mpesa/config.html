@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}M-PESA Configuration - Hillview School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-mobile-alt me-2"></i>M-PESA Configuration</h2>
+                    <p class="text-muted">Configure M-PESA Daraja API credentials for mobile payments</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('mpesa.transactions') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>View Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Status -->
+    {% if config %}
+    <div class="alert {% if config.is_enabled %}alert-success{% else %}alert-warning{% endif %} alert-dismissible fade show" role="alert">
+        <i class="fas {% if config.is_enabled %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
+        <strong>Status:</strong> M-PESA is currently {% if config.is_enabled %}<strong>ENABLED</strong>{% else %}<strong>DISABLED</strong>{% endif %} 
+        ({{ config.environment|upper }} environment)
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <!-- Setup Instructions -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Setup Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold">How to get M-PESA Credentials:</h6>
+                    <ol>
+                        <li>
+                            <strong>Sandbox Testing (Free):</strong>
+                            <ul>
+                                <li>Visit <a href="https://developer.safaricom.co.ke/" target="_blank">Safaricom Developer Portal</a></li>
+                                <li>Create an account and login</li>
+                                <li>Create a new app (select "Lipa Na M-PESA Online")</li>
+                                <li>Copy Consumer Key, Consumer Secret, and Test Credentials</li>
+                                <li>Use sandbox credentials below for testing</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Production (Live Payments):</strong>
+                            <ul>
+                                <li>Contact Safaricom Business (business@safaricom.co.ke or 0711 222 222)</li>
+                                <li>Apply for Lipa Na M-PESA Paybill/Till number</li>
+                                <li>Submit KYC documents (CR12, PIN certificate, etc.)</li>
+                                <li>Once approved, Safaricom will provide production credentials</li>
+                                <li>Update configuration with production credentials</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Each school must have their own M-PESA credentials. 
+                        Transaction fees are charged to the school's M-PESA account, not to you as the software provider.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Form -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cog me-2"></i>API Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('mpesa.save_config') }}" id="configForm">
+                        <!-- Environment Selection -->
+                        <div class="mb-3">
+                            <label for="environment" class="form-label fw-bold">Environment</label>
+                            <select class="form-select" id="environment" name="environment" required>
+                                <option value="sandbox" {% if config and config.environment == 'sandbox' %}selected{% endif %}>
+                                    Sandbox (Testing)
+                                </option>
+                                <option value="production" {% if config and config.environment == 'production' %}selected{% endif %}>
+                                    Production (Live)
+                                </option>
+                            </select>
+                            <small class="form-text text-muted">Start with Sandbox for testing, then switch to Production</small>
+                        </div>
+
+                        <!-- Consumer Key -->
+                        <div class="mb-3">
+                            <label for="consumer_key" class="form-label fw-bold">Consumer Key</label>
+                            <input type="text" class="form-control" id="consumer_key" name="consumer_key" 
+                                   value="{{ config.consumer_key if config else '' }}" required
+                                   placeholder="e.g., FzKhK8VzXXXXXXXXXXXXXXXX">
+                            <small class="form-text text-muted">From Safaricom Developer Portal → Your App → Keys</small>
+                        </div>
+
+                        <!-- Consumer Secret -->
+                        <div class="mb-3">
+                            <label for="consumer_secret" class="form-label fw-bold">Consumer Secret</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="consumer_secret" name="consumer_secret" 
+                                       value="{{ config.consumer_secret if config else '' }}" required
+                                       placeholder="e.g., iXXXXXXXXXXXXXXXX">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('consumer_secret')">
+                                    <i class="fas fa-eye" id="consumer_secret_icon"></i>
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">From Safaricom Developer Portal → Your App → Keys (Keep Secret!)</small>
+                        </div>
+
+                        <!-- Business Shortcode -->
+                        <div class="mb-3">
+                            <label for="shortcode" class="form-label fw-bold">Business Shortcode</label>
+                            <input type="text" class="form-control" id="shortcode" name="shortcode" 
+                                   value="{{ config.shortcode if config else '' }}" required
+                                   placeholder="e.g., 174379 (sandbox) or your Paybill/Till number">
+                            <small class="form-text text-muted">
+                                Sandbox: 174379 | Production: Your Paybill or Till number
+                            </small>
+                        </div>
+
+                        <!-- Passkey -->
+                        <div class="mb-3">
+                            <label for="passkey" class="form-label fw-bold">Lipa Na M-PESA Passkey</label>
+                            <textarea class="form-control" id="passkey" name="passkey" rows="3" required 
+                                      placeholder="Long alphanumeric string from Safaricom">{{ config.passkey if config else '' }}</textarea>
+                            <small class="form-text text-muted">From Safaricom → Test Credentials (sandbox) or Production Credentials</small>
+                        </div>
+
+                        <!-- Callback URL -->
+                        <div class="mb-3">
+                            <label for="callback_url" class="form-label fw-bold">Callback URL</label>
+                            <input type="url" class="form-control" id="callback_url" name="callback_url" 
+                                   value="{{ config.callback_url if config else request.url_root + 'mpesa/callback' }}"
+                                   placeholder="https://yourdomain.com/mpesa/callback">
+                            <small class="form-text text-muted">
+                                Public URL where Safaricom will send payment notifications. 
+                                Must be accessible from the internet (use ngrok for testing locally).
+                            </small>
+                        </div>
+
+                        <!-- Enable/Disable -->
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_enabled" name="is_enabled" 
+                                       {% if config and config.is_enabled %}checked{% endif %}>
+                                <label class="form-check-label fw-bold" for="is_enabled">
+                                    Enable M-PESA Payments
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">When enabled, M-PESA payment option will be available</small>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Configuration
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="testConnection()">
+                                <i class="fas fa-vial me-2"></i>Test Connection
+                            </button>
+                            <a href="{{ url_for('fee.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar - Quick Tips -->
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Quick Tips</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Test with sandbox before going live
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Keep credentials secure (never share)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Use ngrok for local testing
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Transaction fees: ~0.5% - 1.5%
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Callback URL must be HTTPS in production
+                        </li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold mt-3">Sandbox Test Credentials</h6>
+                    <small>
+                        <strong>Shortcode:</strong> 174379<br>
+                        <strong>Test Phone:</strong> 254708374149<br>
+                        <strong>Test PIN:</strong> Any 4 digits<br>
+                        <small class="text-muted">No real money charged in sandbox</small>
+                    </small>
+
+                    <hr>
+
+                    <h6 class="fw-bold mt-3">Need Help?</h6>
+                    <small>
+                        <a href="https://developer.safaricom.co.ke/Documentation" target="_blank">
+                            <i class="fas fa-book me-1"></i>API Documentation
+                        </a><br>
+                        <a href="https://developer.safaricom.co.ke/MyApps" target="_blank">
+                            <i class="fas fa-key me-1"></i>Get Credentials
+                        </a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle password visibility
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(fieldId + '_icon');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Test M-PESA connection
+function testConnection() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+    
+    fetch('{{ url_for("mpesa.test_config") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Connection Successful!\n\n' + data.message);
+        } else {
+            alert('❌ Connection Failed\n\n' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error testing connection: ' + error);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-vial me-2"></i>Test Connection';
+    });
+}
+</script>
+{% endblock %}

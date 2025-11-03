@@ -673,3 +673,108 @@ class CreditTransfer(db.Model):
     
     def __repr__(self):
         return f'<CreditTransfer from={self.from_student_id} to={self.to_student_id} amount=KES{self.amount} status={self.status}>'
+
+
+class MpesaConfig(db.Model):
+    """
+    Store M-PESA Daraja API configuration for each school.
+    Each school must register their own M-PESA credentials with Safaricom.
+    """
+    __tablename__ = 'mpesa_config'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    school_id = db.Column(db.Integer, nullable=True)  # For multi-school setup (NULL = default/single school)
+    
+    # Environment
+    environment = db.Column(db.Enum('sandbox', 'production', name='mpesa_environment'), nullable=False, default='sandbox')
+    
+    # Daraja API Credentials (from Safaricom Developer Portal)
+    consumer_key = db.Column(db.String(255), nullable=False)  # App Consumer Key
+    consumer_secret = db.Column(db.String(255), nullable=False)  # App Consumer Secret (should be encrypted)
+    shortcode = db.Column(db.String(20), nullable=False)  # Business Shortcode (Paybill/Till number)
+    passkey = db.Column(db.String(255), nullable=False)  # Lipa Na M-PESA Online Passkey
+    
+    # Additional Configuration
+    initiator_name = db.Column(db.String(100), nullable=True)  # For B2C/Reversal (API operator username)
+    security_credential = db.Column(db.Text, nullable=True)  # Encrypted initiator password
+    is_enabled = db.Column(db.Boolean, default=False)  # Enable/disable M-PESA for this school
+    callback_url = db.Column(db.String(255), nullable=True)  # Callback URL for STK Push results
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    transactions = db.relationship('MpesaTransaction', backref='config', lazy=True, cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<MpesaConfig school_id={self.school_id} env={self.environment} enabled={self.is_enabled}>'
+
+
+class MpesaTransaction(db.Model):
+    """
+    Track all M-PESA transactions (STK Push, B2C, C2B).
+    Links M-PESA receipts to student payments for auto-reconciliation.
+    """
+    __tablename__ = 'mpesa_transaction'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    school_id = db.Column(db.Integer, nullable=True)  # For multi-school setup
+    config_id = db.Column(db.Integer, db.ForeignKey('mpesa_config.id'), nullable=True)  # Link to config
+    
+    # M-PESA Request Identifiers
+    merchant_request_id = db.Column(db.String(100), nullable=True)  # From STK Push response
+    checkout_request_id = db.Column(db.String(100), nullable=True, index=True)  # Unique request ID
+    
+    # Transaction Details
+    transaction_type = db.Column(db.Enum('stk_push', 'b2c', 'c2b', name='mpesa_transaction_type'), nullable=False, default='stk_push')
+    phone_number = db.Column(db.String(20), nullable=False, index=True)  # Customer phone (254XXXXXXXXX)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)  # Transaction amount
+    account_reference = db.Column(db.String(50), nullable=True)  # Account reference (student admission number)
+    transaction_desc = db.Column(db.String(200), nullable=True)  # Description
+    
+    # M-PESA Response Data
+    mpesa_receipt_number = db.Column(db.String(50), nullable=True, index=True)  # M-PESA receipt code (from callback)
+    transaction_date = db.Column(db.DateTime, nullable=True)  # Date from M-PESA
+    status = db.Column(db.Enum('pending', 'success', 'failed', 'cancelled', 'timeout', name='mpesa_status'), nullable=False, default='pending', index=True)
+    result_code = db.Column(db.String(10), nullable=True)  # Result code from callback (0 = success)
+    result_desc = db.Column(db.String(255), nullable=True)  # Result description
+    
+    # Reconciliation with School Payments
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=True, index=True)  # Linked student
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=True)  # Linked payment record
+    
+    # Callback Data
+    callback_received = db.Column(db.Boolean, default=False)  # Has callback been received?
+    callback_data = db.Column(db.Text, nullable=True)  # Full callback JSON for debugging
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    student = db.relationship('Student', backref='mpesa_transactions', lazy=True)
+    payment = db.relationship('Payment', backref='mpesa_transaction', lazy=True)
+    
+    def __repr__(self):
+        return f'<MpesaTransaction {self.checkout_request_id} phone={self.phone_number} amount=KES{self.amount} status={self.status}>'
+    
+    def to_dict(self):
+        """Convert transaction to dictionary for JSON responses"""
+        return {
+            'id': self.id,
+            'merchant_request_id': self.merchant_request_id,
+            'checkout_request_id': self.checkout_request_id,
+            'transaction_type': self.transaction_type,
+            'phone_number': self.phone_number,
+            'amount': float(self.amount),
+            'account_reference': self.account_reference,
+            'mpesa_receipt_number': self.mpesa_receipt_number,
+            'transaction_date': self.transaction_date.isoformat() if self.transaction_date else None,
+            'status': self.status,
+            'result_desc': self.result_desc,
+            'student_id': self.student_id,
+            'payment_id': self.payment_id,
+            'callback_received': self.callback_received,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
