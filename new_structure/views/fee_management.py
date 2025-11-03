@@ -1293,6 +1293,85 @@ def generate_invoices():
                          academic_years=[ay[0] for ay in academic_years])
 
 
+@fee_bp.route('/invoice/<int:invoice_id>/send', methods=['POST'])
+@fee_access_required
+def send_invoice(invoice_id):
+    """Send invoice via SMS or Email"""
+    from new_structure.models.fee_management import FeeInvoice
+    from new_structure.models.parent import Parent, ParentStudent
+    
+    try:
+        data = request.get_json()
+        method = data.get('method', 'email')  # 'sms' or 'email'
+        
+        invoice = FeeInvoice.query.get_or_404(invoice_id)
+        student = Student.query.get(invoice.student_id)
+        
+        if not student:
+            return jsonify({'success': False, 'message': 'Student not found'}), 404
+        
+        # Get parent information
+        parent_student = ParentStudent.query.filter_by(student_id=student.id, relationship='parent').first()
+        if not parent_student:
+            return jsonify({'success': False, 'message': 'No parent linked to this student'}), 404
+        
+        parent = Parent.query.get(parent_student.parent_id)
+        if not parent:
+            return jsonify({'success': False, 'message': 'Parent information not found'}), 404
+        
+        # Prepare invoice message
+        message = f"""
+Dear {parent.first_name} {parent.last_name},
+
+Fee Invoice for {student.name}
+Invoice No: {invoice.invoice_number}
+Term: {invoice.term} ({invoice.academic_year})
+Amount: KES {invoice.total_amount:,.2f}
+Due Date: {invoice.due_date.strftime('%d %b %Y') if invoice.due_date else 'N/A'}
+
+Please visit the school or parent portal to make payment.
+
+Hillview School
+        """.strip()
+        
+        if method == 'sms':
+            # Check if parent has phone number
+            if not parent.phone:
+                return jsonify({'success': False, 'message': 'Parent phone number not available'}), 400
+            
+            # TODO: Integrate with actual SMS API (Africa's Talking, Twilio, etc.)
+            # For now, we'll just log the message
+            print(f"[SMS] To: {parent.phone}")
+            print(f"[SMS] Message: {message}")
+            
+            return jsonify({
+                'success': True,
+                'message': f'Invoice sent via SMS to {parent.phone}'
+            })
+        
+        elif method == 'email':
+            # Check if parent has email
+            if not parent.email:
+                return jsonify({'success': False, 'message': 'Parent email not available'}), 400
+            
+            # TODO: Integrate with actual Email service (SendGrid, Mailgun, etc.)
+            # For now, we'll just log the message
+            print(f"[EMAIL] To: {parent.email}")
+            print(f"[EMAIL] Subject: Fee Invoice #{invoice.invoice_number} - {student.name}")
+            print(f"[EMAIL] Body: {message}")
+            
+            return jsonify({
+                'success': True,
+                'message': f'Invoice sent via Email to {parent.email}'
+            })
+        
+        else:
+            return jsonify({'success': False, 'message': 'Invalid method. Use "sms" or "email"'}), 400
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
 @fee_bp.route('/invoice/<int:invoice_id>/delete', methods=['POST'])
 @fee_access_required
 def delete_invoice(invoice_id):

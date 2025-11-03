@@ -541,6 +541,8 @@
                         </td>
                         <td>
                             <a href="{{ url_for('fees.view_invoice', invoice_id=invoice.id) }}" class="btn btn-sm btn-primary">View</a>
+                            <button onclick="sendInvoice({{ invoice.id }}, 'sms')" class="btn btn-sm btn-success" title="Send via SMS">📱 SMS</button>
+                            <button onclick="sendInvoice({{ invoice.id }}, 'email')" class="btn btn-sm" style="background: #17a2b8; color: white;" title="Send via Email">📧 Email</button>
                             <form method="POST" action="{{ url_for('fees.delete_invoice', invoice_id=invoice.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete invoice {{ invoice.invoice_number }}?');">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -618,6 +620,46 @@
                 dropdown.classList.remove('show');
             }
         });
+        
+        // Send invoice via SMS or Email
+        function sendInvoice(invoiceId, method) {
+            const methodName = method === 'sms' ? 'SMS' : 'Email';
+            
+            if (!confirm(`Send invoice via ${methodName}?`)) {
+                return;
+            }
+            
+            // Show loading indicator
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Sending...';
+            
+            fetch(`/fees/invoice/${invoiceId}/send`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ method: method })
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                
+                if (data.success) {
+                    alert(`✅ ${data.message}`);
+                } else {
+                    alert(`❌ Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                console.error('Error:', error);
+                alert(`❌ Error sending ${methodName}`);
+            });
+        }
     </script>
 </body>
 </html>
