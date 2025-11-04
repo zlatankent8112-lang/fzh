@@ -8652,3 +8652,381 @@ TypeError: Object of type Undefined is not JSON serializable
 2025-11-03 15:46:43,060 - INFO - b50c75a6180247f1852ef5bf72a5f84d - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
 2025-11-03 15:55:16,364 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
 2025-11-03 15:55:18,549 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 16:01:02,667 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 16:01:04,640 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 16:59:55,038 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 16:59:57,030 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 16:59:58,426 - INFO - 57044d56e0f64ac4bb6ec618dff4183e - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-03 17:00:16,865 - INFO - 24d6e5f212c44deca2540a367e598429 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-03 17:00:21,272 - WARNING - 2890e59119b64bfc8073e20e7067a05e - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-03 17:10:49,298 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 17:10:51,417 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 17:41:17,351 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 17:41:19,286 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 17:41:35,824 - INFO - c3d69019a09b425785c5ba5bca775f6b - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 17:42:31,714 - INFO - ddf20b37a4ef46539cdd2b27a00cd333 - new_structure - GET /fees/api/generation-stats - Page not found: http://127.0.0.1:8080/fees/api/generation-stats - 127.0.0.1
+2025-11-03 17:43:28,434 - INFO - 336cd909a1704d83b362bf5c73122912 - new_structure - GET /fees/api/generation-stats - Page not found: http://127.0.0.1:8080/fees/api/generation-stats - 127.0.0.1
+2025-11-03 17:47:35,874 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 17:47:37,771 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 17:47:55,084 - INFO - cb7f1758f76b4d988c4ac2bc7bdd2cd7 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 17:51:50,876 - WARNING - 047b5e935b2446c8a2c31b0540bcf4a1 - security - POST /fees/invoice/95/send - Bad request: http://127.0.0.1:8080/fees/invoice/95/send - 127.0.0.1
+2025-11-03 17:51:56,577 - WARNING - e990e58dd8014c63b260fc3126bb5409 - security - POST /fees/invoice/97/send - Bad request: http://127.0.0.1:8080/fees/invoice/97/send - 127.0.0.1
+2025-11-03 18:02:20,667 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 18:02:23,113 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 18:02:31,216 - INFO - 066d77c671fb4e3a94e9847b5f603597 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 18:03:02,059 - WARNING - 46186559259940a49902a193f2ec48ac - security - POST /fees/invoices/bulk-send - Bad request: http://127.0.0.1:8080/fees/invoices/bulk-send - 127.0.0.1
+2025-11-03 18:03:06,147 - WARNING - bec189fb6b1d4ef685c353947917d9e3 - security - POST /fees/invoices/bulk-send - Bad request: http://127.0.0.1:8080/fees/invoices/bulk-send - 127.0.0.1
+2025-11-03 18:30:45,664 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 18:30:48,217 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 18:39:59,754 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 18:40:02,604 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 18:51:54,483 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 18:51:56,626 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 22:15:32,871 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 22:15:38,460 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 22:15:46,272 - INFO - 6060dfd25225481f96c827e7a8f107ca - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-03 22:15:50,769 - WARNING - ea6df85f5d404428819a85a8f38cbf05 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-03 22:22:07,297 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 22:22:09,614 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 22:22:37,324 - INFO - 96bca68bddbf41119a6d75fd8ddd55b2 - new_structure - GET /mpesa/config - Page not found: http://127.0.0.1:8080/mpesa/config - 127.0.0.1
+2025-11-03 22:22:37,535 - INFO - cd3e29667f1a40cfacb5eaf1e42702be - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 22:23:14,778 - WARNING - 37fedef240b94454901cd530ec925966 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-03 22:27:05,092 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 22:27:07,515 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 22:27:54,094 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 22:27:56,901 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 22:36:27,531 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 22:36:30,168 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 22:41:06,504 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 22:41:08,685 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 22:44:51,706 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 22:44:54,012 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 22:47:11,470 - INFO - aaee8feb7dce4a6d9f7dec5443035b43 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-03 22:53:48,116 - WARNING - 4024fc2168af44f1aa5e9ae3d91bc46a - security - POST /mpesa/config/save - Bad request: http://127.0.0.1:8080/mpesa/config/save - 127.0.0.1
+2025-11-03 22:53:54,685 - WARNING - 67d3d71a6f044893bc0715045740b3d3 - security - POST /mpesa/config/save - Bad request: http://127.0.0.1:8080/mpesa/config/save - 127.0.0.1
+2025-11-03 22:57:34,784 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 22:57:37,269 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-03 23:13:58,768 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-03 23:14:01,452 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 02:26:31,546 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 02:26:33,742 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 02:33:54,189 - INFO - c553dfb1e1a64c24bfba22c41322583f - new_structure - GET /fees/record-payment - Page not found: http://127.0.0.1:8080/fees/record-payment - 127.0.0.1
+2025-11-04 02:34:35,193 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 02:34:37,121 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 02:34:55,456 - INFO - 93b8fc445ab54b58b0d91dc01fec0c72 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-04 02:34:59,920 - WARNING - dc5d5c4bcc914dfbb43441526afbd121 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 02:42:56,363 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 02:42:58,248 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 02:48:19,693 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 02:48:21,507 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 02:55:39,736 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 02:55:41,658 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 03:01:32,912 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 03:01:34,921 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 03:05:23,228 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 03:05:24,982 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 03:12:20,040 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 03:12:20,422 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-11-04 03:12:20,453 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 03:12:21,923 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 03:12:44,848 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 03:12:45,224 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-11-04 03:12:45,256 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 03:12:46,586 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 03:15:25,096 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 03:15:27,023 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 03:18:18,236 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 03:18:19,999 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 03:28:40,995 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 03:28:42,925 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 03:32:52,726 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 03:32:54,718 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 12:39:46,031 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 12:39:48,049 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 12:40:40,860 - INFO - f977644e19b1467e9eee2408be1efbe7 - new_structure - GET /fees/record-payment - Page not found: http://127.0.0.1:8080/fees/record-payment - 127.0.0.1
+2025-11-04 12:40:41,559 - INFO - 369c8d7b1b1d4bee9ee627a660f8b829 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-04 12:40:49,147 - INFO - 1546788e6e6d46c191d5de7dd5325854 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-04 12:40:54,072 - WARNING - 1b0c2df37e714ff4b91c53f20bc48398 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 12:41:04,996 - INFO - 686ad278ab8443d69f422c24448e733f - new_structure - GET /fees/record-payment - Page not found: http://127.0.0.1:8080/fees/record-payment - 127.0.0.1
+2025-11-04 12:45:38,154 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 12:45:40,925 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 12:48:35,512 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 12:48:37,648 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 12:56:14,648 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 12:56:16,888 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 13:34:49,718 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 13:34:51,887 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 13:34:56,425 - INFO - 5a426c13033b49929e0e068f6361ceba - new_structure - GET /static/js/responsive_utils.js - Page not found: http://127.0.0.1:8080/static/js/responsive_utils.js - 127.0.0.1
+2025-11-04 13:35:08,614 - INFO - fc331babfc9b4170a38e6d4c1dc194db - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-04 13:35:13,315 - WARNING - 6d7c66bf5e43407a9600adb5df0aa0fe - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 13:57:48,842 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 13:57:52,050 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:00:10,901 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:00:11,340 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-11-04 14:00:11,356 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 14:00:11,741 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:00:11,756 - WARNING - n/a - new_structure -   - Classteacher blueprint not available: No module named 'utils'
+2025-11-04 14:00:11,826 - ERROR - n/a - __main__ -   - Error handling transaction timeouts: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 3292, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 452, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 1269, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 716, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\impl.py", line 169, in _do_get
+    with util.safe_reraise():
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\impl.py", line 167, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 393, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 678, in __init__
+    self.__connect()
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 902, in __connect
+    with util.safe_reraise():
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 898, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\create.py", line 637, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\connections.py", line 358, in __init__
+    self.connect()
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\connections.py", line 664, in connect
+    self._request_authentication()
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\connections.py", line 954, in _request_authentication
+    auth_packet = self._read_packet()
+                  ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\connections.py", line 772, in _read_packet
+    packet.raise_for_error()
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\protocol.py", line 221, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\err.py", line 143, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.OperationalError: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\MKT\desktop\fzh\new_structure\utils\mpesa_timeout_handler.py", line 39, in handle_transaction_timeouts
+    ).all()
+      ^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\query.py", line 2693, in all
+    return self._iter().all()  # type: ignore
+           ^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\query.py", line 2847, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\session.py", line 2180, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\session.py", line 2047, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\session.py", line 1143, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 3268, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 147, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 2430, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 145, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 3292, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 452, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 1269, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 716, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\impl.py", line 169, in _do_get
+    with util.safe_reraise():
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\impl.py", line 167, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 393, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 678, in __init__
+    self.__connect()
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 902, in __connect
+    with util.safe_reraise():
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\pool\base.py", line 898, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\create.py", line 637, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\default.py", line 616, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\connections.py", line 358, in __init__
+    self.connect()
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\connections.py", line 664, in connect
+    self._request_authentication()
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\connections.py", line 954, in _request_authentication
+    auth_packet = self._read_packet()
+                  ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\connections.py", line 772, in _read_packet
+    packet.raise_for_error()
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\protocol.py", line 221, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\pymysql\err.py", line 143, in raise_mysql_exception
+    raise errorclass(errno, errval)
+sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 14:04:42,254 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:04:44,750 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:07:38,423 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:07:40,963 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:13:40,810 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:13:43,760 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:17:41,819 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:17:44,065 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:18:47,677 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:18:50,789 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:20:19,398 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:20:22,036 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:23:42,385 - WARNING - 73cecb1e34214445a5588027f0047f7f - security - GET /mpesa/callback - Method not allowed: GET http://127.0.0.1:8080/mpesa/callback - 127.0.0.1
+2025-11-04 14:23:53,952 - WARNING - a8ec2fd6512f46d3aa6d06fd5bab7b57 - security - GET /mpesa/callback - Method not allowed: GET http://127.0.0.1:8080/mpesa/callback - 127.0.0.1
+2025-11-04 14:25:26,456 - INFO - 13e18b11d90f48499a5683f190376ce6 - new_structure.views.mpesa - POST /mpesa/callback - M-PESA Callback received from 127.0.0.1
+2025-11-04 14:25:26,467 - ERROR - 13e18b11d90f48499a5683f190376ce6 - new_structure.views.mpesa - POST /mpesa/callback - Failed to process M-PESA callback
+2025-11-04 14:30:29,391 - WARNING - 35b1b6a83a714a9a987889e7d2902531 - new_structure.views.mpesa - POST /mpesa/callback - Unauthorized M-PESA callback attempt from IP: 1.2.3.4
+2025-11-04 14:30:51,847 - INFO - ac85a87d8bc44f0e89aa7accd323f634 - new_structure.views.mpesa - POST /mpesa/callback - M-PESA Callback received from 196.201.214.200
+2025-11-04 14:30:51,853 - ERROR - ac85a87d8bc44f0e89aa7accd323f634 - new_structure.views.mpesa - POST /mpesa/callback - Failed to process M-PESA callback
+2025-11-04 14:31:59,110 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:32:00,953 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:32:01,068 - WARNING - a3c38d88eca14ed7b74703e75b02f8b6 - security - GET /mpesa/callback - Method not allowed: GET http://127.0.0.1:8080/mpesa/callback - 127.0.0.1
+2025-11-04 14:32:15,194 - WARNING - 3e98b03625c34f3ab2b1300e8d6f3a20 - security - GET /mpesa/callback - Method not allowed: GET http://127.0.0.1:8080/mpesa/callback - 127.0.0.1
+2025-11-04 14:32:16,126 - WARNING - d8c27c2104534539ab216486a3cdab3b - security - GET /mpesa/callback - Method not allowed: GET http://127.0.0.1:8080/mpesa/callback - 127.0.0.1
+2025-11-04 14:32:16,416 - WARNING - d6de7c105bb04a0590c0a6873be763cf - security - GET /mpesa/callback - Method not allowed: GET http://127.0.0.1:8080/mpesa/callback - 127.0.0.1
+2025-11-04 14:32:16,719 - WARNING - 8482b1221cfd479ba18aadf515e2f1f2 - security - GET /mpesa/callback - Method not allowed: GET http://127.0.0.1:8080/mpesa/callback - 127.0.0.1
+2025-11-04 14:32:17,464 - WARNING - 09d396c4cb9f43629ef3556e38490aa0 - security - GET /mpesa/callback - Method not allowed: GET http://127.0.0.1:8080/mpesa/callback - 127.0.0.1
+2025-11-04 14:33:50,801 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:33:52,607 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:35:58,593 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:36:00,381 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:40:02,760 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:40:04,596 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:40:25,257 - INFO - 79d54746b76a4165b19fb0af1d1c2202 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-04 14:41:27,621 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:41:29,414 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:41:53,017 - INFO - 4d928bcb940e48c9884eb77224f8c0b2 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-04 14:41:57,436 - WARNING - c430923e6cf548809390f692201af7a2 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 14:43:48,866 - WARNING - 8d7f6d12bf1a422ebc4eb77a94de5a3e - security - GET /mpesa/handle-timeouts - Method not allowed: GET http://127.0.0.1:8080/mpesa/handle-timeouts - 127.0.0.1
+2025-11-04 14:44:01,076 - WARNING - 8770a75e8aa246aeb8a04fb083ecb59e - security - GET /mpesa/handle-timeouts - Method not allowed: GET http://127.0.0.1:8080/mpesa/handle-timeouts - 127.0.0.1
+2025-11-04 14:45:10,735 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:45:12,557 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:46:12,251 - WARNING - 10404c866e9a4710806842d6b1e3808b - security - GET /mpesa/handle-timeouts - Method not allowed: GET http://127.0.0.1:8080/mpesa/handle-timeouts - 127.0.0.1
+2025-11-04 14:50:44,767 - WARNING - ff60e6fd02274245b354350dbc158039 - security - GET /mpesa/handle-timeouts - Method not allowed: GET http://127.0.0.1:8080/mpesa/handle-timeouts - 127.0.0.1
+2025-11-04 14:50:45,599 - WARNING - c43919a2074a47e08ae11d7c4527208f - security - GET /mpesa/handle-timeouts - Method not allowed: GET http://127.0.0.1:8080/mpesa/handle-timeouts - 127.0.0.1
+2025-11-04 14:51:48,123 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:51:49,932 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:54:21,862 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:54:23,658 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:54:32,139 - INFO - bba22c30997548d19d1ecda8bb780f3c - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-04 14:54:36,538 - WARNING - a1cb91ab0f3a42918e8adfa814a35b38 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 14:59:36,126 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 14:59:37,939 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 14:59:56,705 - INFO - 4f0587dbf61746efbaa41f2e2ea007f1 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-04 15:00:01,117 - WARNING - b37124b709e24c28ae9607f377996d4b - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 15:00:29,660 - INFO - f0ee8d6aef844ac7a570b9467d619027 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-04 15:03:33,463 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 15:03:35,233 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 15:05:31,300 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 15:05:33,038 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 15:05:53,244 - INFO - cbbfbbd64ee04bcfb6ef16522c66081e - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-04 15:05:57,640 - WARNING - 8ac2b685fae0460d8ae527cf48ed4a14 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 15:16:58,598 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 15:17:00,429 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 15:19:44,713 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 15:19:46,604 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 15:20:07,690 - WARNING - 0ad2d16913764d4298d79fd7e9759631 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 15:20:33,347 - INFO - 8b753a6579844b7583ad8be33bbc6faa - new_structure.utils.notification_service - GET /mpesa/test-notification - TEST MODE - SMS to [REDACTED-PHONE]: Payment Received!
+Student: Test Student
+Amount: KES 100.00
+M-PESA Receipt: TEST123456
+Thank you for your payment.
+2025-11-04 15:25:28,950 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 15:25:30,771 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 15:36:41,934 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 15:36:43,721 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 15:44:54,740 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 15:44:56,530 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 15:45:06,986 - WARNING - 3375f92b63e9422d84baf96df67327e1 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 15:53:07,484 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 15:53:09,216 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 15:54:29,443 - ERROR - fa1e7ea7a1cb44a4876f94cfbf8cbb02 - new_structure.views.mpesa - GET /mpesa/analytics - Error loading analytics dashboard: 'today_date' is undefined
+Traceback (most recent call last):
+  File "C:\Users\MKT\desktop\fzh\new_structure\views\mpesa.py", line 596, in analytics_dashboard
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 151, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\flask\templating.py", line 132, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\MKT\desktop\fzh\new_structure\templates\mpesa_analytics.html", line 588, in top-level template code
+    <h5><i class="fas fa-calendar-day"></i> Today's Activity - {{ today_date.strftime('%B %d, %Y') }}</h5>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MKT\AppData\Local\Programs\Python\Python311\Lib\site-packages\jinja2\environment.py", line 490, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'today_date' is undefined
+2025-11-04 15:55:32,491 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 15:55:34,237 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 15:56:06,731 - WARNING - 80b24b69a2b94bf8a0a99fc0aab3f9b1 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 16:02:46,777 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 16:02:48,581 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 16:06:42,471 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 16:06:44,291 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 16:14:46,316 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 16:14:48,966 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 16:15:09,107 - WARNING - 905dadb9b83b404598198079d5b2d8c6 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 16:19:35,932 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 16:19:37,714 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized

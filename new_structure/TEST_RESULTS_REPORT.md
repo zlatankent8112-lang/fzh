@@ -7,16 +7,16 @@
 
 ## 📊 Test Suite Overview
 
-| Test File | Status | Tests Created | Issues Found |
-|-----------|--------|---------------|--------------|
-| `test_mpesa_stk_push.py` | ⚠️ Needs Fixtures | 14 tests | Missing `mock_mpesa_env` fixture |
-| `test_mpesa_callbacks.py` | ⚠️ Partial Pass | 14 tests | Some tests need routes |
-| `test_mpesa_security.py` | ⚠️ Partial Pass | 20 tests | Missing `mock_mpesa_env` fixture |
-| `test_mpesa_notifications.py` | ❌ Module Missing | 27 tests | `notification_service.py` not implemented |
-| `test_mpesa_analytics.py` | ⚠️ Partial Pass | 34 tests | Some tests need implementation |
-| `test_mpesa_integration.py` | ✅ Ready | 16 tests | Awaiting fixtures |
-| `test_mpesa_staging.py` | ✅ Ready | 14 tests | Needs staging credentials |
-| **TOTAL** | **In Progress** | **139 tests** | **Fixtures & modules needed** |
+| Test File                     | Status            | Tests Created | Issues Found                              |
+| ----------------------------- | ----------------- | ------------- | ----------------------------------------- |
+| `test_mpesa_stk_push.py`      | ⚠️ Needs Fixtures | 14 tests      | Missing `mock_mpesa_env` fixture          |
+| `test_mpesa_callbacks.py`     | ⚠️ Partial Pass   | 14 tests      | Some tests need routes                    |
+| `test_mpesa_security.py`      | ⚠️ Partial Pass   | 20 tests      | Missing `mock_mpesa_env` fixture          |
+| `test_mpesa_notifications.py` | ❌ Module Missing | 27 tests      | `notification_service.py` not implemented |
+| `test_mpesa_analytics.py`     | ⚠️ Partial Pass   | 34 tests      | Some tests need implementation            |
+| `test_mpesa_integration.py`   | ✅ Ready          | 16 tests      | Awaiting fixtures                         |
+| `test_mpesa_staging.py`       | ✅ Ready          | 14 tests      | Needs staging credentials                 |
+| **TOTAL**                     | **In Progress**   | **139 tests** | **Fixtures & modules needed**             |
 
 ---
 
@@ -25,10 +25,12 @@
 ### 1. Missing Fixtures
 
 #### `mock_mpesa_env` fixture needed:
+
 **Used in**: 13+ tests across multiple files  
 **Purpose**: Mock M-PESA environment variables
 
 **Create in `conftest.py`**:
+
 ```python
 @pytest.fixture()
 def mock_mpesa_env(monkeypatch):
@@ -46,10 +48,12 @@ def mock_mpesa_env(monkeypatch):
 ### 2. Missing Module
 
 #### `utils/notification_service.py` - NOT IMPLEMENTED
+
 **Impact**: 27 notification tests cannot run  
 **Required for**: SMS/Email notifications
 
 **Status**: Module needs to be created with:
+
 - `NotificationService` class
 - `send_sms()` method (Africa's Talking, Twilio)
 - `send_email()` method (SMTP)
@@ -62,10 +66,12 @@ def mock_mpesa_env(monkeypatch):
 ### 3. Model Schema Issues
 
 #### `Student` model missing fields:
+
 **Issue**: Tests expect `phone_number` and `email` fields  
 **Current**: Student model may not have these fields
 
 **Fix Options**:
+
 1. Add fields to Student model
 2. Update test fixtures to not use these fields
 3. Use parent/guardian contact info instead
@@ -75,6 +81,7 @@ def mock_mpesa_env(monkeypatch):
 ### 4. Route Implementation Status
 
 #### Routes being tested:
+
 - ✅ `/mpesa/callback` - Exists (callback processing)
 - ⚠️ `/mpesa/stk-push` - May need implementation
 - ⚠️ `/mpesa/transactions` - May need implementation
@@ -85,6 +92,7 @@ def mock_mpesa_env(monkeypatch):
 ## ✅ Tests That Passed
 
 ### Callback Processing Tests (Partial):
+
 ```
 test_mpesa_callbacks.py::TestCallbackProcessing::test_callback_with_invalid_ip ✓
 test_mpesa_callbacks.py::TestCallbackProcessing::test_callback_with_malformed_data ✓
@@ -96,6 +104,7 @@ test_mpesa_callbacks.py::TestCallbackDatabaseUpdates::test_transaction_timestamp
 ```
 
 ### Security Tests (Partial):
+
 ```
 test_mpesa_security.py::TestIPValidation::test_callback_with_spoofed_headers ✓
 test_mpesa_security.py::TestAuthentication::test_stk_push_requires_authentication ✓
@@ -111,24 +120,28 @@ test_mpesa_security.py::TestAuthentication::test_callback_does_not_require_authe
 ## 🔧 Required Fixes
 
 ### Priority 1: Add Missing Fixture
+
 **File**: `tests/conftest.py`  
 **Action**: Add `mock_mpesa_env` fixture  
 **Impact**: Unblocks 13+ tests  
 **Effort**: 5 minutes
 
 ### Priority 2: Fix Student Model/Fixtures
+
 **File**: `tests/conftest.py`  
 **Action**: Update `sample_student` fixture to match actual Student model schema  
 **Impact**: Unblocks 8+ tests  
 **Effort**: 10 minutes
 
 ### Priority 3: Implement Notification Service
+
 **File**: `utils/notification_service.py`  
 **Action**: Create NotificationService class with SMS/Email methods  
 **Impact**: Enables 27 notification tests  
 **Effort**: 2-3 hours (already have implementation code from earlier)
 
 ### Priority 4: Verify/Implement Routes
+
 **Files**: `views/mpesa.py` or similar  
 **Action**: Ensure STK Push and other endpoints exist  
 **Impact**: Enables full integration testing  
@@ -139,6 +152,7 @@ test_mpesa_security.py::TestAuthentication::test_callback_does_not_require_authe
 ## 📈 Progress Summary
 
 ### Test Infrastructure: ✅ COMPLETE
+
 - [x] 7 test files created (3,510 lines)
 - [x] 139 comprehensive tests written
 - [x] Pytest configuration with markers
@@ -146,13 +160,15 @@ test_mpesa_security.py::TestAuthentication::test_callback_does_not_require_authe
 - [x] Integration and staging test strategies
 
 ### Test Execution: ⚠️ IN PROGRESS
+
 - [x] Tests import correctly (mostly)
 - [x] ~20 tests passing
 - [ ] Missing `mock_mpesa_env` fixture (quick fix)
 - [ ] Missing `notification_service` module (medium fix)
 - [ ] Model schema alignment needed (quick fix)
 
-### Ready to Run (with fixes): 
+### Ready to Run (with fixes):
+
 - **Unit Tests**: 82 tests (after fixture fixes)
 - **Integration Tests**: 16 tests (after route verification)
 - **Staging Tests**: 14 tests (needs credentials)
@@ -162,6 +178,7 @@ test_mpesa_security.py::TestAuthentication::test_callback_does_not_require_authe
 ## 🚀 Quick Fix Action Plan
 
 ### Step 1: Add Missing Fixture (5 min)
+
 ```bash
 # Add to tests/conftest.py
 @pytest.fixture()
@@ -174,6 +191,7 @@ def mock_mpesa_env(monkeypatch):
 ```
 
 ### Step 2: Fix Student Fixtures (10 min)
+
 ```python
 @pytest.fixture()
 def sample_student(db_session):
@@ -191,6 +209,7 @@ def sample_student(db_session):
 ```
 
 ### Step 3: Re-run Tests
+
 ```bash
 pytest tests/test_mpesa_stk_push.py tests/test_mpesa_callbacks.py tests/test_mpesa_security.py tests/test_mpesa_analytics.py -v
 ```
@@ -198,9 +217,11 @@ pytest tests/test_mpesa_stk_push.py tests/test_mpesa_callbacks.py tests/test_mpe
 **Expected Result**: 50-60 tests passing
 
 ### Step 4: Implement Notification Service (later)
+
 Create `utils/notification_service.py` with basic structure
 
 ### Step 5: Full Test Suite
+
 ```bash
 pytest tests/test_mpesa_*.py -v --tb=short
 ```
@@ -210,16 +231,19 @@ pytest tests/test_mpesa_*.py -v --tb=short
 ## 📊 Coverage Estimate
 
 ### Current Coverage:
+
 - **Test Infrastructure**: 100% ✅
 - **Test Execution**: 20% ⚠️ (20/100 unit tests passing)
 - **Integration Tests**: 0% ⏸️ (awaiting unit test fixes)
 
 ### After Quick Fixes:
+
 - **Test Infrastructure**: 100% ✅
 - **Test Execution**: 60-70% ✅ (50-60/82 unit tests)
 - **Integration Tests**: 50% ⚠️ (some routes may not exist)
 
 ### After Full Implementation:
+
 - **Test Infrastructure**: 100% ✅
 - **Test Execution**: 90%+ ✅
 - **Integration Tests**: 90%+ ✅
@@ -229,19 +253,22 @@ pytest tests/test_mpesa_*.py -v --tb=short
 ## 💡 Key Insights
 
 ### What Works Well:
+
 ✅ Test structure and organization  
 ✅ Comprehensive test scenarios  
 ✅ Good use of fixtures and mocking  
 ✅ Clear test names and documentation  
-✅ Security and edge case coverage  
+✅ Security and edge case coverage
 
 ### What Needs Attention:
+
 ⚠️ Fixture alignment with actual models  
 ⚠️ Missing M-PESA environment fixture  
 ⚠️ Notification service implementation  
-⚠️ Route existence verification  
+⚠️ Route existence verification
 
 ### Test Quality:
+
 - **Well-designed**: Tests are comprehensive and follow best practices
 - **Implementation-ready**: Tests are written correctly, just need actual code to test
 - **Maintainable**: Clear structure makes future updates easy
@@ -251,12 +278,14 @@ pytest tests/test_mpesa_*.py -v --tb=short
 ## 🎯 Recommended Next Steps
 
 ### Option 1: Quick Win (30 min)
+
 1. Add `mock_mpesa_env` fixture
 2. Fix Student model issues in fixtures
 3. Run tests again
 4. See 50-60 tests passing ✅
 
 ### Option 2: Full Implementation (3-4 hours)
+
 1. Do Option 1 first
 2. Implement `notification_service.py`
 3. Verify/implement M-PESA routes
@@ -264,6 +293,7 @@ pytest tests/test_mpesa_*.py -v --tb=short
 5. See 100+ tests passing ✅
 
 ### Option 3: Incremental (ongoing)
+
 1. Fix fixtures now
 2. Implement features as needed
 3. Watch test pass rate increase over time
@@ -277,12 +307,13 @@ pytest tests/test_mpesa_*.py -v --tb=short
 **Created**: 139 comprehensive tests (3,510 lines)  
 **Currently Passing**: ~20 tests (20%)  
 **Blocked By**: Missing fixtures and modules  
-**Fix Effort**: 30 min - 4 hours depending on scope  
+**Fix Effort**: 30 min - 4 hours depending on scope
 
 ### Bottom Line:
+
 ✅ **Test infrastructure is excellent and production-ready**  
 ⚠️ **Need to align tests with actual codebase**  
-✅ **Once fixed, will provide comprehensive coverage**  
+✅ **Once fixed, will provide comprehensive coverage**
 
 The tests are well-written and comprehensive. They're doing exactly what they should - revealing what needs to be implemented!
 
@@ -292,4 +323,4 @@ The tests are well-written and comprehensive. They're doing exactly what they sh
 **Implementation Status**: ⭐⭐⭐☆☆ (3/5)  
 **Overall Readiness**: ⭐⭐⭐⭐☆ (4/5)
 
-*Tests are excellent, just need the code they're testing!*
+_Tests are excellent, just need the code they're testing!_

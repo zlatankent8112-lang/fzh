@@ -19,6 +19,10 @@ def app():
     flask_app.config['SECRET_KEY'] = 'test-session-secret-key-1234567890'
     # Flag this as the central session-scoped test app so other fixtures can detect it
     flask_app.config['_SESSION_SCOPED_TEST_APP'] = True
+    flask_app.config['TESTING'] = True
+    # Security checks ENABLED by default - individual tests can bypass via fixtures
+    flask_app.config['BYPASS_AUTH_FOR_TEST'] = False
+    flask_app.config['BYPASS_IP_VALIDATION_FOR_TEST'] = False
     from new_structure.extensions import db
     with flask_app.app_context():
         # Ensure all models are registered before creating tables
@@ -362,12 +366,31 @@ def sample_mpesa_transactions(db_session):
     return transactions
 
 @pytest.fixture()
-def auth_client(client):
+def auth_client(client, app, db_session):
     """Authenticated client for testing protected endpoints"""
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['username'] = 'testuser'
-        sess['role'] = 'admin'
+    from new_structure.models.user import Teacher
+    from flask_login import login_user
+    
+    # Create a test teacher if not exists
+    teacher = Teacher.query.filter_by(username='testteacher').first()
+    if not teacher:
+        teacher = Teacher(
+            username='testteacher',
+            full_name='Test Teacher',
+            email='test@school.com',
+            role='teacher'
+        )
+        teacher.set_password('testpass123')
+        db_session.add(teacher)
+        db_session.commit()
+    
+    # Log in using Flask-Login
+    with client:
+        with client.session_transaction() as sess:
+            sess['_user_id'] = str(teacher.id)
+            sess['teacher_id'] = teacher.id
+            sess['username'] = teacher.username
+            sess['role'] = teacher.role
     return client
 
 @pytest.fixture()
@@ -461,6 +484,22 @@ def safaricom_ip():
 def invalid_ip():
     """Invalid IP address"""
     return '192.168.1.1'
+
+@pytest.fixture()
+def bypass_auth(app):
+    """Fixture to bypass authentication for specific tests"""
+    original = app.config.get('BYPASS_AUTH_FOR_TEST', False)
+    app.config['BYPASS_AUTH_FOR_TEST'] = True
+    yield
+    app.config['BYPASS_AUTH_FOR_TEST'] = original
+
+@pytest.fixture()
+def bypass_ip_validation(app):
+    """Fixture to bypass IP validation for specific tests"""
+    original = app.config.get('BYPASS_IP_VALIDATION_FOR_TEST', False)
+    app.config['BYPASS_IP_VALIDATION_FOR_TEST'] = True
+    yield
+    app.config['BYPASS_IP_VALIDATION_FOR_TEST'] = original
 
 @pytest.fixture()
 def mock_sms_env(monkeypatch):

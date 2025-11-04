@@ -1,33 +1,37 @@
 """
 Views package for the Hillview School Management System.
 This file imports and exposes view blueprints for registration with the Flask app.
+
+Important: Use absolute imports (new_structure.views.*) so that this package
+can be imported either as `new_structure.views` or as `views` (as some tests do)
+without triggering relative import errors.
 """
-from .auth import auth_bp
-from .api_teacher import api_teacher_bp
-from .teacher import teacher_bp
+from new_structure.views.auth import auth_bp
+from new_structure.views.api_teacher import api_teacher_bp
+from new_structure.views.teacher import teacher_bp
 # Import classteacher with error handling due to security_helpers dependency
 try:
-    from .classteacher import classteacher_bp
+    from new_structure.views.classteacher import classteacher_bp
     classteacher_available = True
 except ImportError as e:
-    print(f"⚠️ Classteacher blueprint not available: {e}")
+    print(f"WARNING: Classteacher blueprint not available: {e}")
     classteacher_bp = None
     classteacher_available = False
-from .admin import admin_bp
-from .bulk_assignments import bulk_assignments_bp
-from .setup import setup_bp
-from .staff_management import staff_bp
-from .permission_management import permission_bp
-from .headteacher_universal import universal_bp
-from .analytics_api import analytics_api_bp
-from .school_setup import school_setup_bp
-from .subject_config_api import subject_config_api
-from .missing_routes import missing_routes_bp
-from .mobile_performance_api import mobile_performance_api
+from new_structure.views.admin import admin_bp
+from new_structure.views.bulk_assignments import bulk_assignments_bp
+from new_structure.views.setup import setup_bp
+from new_structure.views.staff_management import staff_bp
+from new_structure.views.permission_management import permission_bp
+from new_structure.views.headteacher_universal import universal_bp
+from new_structure.views.analytics_api import analytics_api_bp
+from new_structure.views.school_setup import school_setup_bp
+from new_structure.views.subject_config_api import subject_config_api
+from new_structure.views.missing_routes import missing_routes_bp
+from new_structure.views.mobile_performance_api import mobile_performance_api
 
 # Import parent portal blueprints with error handling
 try:
-    from .parent_simple import parent_simple_bp
+    from new_structure.views.parent_simple import parent_simple_bp
     parent_bp_available = True
 except ImportError:
     parent_simple_bp = None
@@ -35,7 +39,7 @@ except ImportError:
 
 # Import parent management blueprint with error handling
 try:
-    from .parent_management import parent_management_bp
+    from new_structure.views.parent_management import parent_management_bp
     parent_mgmt_bp_available = True
 except ImportError:
     parent_management_bp = None
@@ -51,11 +55,11 @@ email_config_bp_available = False
 
 # Import fee management blueprint with error handling
 try:
-    from .fee_management import fee_bp
+    from new_structure.views.fee_management import fee_bp
     fee_bp_available = True
-    print("✅ Fee management blueprint imported successfully")
+    print("[OK] Fee management blueprint imported successfully")
 except ImportError as e:
-    print(f"❌ Failed to import fee management blueprint: {e}")
+    print(f"[ERROR] Failed to import fee management blueprint: {e}")
     import traceback
     traceback.print_exc()
     fee_bp = None
@@ -63,11 +67,11 @@ except ImportError as e:
 
 # Import M-PESA integration blueprint with error handling
 try:
-    from .mpesa import mpesa_bp
+    from new_structure.views.mpesa import mpesa_bp
     mpesa_bp_available = True
-    print("✅ M-PESA blueprint imported successfully")
+    print("[OK] M-PESA blueprint imported successfully")
 except ImportError as e:
-    print(f"❌ Failed to import M-PESA blueprint: {e}")
+    print(f"[ERROR] Failed to import M-PESA blueprint: {e}")
     import traceback
     traceback.print_exc()
     mpesa_bp = None
@@ -102,13 +106,13 @@ if email_config_bp_available and email_config_bp:
 # Add fee management blueprint if available
 if fee_bp_available and fee_bp:
     blueprints.append(fee_bp)
-    print(f"✅ Fee blueprint added to registration list (URL prefix: {fee_bp.url_prefix})")
+    print(f"[OK] Fee blueprint added to registration list (URL prefix: {fee_bp.url_prefix})")
 else:
-    print("❌ Fee blueprint NOT added to registration list")
+    print("[ERROR] Fee blueprint NOT added to registration list")
 
 # Add M-PESA blueprint if available
 if mpesa_bp_available and mpesa_bp:
     blueprints.append(mpesa_bp)
-    print(f"✅ M-PESA blueprint added to registration list (URL prefix: {mpesa_bp.url_prefix})")
+    print(f"[OK] M-PESA blueprint added to registration list (URL prefix: {mpesa_bp.url_prefix})")
 else:
-    print("❌ M-PESA blueprint NOT added to registration list")
+    print("[ERROR] M-PESA blueprint NOT added to registration list")
