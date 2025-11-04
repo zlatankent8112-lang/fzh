@@ -378,9 +378,7 @@ def sample_student(db_session):
         name='Test Student',
         admission_number='ADM001',
         grade_id=1,
-        stream_id=1,
-        phone_number='254712345678',
-        email='student@test.com'
+        stream_id=1
     )
     db_session.add(student)
     db_session.commit()
@@ -396,9 +394,7 @@ def sample_students(db_session):
             name=f'Student {i}',
             admission_number=f'ADM00{i}',
             grade_id=1,
-            stream_id=1,
-            phone_number=f'25471234567{i}',
-            email=f'student{i}@test.com'
+            stream_id=1
         )
         db_session.add(student)
         students.append(student)
@@ -482,3 +478,13 @@ def mock_email_env(monkeypatch):
     monkeypatch.setenv('SMTP_PASSWORD', 'test_password')
     monkeypatch.setenv('SMTP_FROM_EMAIL', 'test@example.com')
     monkeypatch.setenv('SCHOOL_NAME', 'Test School')
+
+@pytest.fixture()
+def mock_mpesa_env(monkeypatch):
+    """Mock M-PESA environment variables"""
+    monkeypatch.setenv('MPESA_ENVIRONMENT', 'test')
+    monkeypatch.setenv('MPESA_CONSUMER_KEY', 'test_key_123')
+    monkeypatch.setenv('MPESA_CONSUMER_SECRET', 'test_secret_456')
+    monkeypatch.setenv('MPESA_SHORTCODE', '174379')
+    monkeypatch.setenv('MPESA_PASSKEY', 'test_passkey_789')
+    monkeypatch.setenv('MPESA_CALLBACK_URL', 'http://localhost:5000/mpesa/callback')
