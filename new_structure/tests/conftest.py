@@ -318,3 +318,167 @@ def fresh_app(request):
 @pytest.fixture()
 def fresh_client(fresh_app):
     return fresh_app.test_client()
+
+# --- M-PESA Testing Fixtures --------------------------------------------------------
+@pytest.fixture()
+def sample_mpesa_transaction(db_session):
+    """Create a sample M-PESA transaction for testing"""
+    from new_structure.models.fee_management import MpesaTransaction
+    transaction = MpesaTransaction(
+        phone_number='254712345678',
+        amount=1000.00,
+        account_reference='TEST001',
+        transaction_desc='Test payment',
+        merchant_request_id='test-merchant-123',
+        checkout_request_id='test-checkout-456',
+        status='pending'
+    )
+    db_session.add(transaction)
+    db_session.commit()
+    return transaction
+
+@pytest.fixture()
+def sample_mpesa_transactions(db_session):
+    """Create multiple sample M-PESA transactions"""
+    from new_structure.models.fee_management import MpesaTransaction
+    from datetime import datetime, timedelta
+    
+    transactions = []
+    for i in range(5):
+        txn = MpesaTransaction(
+            phone_number=f'25471234567{i}',
+            amount=1000.00 * (i + 1),
+            account_reference=f'TEST00{i}',
+            transaction_desc=f'Test payment {i}',
+            merchant_request_id=f'test-merchant-{i}',
+            checkout_request_id=f'test-checkout-{i}',
+            status='completed' if i % 2 == 0 else 'failed',
+            created_at=datetime.now() - timedelta(days=i)
+        )
+        db_session.add(txn)
+        transactions.append(txn)
+    
+    db_session.commit()
+    return transactions
+
+@pytest.fixture()
+def auth_client(client):
+    """Authenticated client for testing protected endpoints"""
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['username'] = 'testuser'
+        sess['role'] = 'admin'
+    return client
+
+@pytest.fixture()
+def sample_student(db_session):
+    """Create a sample student for testing"""
+    from new_structure.models.academic import Student
+    student = Student(
+        name='Test Student',
+        admission_number='ADM001',
+        grade_id=1,
+        stream_id=1,
+        phone_number='254712345678',
+        email='student@test.com'
+    )
+    db_session.add(student)
+    db_session.commit()
+    return student
+
+@pytest.fixture()
+def sample_students(db_session):
+    """Create multiple sample students"""
+    from new_structure.models.academic import Student
+    students = []
+    for i in range(3):
+        student = Student(
+            name=f'Student {i}',
+            admission_number=f'ADM00{i}',
+            grade_id=1,
+            stream_id=1,
+            phone_number=f'25471234567{i}',
+            email=f'student{i}@test.com'
+        )
+        db_session.add(student)
+        students.append(student)
+    db_session.commit()
+    return students
+
+@pytest.fixture()
+def mock_callback_success():
+    """Mock successful M-PESA callback data"""
+    return {
+        'Body': {
+            'stkCallback': {
+                'MerchantRequestID': 'test-merchant-123',
+                'CheckoutRequestID': 'test-checkout-456',
+                'ResultCode': 0,
+                'ResultDesc': 'The service request is processed successfully.',
+                'CallbackMetadata': {
+                    'Item': [
+                        {'Name': 'Amount', 'Value': 1000.00},
+                        {'Name': 'MpesaReceiptNumber', 'Value': 'TK123456'},
+                        {'Name': 'TransactionDate', 'Value': 20231104143000},
+                        {'Name': 'PhoneNumber', 'Value': 254712345678}
+                    ]
+                }
+            }
+        }
+    }
+
+@pytest.fixture()
+def mock_callback_failed():
+    """Mock failed M-PESA callback data"""
+    return {
+        'Body': {
+            'stkCallback': {
+                'MerchantRequestID': 'test-merchant-123',
+                'CheckoutRequestID': 'test-checkout-456',
+                'ResultCode': 1,
+                'ResultDesc': 'The balance is insufficient for the transaction.'
+            }
+        }
+    }
+
+@pytest.fixture()
+def mock_callback_timeout():
+    """Mock timeout M-PESA callback data"""
+    return {
+        'Body': {
+            'stkCallback': {
+                'MerchantRequestID': 'test-merchant-123',
+                'CheckoutRequestID': 'test-checkout-456',
+                'ResultCode': 1037,
+                'ResultDesc': 'Timeout in completing transaction.'
+            }
+        }
+    }
+
+@pytest.fixture()
+def safaricom_ip():
+    """Valid Safaricom IP address"""
+    return '196.201.214.200'
+
+@pytest.fixture()
+def invalid_ip():
+    """Invalid IP address"""
+    return '192.168.1.1'
+
+@pytest.fixture()
+def mock_sms_env(monkeypatch):
+    """Mock SMS environment variables"""
+    monkeypatch.setenv('SMS_PROVIDER', 'test')
+    monkeypatch.setenv('AFRICAS_TALKING_USERNAME', 'test_username')
+    monkeypatch.setenv('AFRICAS_TALKING_API_KEY', 'test_api_key')
+    monkeypatch.setenv('AFRICAS_TALKING_SENDER_ID', 'TEST')
+
+@pytest.fixture()
+def mock_email_env(monkeypatch):
+    """Mock Email environment variables"""
+    monkeypatch.setenv('SMTP_SERVER', 'smtp.gmail.com')
+    monkeypatch.setenv('SMTP_PORT', '587')
+    monkeypatch.setenv('SMTP_USERNAME', 'test@example.com')
+    monkeypatch.setenv('SMTP_PASSWORD', 'test_password')
+    monkeypatch.setenv('SMTP_FROM_EMAIL', 'test@example.com')
+    monkeypatch.setenv('SCHOOL_NAME', 'Test School')
