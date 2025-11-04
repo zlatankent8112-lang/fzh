@@ -13,11 +13,13 @@ from new_structure.models.fee_management import MpesaTransaction
 from new_structure.extensions import db
 
 
+@pytest.mark.usefixtures('bypass_ip_validation')
+@pytest.mark.usefixtures('bypass_ip_validation')
 class TestCompletePaymentFlow:
     """Test complete payment flow from initiation to callback"""
     
     @patch('new_structure.utils.notification_service.NotificationService.send_payment_notification')
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_successful_payment_flow_end_to_end(self, mock_post, mock_notification, 
                                                  auth_client, db_session, sample_student):
         """Test complete successful payment flow"""
@@ -96,7 +98,7 @@ class TestCompletePaymentFlow:
         assert call_args['mpesa_receipt'] == 'TK123456789'
     
     @patch('new_structure.utils.notification_service.NotificationService.send_payment_notification')
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_failed_payment_flow_end_to_end(self, mock_post, mock_notification,
                                            auth_client, db_session, sample_student):
         """Test complete failed payment flow"""
@@ -151,7 +153,7 @@ class TestCompletePaymentFlow:
         # Step 4: Verify no notification sent for failed payment
         mock_notification.assert_not_called()
     
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_timeout_payment_flow(self, mock_post, auth_client, db_session, sample_student):
         """Test payment that times out without callback"""
         # Initiate payment
@@ -193,10 +195,11 @@ class TestCompletePaymentFlow:
         assert txn in old_pending
 
 
+@pytest.mark.usefixtures('bypass_ip_validation')
 class TestMultiplePaymentFlows:
     """Test scenarios with multiple concurrent payments"""
     
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_multiple_concurrent_payments(self, mock_post, auth_client, 
                                          db_session, sample_students):
         """Test handling multiple simultaneous payment requests"""
@@ -226,7 +229,7 @@ class TestMultiplePaymentFlows:
         assert len(txns) >= len(sample_students)
     
     @patch('new_structure.utils.notification_service.NotificationService.send_payment_notification')
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_mixed_success_and_failure(self, mock_post, mock_notification,
                                       auth_client, db_session, sample_students):
         """Test scenario with some successful and some failed payments"""
@@ -290,11 +293,12 @@ class TestMultiplePaymentFlows:
         assert failed > 0
 
 
+@pytest.mark.usefixtures('bypass_ip_validation')
 class TestPaymentWithAnalytics:
     """Test payment flow impact on analytics"""
     
     @patch('new_structure.utils.notification_service.NotificationService.send_payment_notification')
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_successful_payment_updates_analytics(self, mock_post, mock_notification,
                                                   auth_client, db_session, sample_student):
         """Test that completed payment appears in analytics"""
@@ -359,10 +363,11 @@ class TestPaymentWithAnalytics:
         assert updated_stats['total_amount'] - initial_amount == 3500
 
 
+@pytest.mark.usefixtures('bypass_ip_validation')
 class TestPaymentErrorHandling:
     """Test error handling in payment flows"""
     
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_mpesa_api_failure(self, mock_post, auth_client, db_session, sample_student):
         """Test handling when M-PESA API is unavailable"""
         # Simulate API failure
@@ -379,7 +384,7 @@ class TestPaymentErrorHandling:
         # Should handle gracefully
         assert response.status_code in [500, 503, 200]  # Depends on error handling
     
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_invalid_callback_data(self, mock_post, auth_client, db_session, sample_student):
         """Test handling of malformed callback data"""
         # Create transaction first
@@ -444,6 +449,7 @@ class TestPaymentErrorHandling:
         assert response.status_code in [200, 404]
 
 
+@pytest.mark.usefixtures('bypass_ip_validation')
 class TestPaymentSecurity:
     """Test security aspects of payment flow"""
     
@@ -485,7 +491,7 @@ class TestPaymentSecurity:
         # Should require authentication
         assert response.status_code in [401, 302]  # Unauthorized or redirect to login
     
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_duplicate_transaction_prevention(self, mock_post, auth_client, 
                                              db_session, sample_student):
         """Test system prevents duplicate transactions"""
@@ -522,10 +528,11 @@ class TestPaymentSecurity:
         assert len(txns) >= 1
 
 
+@pytest.mark.usefixtures('bypass_ip_validation')
 class TestPaymentQueryStatus:
     """Test querying payment status"""
     
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_query_pending_payment_status(self, mock_post, auth_client, 
                                          db_session, sample_student):
         """Test checking status of pending payment"""
@@ -555,11 +562,12 @@ class TestPaymentQueryStatus:
         assert status_response.status_code in [200, 404]  # Depends on implementation
 
 
+@pytest.mark.usefixtures('bypass_ip_validation')
 class TestPaymentReconciliation:
     """Test payment reconciliation scenarios"""
     
     @patch('new_structure.utils.notification_service.NotificationService.send_payment_notification')
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_late_callback_processing(self, mock_post, mock_notification,
                                      auth_client, db_session, sample_student):
         """Test callback received after extended delay"""
@@ -621,11 +629,12 @@ class TestPaymentReconciliation:
         assert txn.status == 'completed'
 
 
+@pytest.mark.usefixtures('bypass_ip_validation')
 class TestPaymentReporting:
     """Test payment reporting after transactions"""
     
     @patch('new_structure.utils.notification_service.NotificationService.send_payment_notification')
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_payment_appears_in_transaction_list(self, mock_post, mock_notification,
                                                  auth_client, db_session, sample_student):
         """Test completed payment appears in transaction list"""
@@ -685,10 +694,11 @@ class TestPaymentReporting:
             assert 'TK555' in receipt_numbers
 
 
+@pytest.mark.usefixtures('bypass_ip_validation')
 class TestPaymentRollback:
     """Test scenarios requiring transaction rollback"""
     
-    @patch('requests.post')
+    @patch('new_structure.utils.mpesa_client.requests.post')
     def test_database_error_during_transaction_creation(self, mock_post, 
                                                        auth_client, db_session, sample_student):
         """Test handling of database errors during transaction creation"""

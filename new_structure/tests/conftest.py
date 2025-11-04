@@ -527,21 +527,24 @@ def mock_email_env(monkeypatch):
     monkeypatch.setenv('SCHOOL_NAME', 'Test School')
 
 @pytest.fixture()
-def mpesa_config(db_session):
+def mpesa_config(app, db_session):
     """Create M-PESA configuration for testing"""
     from new_structure.models.fee_management import MpesaConfig
-    config = MpesaConfig(
-        environment='sandbox',
-        consumer_key='test_consumer_key',
-        consumer_secret='test_consumer_secret',
-        shortcode='174379',
-        passkey='test_passkey',
-        callback_url='http://localhost:5000/mpesa/callback',
-        is_enabled=True
-    )
-    db_session.add(config)
-    db_session.commit()
-    return config
+    with app.app_context():
+        config = MpesaConfig(
+            environment='sandbox',
+            consumer_key='test_consumer_key',
+            consumer_secret='test_consumer_secret',
+            shortcode='174379',
+            passkey='test_passkey',
+            callback_url='http://localhost:5000/mpesa/callback',
+            is_enabled=True
+        )
+        db_session.add(config)
+        db_session.commit()
+        # Ensure config is refreshed to avoid DetachedInstanceError
+        db_session.refresh(config)
+        return config
 
 @pytest.fixture()
 def mock_mpesa_env(mpesa_config):

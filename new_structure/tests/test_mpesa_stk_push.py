@@ -16,11 +16,28 @@ class TestSTKPushInitiation:
     
     def test_stk_push_with_valid_data(self, auth_client, db_session, sample_student, mock_mpesa_env):
         """Test STK Push with valid payment data"""
-        with patch('views.mpesa.requests.post') as mock_post:
+        # Ensure config exists (fixture might not persist due to db_reset)
+        from new_structure.models.fee_management import MpesaConfig
+        if not db_session.query(MpesaConfig).first():
+            config = MpesaConfig(
+                environment='sandbox',
+                consumer_key='test_key',
+                consumer_secret='test_secret',
+                shortcode='174379',
+                passkey='test_pass',
+                callback_url='http://test',
+                is_enabled=True
+            )
+            db_session.add(config)
+            db_session.commit()
+        
+        with patch('new_structure.utils.mpesa_client.requests.get') as mock_get, \
+             patch('new_structure.utils.mpesa_client.requests.post') as mock_post:
             # Mock access token response
             mock_token_response = Mock()
             mock_token_response.status_code = 200
             mock_token_response.json.return_value = {'access_token': 'test_token_123'}
+            mock_get.return_value = mock_token_response
             
             # Mock STK Push response
             mock_stk_response = Mock()
@@ -32,8 +49,7 @@ class TestSTKPushInitiation:
                 'ResponseDescription': 'Success',
                 'CustomerMessage': 'Success. Request accepted for processing'
             }
-            
-            mock_post.side_effect = [mock_token_response, mock_stk_response]
+            mock_post.return_value = mock_stk_response
             
             # Make STK Push request
             response = auth_client.post('/mpesa/stk-push', 
@@ -44,6 +60,17 @@ class TestSTKPushInitiation:
                 }),
                 content_type='application/json'
             )
+            
+            # Debug: print actual response and config status
+            from new_structure.models.fee_management import MpesaConfig
+            config_count = db_session.query(MpesaConfig).count()
+            print(f"Config count in DB: {config_count}")
+            if config_count > 0:
+                cfg = db_session.query(MpesaConfig).first()
+                print(f"Config found: enabled={cfg.is_enabled}, shortcode={cfg.shortcode}")
+            if response.status_code != 200:
+                print(f"Response status: {response.status_code}")
+                print(f"Response data: {response.get_json()}")
             
             assert response.status_code == 200
             data = json.loads(response.data)
@@ -131,7 +158,7 @@ class TestSTKPushInitiation:
     
     def test_stk_push_phone_number_normalization(self, auth_client, db_session, mock_mpesa_env):
         """Test phone number is normalized correctly"""
-        with patch('views.mpesa.requests.post') as mock_post:
+        with patch('new_structure.utils.mpesa_client.requests.post') as mock_post:
             # Mock responses
             mock_token_response = Mock()
             mock_token_response.status_code = 200
@@ -174,7 +201,7 @@ class TestSTKPushInitiation:
     
     def test_stk_push_api_timeout(self, auth_client, mock_mpesa_env):
         """Test STK Push handles API timeout gracefully"""
-        with patch('views.mpesa.requests.post') as mock_post:
+        with patch('new_structure.utils.mpesa_client.requests.post') as mock_post:
             mock_post.side_effect = Exception("Connection timeout")
             
             response = auth_client.post('/mpesa/stk-push',
@@ -192,7 +219,7 @@ class TestSTKPushInitiation:
     
     def test_stk_push_duplicate_prevention(self, auth_client, db_session, sample_student, mock_mpesa_env):
         """Test duplicate STK Push requests are handled"""
-        with patch('views.mpesa.requests.post') as mock_post:
+        with patch('new_structure.utils.mpesa_client.requests.post') as mock_post:
             # Mock responses
             mock_token_response = Mock()
             mock_token_response.status_code = 200
