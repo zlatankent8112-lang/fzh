@@ -352,7 +352,7 @@ def sample_mpesa_transactions(db_session):
             transaction_desc=f'Test payment {i}',
             merchant_request_id=f'test-merchant-{i}',
             checkout_request_id=f'test-checkout-{i}',
-            status='completed' if i % 2 == 0 else 'failed',
+            status='success' if i % 2 == 0 else 'failed',
             created_at=datetime.now() - timedelta(days=i)
         )
         db_session.add(txn)

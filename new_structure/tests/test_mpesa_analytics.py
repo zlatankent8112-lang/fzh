@@ -46,13 +46,13 @@ class TestAnalyticsDashboardStats:
                 phone_number='254712345678',
                 amount=1000,
                 account_reference='TEST001',
-                status='completed'
+                status='success'
             ),
             MpesaTransaction(
                 phone_number='254712345679',
                 amount=2000,
                 account_reference='TEST002',
-                status='completed'
+                status='success'
             ),
             MpesaTransaction(
                 phone_number='254712345680',
@@ -78,13 +78,13 @@ class TestAnalyticsDashboardStats:
                 phone_number='254712345678',
                 amount=1000,
                 account_reference='TEST001',
-                status='completed'
+                status='success'
             ),
             MpesaTransaction(
                 phone_number='254712345679',
                 amount=2000,
                 account_reference='TEST002',
-                status='completed'
+                status='success'
             ),
             MpesaTransaction(
                 phone_number='254712345680',
@@ -144,21 +144,21 @@ class TestDailyTrends:
                 phone_number='254712345678',
                 amount=1000,
                 account_reference='TEST001',
-                status='completed',
+                status='success',
                 created_at=today
             ),
             MpesaTransaction(
                 phone_number='254712345679',
                 amount=2000,
                 account_reference='TEST002',
-                status='completed',
+                status='success',
                 created_at=today
             ),
             MpesaTransaction(
                 phone_number='254712345680',
                 amount=1500,
                 account_reference='TEST003',
-                status='completed',
+                status='success',
                 created_at=yesterday
             )
         ]
@@ -228,7 +228,7 @@ class TestHourlyDistribution:
                 phone_number=f'25471234567{i}',
                 amount=1000,
                 account_reference=f'TEST00{i}',
-                status='completed',
+                status='success',
                 created_at=base_time.replace(hour=14)
             ) for i in range(5)
         ] + [
@@ -237,7 +237,7 @@ class TestHourlyDistribution:
                 phone_number='254712345699',
                 amount=1000,
                 account_reference='TEST099',
-                status='completed',
+                status='success',
                 created_at=base_time.replace(hour=8)
             )
         ]
@@ -279,21 +279,21 @@ class TestTopPayingStudents:
                 phone_number='254712345678',
                 amount=5000,
                 account_reference='STU001',
-                status='completed',
+                status='success',
                 student_id=1
             ),
             MpesaTransaction(
                 phone_number='254712345679',
                 amount=3000,
                 account_reference='STU002',
-                status='completed',
+                status='success',
                 student_id=2
             ),
             MpesaTransaction(
                 phone_number='254712345678',
                 amount=2000,
                 account_reference='STU001',
-                status='completed',
+                status='success',
                 student_id=1
             )
         ]
@@ -317,21 +317,21 @@ class TestTopPayingStudents:
                 phone_number='254712345678',
                 amount=1000,
                 account_reference='STU001',
-                status='completed',
+                status='success',
                 student_id=1
             ),
             MpesaTransaction(
                 phone_number='254712345678',
                 amount=2000,
                 account_reference='STU001',
-                status='completed',
+                status='success',
                 student_id=1
             ),
             MpesaTransaction(
                 phone_number='254712345678',
                 amount=1500,
                 account_reference='STU001',
-                status='completed',
+                status='success',
                 student_id=1
             )
         ]
@@ -355,7 +355,7 @@ class TestTopPayingStudents:
                 phone_number='254712345678',
                 amount=5000,
                 account_reference='STU001',
-                status='completed',
+                status='success',
                 student_id=1
             ),
             MpesaTransaction(
@@ -389,7 +389,7 @@ class TestFailureAnalysis:
                 phone_number='254712345678',
                 amount=1000,
                 account_reference='TEST001',
-                status='completed'
+                status='success'
             ),
             MpesaTransaction(
                 phone_number='254712345679',
@@ -595,7 +595,7 @@ class TestAnalyticsFiltering:
     
     def test_filter_by_status(self, db_session):
         """Test filtering transactions by status"""
-        stats = MpesaAnalytics.get_dashboard_stats(status='completed')
+        stats = MpesaAnalytics.get_dashboard_stats(status='success')
         
         # Should only include completed transactions
         assert stats is not None

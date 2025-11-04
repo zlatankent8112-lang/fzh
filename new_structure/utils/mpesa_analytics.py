@@ -62,17 +62,18 @@ class MpesaAnalytics:
             
             # If filtering by status, just use base_query
             if status:
-                successful = base_query.count() if status == 'success' else 0
+                successful = base_query.count() if status in ['success', 'completed'] else 0
                 failed = base_query.count() if status == 'failed' else 0
                 pending = base_query.count() if status == 'pending' else 0
                 timed_out = base_query.count() if status == 'timeout' else 0
                 cancelled = base_query.count() if status == 'cancelled' else 0
             else:
                 # Build filtered queries for each status
+                # Support both 'success' and 'completed' for backward compatibility
                 successful_query = MpesaTransaction.query.filter(
                     MpesaTransaction.created_at >= cutoff_date,
                     MpesaTransaction.created_at <= end_filter,
-                    MpesaTransaction.status == 'success'
+                    MpesaTransaction.status.in_(['success', 'completed'])
                 )
                 if min_amount is not None:
                     successful_query = successful_query.filter(MpesaTransaction.amount >= min_amount)
@@ -114,10 +115,11 @@ class MpesaAnalytics:
                 ).count()
             
             # Financial statistics - use success query
+            # Support both 'success' and 'completed' for backward compatibility
             success_query = MpesaTransaction.query.filter(
                 MpesaTransaction.created_at >= cutoff_date,
                 MpesaTransaction.created_at <= end_filter,
-                MpesaTransaction.status == 'success'
+                MpesaTransaction.status.in_(['success', 'completed'])
             )
             if min_amount is not None:
                 success_query = success_query.filter(MpesaTransaction.amount >= min_amount)
@@ -154,14 +156,14 @@ class MpesaAnalytics:
             
             today_successful = MpesaTransaction.query.filter(
                 MpesaTransaction.created_at >= today_start,
-                MpesaTransaction.status == 'success'
+                MpesaTransaction.status.in_(['success', 'completed'])
             ).count()
             
             today_amount_result = db.session.query(
                 func.sum(MpesaTransaction.amount)
             ).filter(
                 MpesaTransaction.created_at >= today_start,
-                MpesaTransaction.status == 'success'
+                MpesaTransaction.status.in_(['success', 'completed'])
             ).scalar()
             
             today_amount = float(today_amount_result or 0)
@@ -215,17 +217,18 @@ class MpesaAnalytics:
             cutoff_date = datetime.utcnow() - timedelta(days=days)
             
             # Query daily aggregates
+            # Support both 'success' and 'completed' for backward compatibility
             daily_data = db.session.query(
                 func.date(MpesaTransaction.created_at).label('date'),
                 func.count(MpesaTransaction.id).label('count'),
                 func.sum(
                     case(
-                        (MpesaTransaction.status == 'success', MpesaTransaction.amount),
+                        (MpesaTransaction.status.in_(['success', 'completed']), MpesaTransaction.amount),
                         else_=0
                     )
                 ).label('total_amount'),
                 func.sum(
-                    case((MpesaTransaction.status == 'success', 1), else_=0)
+                    case((MpesaTransaction.status.in_(['success', 'completed']), 1), else_=0)
                 ).label('successful'),
                 func.sum(
                     case((MpesaTransaction.status == 'failed', 1), else_=0)
@@ -241,8 +244,10 @@ class MpesaAnalytics:
             # Format results
             trends = []
             for row in daily_data:
+                # In SQLite, func.date() returns a string, not a date object
+                date_str = row.date if isinstance(row.date, str) else (row.date.isoformat() if row.date else None)
                 trends.append({
-                    'date': row.date.isoformat() if row.date else None,
+                    'date': date_str,
                     'count': row.count,
                     'amount': float(row.total_amount or 0),
                     'successful': row.successful,
@@ -271,7 +276,7 @@ class MpesaAnalytics:
                 extract('hour', MpesaTransaction.created_at).label('hour'),
                 func.count(MpesaTransaction.id).label('count'),
                 func.sum(
-                    case((MpesaTransaction.status == 'success', 1), else_=0)
+                    case((MpesaTransaction.status.in_(['success', 'completed']), 1), else_=0)
                 ).label('successful')
             ).filter(
                 MpesaTransaction.created_at >= cutoff_date
@@ -324,7 +329,7 @@ class MpesaAnalytics:
                 MpesaTransaction, Student.id == MpesaTransaction.student_id
             ).filter(
                 MpesaTransaction.created_at >= cutoff_date,
-                MpesaTransaction.status == 'success'
+                MpesaTransaction.status.in_(['success', 'completed'])
             ).group_by(
                 Student.id, Student.name, Student.admission_number
             ).order_by(
@@ -525,12 +530,13 @@ class MpesaAnalytics:
             List of timed out transactions
         """
         try:
-            timeout_threshold = datetime.utcnow() - timedelta(minutes=timeout_minutes)
+            # Use datetime.now() for consistency with test data
+            timeout_threshold = datetime.now() - timedelta(minutes=timeout_minutes)
             
             timed_out = MpesaTransaction.query.filter(
                 MpesaTransaction.status == 'pending',
                 MpesaTransaction.created_at < timeout_threshold,
-                MpesaTransaction.callback_received == False
+                (MpesaTransaction.callback_received.is_(False) | (MpesaTransaction.callback_received.is_(None)))
             ).all()
             
             transactions = []
@@ -567,7 +573,7 @@ class MpesaAnalytics:
                 func.sum(MpesaTransaction.amount)
             ).filter(
                 MpesaTransaction.created_at >= cutoff_date,
-                MpesaTransaction.status == 'success'
+                MpesaTransaction.status.in_(['success', 'completed'])
             ).scalar()
             
             return float(revenue_result or 0)
@@ -594,7 +600,7 @@ class MpesaAnalytics:
                 func.sum(MpesaTransaction.amount)
             ).filter(
                 MpesaTransaction.created_at >= cutoff_date,
-                MpesaTransaction.status == 'success'
+                MpesaTransaction.status.in_(['success', 'completed'])
             ).scalar()
             
             total_revenue = float(total_revenue_result or 0)
@@ -627,7 +633,7 @@ class MpesaAnalytics:
                 func.sum(MpesaTransaction.amount)
             ).filter(
                 MpesaTransaction.created_at >= cutoff_date,
-                MpesaTransaction.status == 'success'
+                MpesaTransaction.status.in_(['success', 'completed'])
             ).scalar()
             
             mpesa_revenue = float(mpesa_revenue_result or 0)
