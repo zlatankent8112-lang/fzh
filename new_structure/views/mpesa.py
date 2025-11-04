@@ -156,11 +156,34 @@ def callback():
     This endpoint is called by Safaricom servers, not by users.
     """
     try:
+        # Security: Validate callback source (Safaricom IPs)
+        # Safaricom callback IPs (update with official list from Safaricom docs)
+        SAFARICOM_IPS = [
+            '196.201.214.200',  # Safaricom primary callback IP
+            '196.201.214.206',  # Safaricom secondary callback IP
+            '196.201.213.114',  # Safaricom tertiary callback IP
+            '127.0.0.1',        # Localhost for testing (remove in production)
+            '::1'               # IPv6 localhost for testing (remove in production)
+        ]
+        
+        # Get client IP (handle proxy headers if behind load balancer)
+        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ',' in client_ip:
+            client_ip = client_ip.split(',')[0].strip()
+        
+        # Validate IP (skip for localhost/testing)
+        if client_ip not in SAFARICOM_IPS and client_ip != '127.0.0.1':
+            print(f"⚠️ Unauthorized callback attempt from IP: {client_ip}")
+            return jsonify({
+                'ResultCode': 1,
+                'ResultDesc': 'Unauthorized'
+            }), 403
+        
         # Get callback data
         callback_data = request.get_json()
         
         # Log callback for debugging
-        print(f"M-PESA Callback received: {json.dumps(callback_data, indent=2)}")
+        print(f"✅ M-PESA Callback received from {client_ip}: {json.dumps(callback_data, indent=2)}")
         
         # Process callback
         success = process_mpesa_callback(callback_data)
