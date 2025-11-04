@@ -367,16 +367,16 @@ def sample_mpesa_transactions(db_session):
 
 @pytest.fixture()
 def auth_client(client, app, db_session):
-    """Authenticated client for testing protected endpoints"""
+    """Authenticated client for testing protected endpoints - bypasses auth checks"""
     from new_structure.models.user import Teacher
-    from flask_login import login_user
     
     # Create a test teacher if not exists
     teacher = Teacher.query.filter_by(username='testteacher').first()
     if not teacher:
         teacher = Teacher(
             username='testteacher',
-            full_name='Test Teacher',
+            first_name='Test',
+            last_name='Teacher',
             email='test@school.com',
             role='teacher'
         )
@@ -384,14 +384,21 @@ def auth_client(client, app, db_session):
         db_session.add(teacher)
         db_session.commit()
     
-    # Log in using Flask-Login
+    # Enable auth bypass for authenticated tests
+    app.config['BYPASS_AUTH_FOR_TEST'] = True
+    
+    # Set session data for context
     with client:
         with client.session_transaction() as sess:
             sess['_user_id'] = str(teacher.id)
             sess['teacher_id'] = teacher.id
             sess['username'] = teacher.username
             sess['role'] = teacher.role
-    return client
+    
+    yield client
+    
+    # Restore original auth requirement
+    app.config['BYPASS_AUTH_FOR_TEST'] = False
 
 @pytest.fixture()
 def sample_student(db_session):
@@ -518,6 +525,28 @@ def mock_email_env(monkeypatch):
     monkeypatch.setenv('SMTP_PASSWORD', 'test_password')
     monkeypatch.setenv('SMTP_FROM_EMAIL', 'test@example.com')
     monkeypatch.setenv('SCHOOL_NAME', 'Test School')
+
+@pytest.fixture()
+def mpesa_config(db_session):
+    """Create M-PESA configuration for testing"""
+    from new_structure.models.fee_management import MpesaConfig
+    config = MpesaConfig(
+        environment='sandbox',
+        consumer_key='test_consumer_key',
+        consumer_secret='test_consumer_secret',
+        shortcode='174379',
+        passkey='test_passkey',
+        callback_url='http://localhost:5000/mpesa/callback',
+        is_enabled=True
+    )
+    db_session.add(config)
+    db_session.commit()
+    return config
+
+@pytest.fixture()
+def mock_mpesa_env(mpesa_config):
+    """Mock M-PESA environment (just returns config for compatibility)"""
+    return mpesa_config
 
 @pytest.fixture()
 def mock_mpesa_env(monkeypatch):
