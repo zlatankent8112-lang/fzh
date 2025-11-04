@@ -20,7 +20,7 @@ mpesa_bp = Blueprint('mpesa', __name__, url_prefix='/mpesa')
 
 
 @mpesa_bp.route('/config', methods=['GET'])
-# @login_required  # Temporarily disabled for initial setup
+@login_required
 def config():
     """M-PESA configuration page"""
     # Get existing configuration
@@ -29,7 +29,7 @@ def config():
 
 
 @mpesa_bp.route('/config/save', methods=['POST'])
-# @login_required  # Temporarily disabled for initial setup
+@login_required
 def save_config():
     """Save M-PESA configuration"""
     try:
@@ -60,7 +60,7 @@ def save_config():
 
 
 @mpesa_bp.route('/config/test', methods=['POST'])
-# @login_required  # Temporarily disabled for initial setup
+@login_required
 def test_config():
     """Test M-PESA configuration by generating access token"""
     try:
@@ -95,7 +95,7 @@ def test_config():
 
 
 @mpesa_bp.route('/stk-push', methods=['POST'])
-# @login_required  # Commented out for testing - TODO: implement proper auth for AJAX
+@login_required
 def stk_push():
     """
     Initiate STK Push payment request.
@@ -222,7 +222,7 @@ def callback():
 
 
 @mpesa_bp.route('/transactions', methods=['GET'])
-# @login_required  # Commented out for testing - TODO: implement proper auth
+@login_required
 def transactions():
     """M-PESA transactions dashboard"""
     # Get all transactions with pagination
@@ -275,7 +275,7 @@ def transactions():
 
 
 @mpesa_bp.route('/transaction/<int:transaction_id>', methods=['GET'])
-# @login_required  # Commented out for testing - TODO: implement proper auth
+@login_required
 def transaction_detail(transaction_id):
     """View detailed transaction information"""
     transaction = MpesaTransaction.query.get_or_404(transaction_id)
@@ -294,7 +294,7 @@ def transaction_detail(transaction_id):
 
 
 @mpesa_bp.route('/transaction/<int:transaction_id>/check-status', methods=['POST'])
-# @login_required  # Commented out for testing - TODO: implement proper auth
+@login_required
 def check_transaction_status(transaction_id):
     """
     Manually check transaction status.
