@@ -15,6 +15,10 @@ from new_structure.utils.mpesa_client import (
 )
 from datetime import datetime
 import json
+import logging
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 mpesa_bp = Blueprint('mpesa', __name__, url_prefix='/mpesa')
 
@@ -173,7 +177,7 @@ def callback():
         
         # Validate IP (skip for localhost/testing)
         if client_ip not in SAFARICOM_IPS and client_ip != '127.0.0.1':
-            print(f"⚠️ Unauthorized callback attempt from IP: {client_ip}")
+            logger.warning(f"Unauthorized M-PESA callback attempt from IP: {client_ip}")
             return jsonify({
                 'ResultCode': 1,
                 'ResultDesc': 'Unauthorized'
@@ -182,8 +186,9 @@ def callback():
         # Get callback data
         callback_data = request.get_json()
         
-        # Log callback for debugging
-        print(f"✅ M-PESA Callback received from {client_ip}: {json.dumps(callback_data, indent=2)}")
+        # Log callback
+        logger.info(f"M-PESA Callback received from {client_ip}")
+        logger.debug(f"Callback data: {json.dumps(callback_data, indent=2)}")
         
         # Process callback
         success = process_mpesa_callback(callback_data)
@@ -224,20 +229,21 @@ def callback():
                     transaction.payment_id = payment.id
                     db.session.commit()
                     
-                    print(f"Auto-reconciliation: Payment {payment.id} created for transaction {transaction.id}")
+                    logger.info(f"Auto-reconciliation successful: Payment #{payment.id} created for transaction #{transaction.id}, Receipt: {transaction.mpesa_receipt_number}")
             
             return jsonify({
                 'ResultCode': 0,
                 'ResultDesc': 'Success'
             })
         else:
+            logger.error("Failed to process M-PESA callback")
             return jsonify({
                 'ResultCode': 1,
                 'ResultDesc': 'Failed to process callback'
             })
     
     except Exception as e:
-        print(f"Error in M-PESA callback: {str(e)}")
+        logger.error(f"Error in M-PESA callback: {str(e)}", exc_info=True)
         return jsonify({
             'ResultCode': 1,
             'ResultDesc': f'Error: {str(e)}'
