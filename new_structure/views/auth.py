@@ -4,7 +4,17 @@ Authentication views for the Hillview School Management System.
 import os
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, send_from_directory, get_flashed_messages, current_app
-from ..extensions import csrf, limiter
+
+# Import extensions with fallback for test context
+try:
+    from ..extensions import csrf, limiter
+except ImportError:
+    try:
+        from new_structure.extensions import csrf, limiter
+    except ImportError:
+        # Mock for testing
+        csrf = None
+        limiter = None
 try:
     from ..services import authenticate_teacher, logout
 except ImportError:

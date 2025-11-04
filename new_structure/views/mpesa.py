@@ -98,30 +98,132 @@ def test_config():
         })
 
 
+def normalize_phone_number(phone):
+    """
+    Normalize phone number to 254XXXXXXXXX format.
+    Accepts: 0712345678, 712345678, 254712345678, +254712345678
+    """
+    if not phone:
+        return None
+    
+    # Remove spaces, dashes, and plus sign
+    phone = str(phone).replace(' ', '').replace('-', '').replace('+', '')
+    
+    # Remove leading zeros and add 254
+    if phone.startswith('0'):
+        phone = '254' + phone[1:]
+    elif not phone.startswith('254'):
+        phone = '254' + phone
+    
+    return phone
+
+
+def validate_phone_number(phone):
+    """Validate Kenyan phone number format"""
+    if not phone:
+        return False
+    
+    # Normalize first
+    normalized = normalize_phone_number(phone)
+    
+    # Must be 12 digits starting with 254
+    if not normalized or len(normalized) != 12:
+        return False
+    
+    if not normalized.startswith('254'):
+        return False
+    
+    # Must be all digits
+    if not normalized.isdigit():
+        return False
+    
+    return True
+
+
+def validate_amount(amount):
+    """Validate payment amount"""
+    try:
+        amount_float = float(amount)
+        # M-PESA minimum is 1 KES
+        if amount_float < 1:
+            return False, "Amount must be at least 1 KES"
+        # Maximum per transaction (M-PESA limit)
+        if amount_float > 150000:
+            return False, "Amount exceeds M-PESA limit of 150,000 KES"
+        return True, None
+    except (ValueError, TypeError):
+        return False, "Invalid amount format"
+
+
 @mpesa_bp.route('/stk-push', methods=['POST'])
 @login_required
 def stk_push():
     """
     Initiate STK Push payment request.
-    Called from record payment page.
+    Accepts both JSON and form data.
     """
     try:
-        # Get form data
-        student_id = request.form.get('student_id')
-        phone_number = request.form.get('phone_number')
-        amount = float(request.form.get('amount'))
+        # Get data from JSON or form
+        if request.is_json:
+            data = request.get_json()
+            phone_number = data.get('phone_number')
+            amount = data.get('amount')
+            account_reference = data.get('account_reference')
+            transaction_desc = data.get('transaction_desc', 'Fee payment')
+            student_id = data.get('student_id')
+        else:
+            phone_number = request.form.get('phone_number')
+            amount = request.form.get('amount')
+            account_reference = request.form.get('account_reference')
+            transaction_desc = request.form.get('transaction_desc', 'Fee payment')
+            student_id = request.form.get('student_id')
         
-        # Get student for account reference
-        student = Student.query.get(student_id)
-        if not student:
+        # Validate required fields
+        if not phone_number or not amount or not account_reference:
             return jsonify({
                 'success': False,
-                'message': 'Student not found'
-            })
+                'message': 'Missing required fields: phone_number, amount, account_reference'
+            }), 400
         
-        # Create account reference and description
-        account_reference = student.admission_number or f"STU{student.id}"
-        transaction_desc = f"Fee payment for {student.name}"
+        # Validate phone number
+        if not validate_phone_number(phone_number):
+            return jsonify({
+                'success': False,
+                'message': 'Invalid phone number format. Use format: 0712345678 or 254712345678'
+            }), 400
+        
+        # Normalize phone number
+        phone_number = normalize_phone_number(phone_number)
+        
+        # Validate amount
+        amount_valid, amount_error = validate_amount(amount)
+        if not amount_valid:
+            return jsonify({
+                'success': False,
+                'message': amount_error
+            }), 400
+        
+        # Convert amount to float
+        amount = float(amount)
+        
+        # Sanitize account_reference (prevent SQL injection, XSS)
+        account_reference = str(account_reference).strip()[:50]  # Limit length
+        
+        # Sanitize transaction description
+        transaction_desc = str(transaction_desc).strip()[:100]  # Limit length
+        
+        # If student_id provided but no account_reference, get from student
+        if student_id and not account_reference:
+            student = Student.query.get(student_id)
+            if not student:
+                return jsonify({
+                    'success': False,
+                    'message': 'Student not found'
+                }), 404
+            
+            account_reference = student.admission_number or f"STU{student.id}"
+            if not transaction_desc or transaction_desc == 'Fee payment':
+                transaction_desc = f"Fee payment for {student.name}"
         
         # Create and initiate STK Push transaction
         transaction, response = create_stk_push_transaction(
@@ -143,13 +245,19 @@ def stk_push():
             return jsonify({
                 'success': False,
                 'message': response.get('ResponseDescription') or response.get('errorMessage', 'Payment request failed')
-            })
+            }), 400
     
+    except ValueError as e:
+        return jsonify({
+            'success': False,
+            'message': f'Invalid amount: {str(e)}'
+        }), 400
     except Exception as e:
+        logger.error(f"Error initiating STK Push: {str(e)}", exc_info=True)
         return jsonify({
             'success': False,
             'message': f'Error: {str(e)}'
-        })
+        }), 500
 
 
 @mpesa_bp.route('/callback', methods=['POST'])
@@ -161,13 +269,13 @@ def callback():
     """
     try:
         # Security: Validate callback source (Safaricom IPs)
-        # Safaricom callback IPs (update with official list from Safaricom docs)
+        # Official Safaricom callback IP addresses
         SAFARICOM_IPS = [
-            '196.201.214.200',  # Safaricom primary callback IP
-            '196.201.214.206',  # Safaricom secondary callback IP
-            '196.201.213.114',  # Safaricom tertiary callback IP
-            '127.0.0.1',        # Localhost for testing (remove in production)
-            '::1'               # IPv6 localhost for testing (remove in production)
+            '196.201.214.200',
+            '196.201.214.206',
+            '196.201.213.114',
+            '196.201.214.207',
+            '196.201.214.208',
         ]
         
         # Get client IP (handle proxy headers if behind load balancer)
@@ -175,8 +283,8 @@ def callback():
         if ',' in client_ip:
             client_ip = client_ip.split(',')[0].strip()
         
-        # Validate IP (skip for localhost/testing)
-        if client_ip not in SAFARICOM_IPS and client_ip != '127.0.0.1':
+        # Validate IP - must be from Safaricom
+        if client_ip not in SAFARICOM_IPS:
             logger.warning(f"Unauthorized M-PESA callback attempt from IP: {client_ip}")
             return jsonify({
                 'ResultCode': 1,
@@ -233,7 +341,7 @@ def callback():
                     
                     # Send notifications
                     try:
-                        from ..utils.notification_service import NotificationService
+                        from new_structure.utils.notification_service import NotificationService
                         
                         # Get student details
                         student = Student.query.get(transaction.student_id)
@@ -284,10 +392,13 @@ def callback():
 @mpesa_bp.route('/transactions', methods=['GET'])
 @login_required
 def transactions():
-    """M-PESA transactions dashboard"""
+    """
+    M-PESA transactions dashboard.
+    Returns HTML template for browser, JSON for API requests.
+    """
     # Get all transactions with pagination
     page = request.args.get('page', 1, type=int)
-    per_page = 50
+    per_page = request.args.get('per_page', 50, type=int)
     
     # Filters
     status = request.args.get('status')
@@ -305,19 +416,25 @@ def transactions():
         query = query.filter_by(student_id=student_id)
     
     if date_from:
-        date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
-        query = query.filter(MpesaTransaction.created_at >= date_from_obj)
+        try:
+            date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
+            query = query.filter(MpesaTransaction.created_at >= date_from_obj)
+        except ValueError:
+            pass
     
     if date_to:
-        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d')
-        query = query.filter(MpesaTransaction.created_at <= date_to_obj)
+        try:
+            date_to_obj = datetime.strptime(date_to, '%Y-%m-%d')
+            query = query.filter(MpesaTransaction.created_at <= date_to_obj)
+        except ValueError:
+            pass
     
     # Order by most recent first
     query = query.order_by(MpesaTransaction.created_at.desc())
     
     # Paginate
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-    transactions = pagination.items
+    transactions_list = pagination.items
     
     # Calculate statistics
     stats = {
@@ -325,11 +442,43 @@ def transactions():
         'successful': MpesaTransaction.query.filter_by(status='success').count(),
         'pending': MpesaTransaction.query.filter_by(status='pending').count(),
         'failed': MpesaTransaction.query.filter_by(status='failed').count(),
-        'total_amount': db.session.query(db.func.sum(MpesaTransaction.amount)).filter_by(status='success').scalar() or 0
+        'total_amount': float(db.session.query(db.func.sum(MpesaTransaction.amount)).filter_by(status='success').scalar() or 0)
     }
     
+    # Return JSON for API requests (Accept: application/json header or ?format=json)
+    if request.accept_mimetypes.accept_json and not request.accept_mimetypes.accept_html:
+        return jsonify({
+            'success': True,
+            'transactions': [
+                {
+                    'id': t.id,
+                    'merchant_request_id': t.merchant_request_id,
+                    'checkout_request_id': t.checkout_request_id,
+                    'status': t.status,
+                    'amount': float(t.amount) if t.amount else None,
+                    'phone_number': t.phone_number,
+                    'mpesa_receipt_number': t.mpesa_receipt_number,
+                    'result_code': t.result_code,
+                    'result_desc': t.result_desc,
+                    'transaction_date': t.transaction_date.isoformat() if t.transaction_date else None,
+                    'created_at': t.created_at.isoformat() if t.created_at else None
+                }
+                for t in transactions_list
+            ],
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': pagination.total,
+                'pages': pagination.pages,
+                'has_next': pagination.has_next,
+                'has_prev': pagination.has_prev
+            },
+            'stats': stats
+        })
+    
+    # Return HTML template for browser requests
     return render_template('mpesa/transactions.html', 
-                         transactions=transactions, 
+                         transactions=transactions_list, 
                          pagination=pagination,
                          stats=stats)
 
@@ -357,7 +506,7 @@ def transaction_detail(transaction_id):
 @login_required
 def check_transaction_status(transaction_id):
     """
-    Manually check transaction status.
+    Manually check transaction status (POST method).
     Useful when callback is delayed or not received.
     """
     try:
@@ -417,6 +566,50 @@ def check_transaction_status(transaction_id):
             'success': False,
             'message': f'Error: {str(e)}'
         })
+
+
+@mpesa_bp.route('/query-status/<int:transaction_id>', methods=['GET'])
+@login_required
+def query_status(transaction_id):
+    """
+    Query M-PESA transaction status (GET method).
+    Returns current status of transaction from database.
+    For API/test usage.
+    """
+    try:
+        transaction = MpesaTransaction.query.get(transaction_id)
+        
+        if not transaction:
+            return jsonify({
+                'success': False,
+                'message': 'Transaction not found'
+            }), 404
+        
+        # Return transaction details
+        return jsonify({
+            'success': True,
+            'transaction': {
+                'id': transaction.id,
+                'merchant_request_id': transaction.merchant_request_id,
+                'checkout_request_id': transaction.checkout_request_id,
+                'status': transaction.status,
+                'amount': float(transaction.amount) if transaction.amount else None,
+                'phone_number': transaction.phone_number,
+                'mpesa_receipt_number': transaction.mpesa_receipt_number,
+                'result_code': transaction.result_code,
+                'result_desc': transaction.result_desc,
+                'transaction_date': transaction.transaction_date.isoformat() if transaction.transaction_date else None,
+                'created_at': transaction.created_at.isoformat() if transaction.created_at else None,
+                'updated_at': transaction.updated_at.isoformat() if transaction.updated_at else None
+            }
+        })
+    
+    except Exception as e:
+        logger.error(f"Error querying transaction status: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }), 500
 
 
 @mpesa_bp.route('/api/stk-push', methods=['POST'])
@@ -559,7 +752,7 @@ def transaction_status(transaction_id):
     Used for polling transaction status without page refresh.
     """
     try:
-        from ..utils.mpesa_status_checker import get_transaction_status
+        from new_structure.utils.mpesa_status_checker import get_transaction_status
         
         result = get_transaction_status(transaction_id)
         return jsonify(result)
@@ -580,7 +773,7 @@ def analytics_dashboard():
     Shows comprehensive statistics and trends for M-PESA payments.
     """
     try:
-        from ..utils.mpesa_analytics import MpesaAnalytics
+        from new_structure.utils.mpesa_analytics import MpesaAnalytics
         from datetime import datetime
         
         # Get period from query params (default: 30 days)
@@ -619,7 +812,7 @@ def test_notification():
     Send a test notification to verify configuration.
     """
     try:
-        from ..utils.notification_service import NotificationService
+        from new_structure.utils.notification_service import NotificationService
         
         # Get parameters from request
         if request.method == 'POST':

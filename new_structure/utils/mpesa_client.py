@@ -224,11 +224,17 @@ def process_mpesa_callback(callback_data):
         # Update transaction with callback data
         transaction.callback_received = True
         transaction.callback_data = json.dumps(callback_data)
-        transaction.result_code = str(result_code)
+        # Store result_code as string (model uses String column)
+        transaction.result_code = str(result_code) if result_code is not None else None
         transaction.result_desc = result_desc
         
-        # Check result code
-        if result_code == 0:
+        # Check result code (handle both string and int)
+        try:
+            result_code_int = int(result_code) if result_code is not None else -1
+        except (ValueError, TypeError):
+            result_code_int = -1
+        
+        if result_code_int == 0:
             # Success - extract metadata
             callback_metadata = stk_callback.get('CallbackMetadata', {})
             items = callback_metadata.get('Item', [])
