@@ -8,6 +8,7 @@ from typing import Optional
 from pathlib import Path
 from sqlalchemy.pool import StaticPool
 from urllib.parse import quote_plus
+from datetime import datetime
 
 class Config:
     """Base configuration class with settings common to all environments.
@@ -126,6 +127,32 @@ class Config:
     LOG_LEVEL = 'INFO'
     LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     LOG_FILE = None  # Set in environment-specific configs
+
+    # Notification Configuration (SMS & Email)
+    # SMS Provider: 'africas_talking', 'twilio', or 'test' (test mode just logs)
+    SMS_PROVIDER = os.environ.get('SMS_PROVIDER', 'test')
+    
+    # Africa's Talking Configuration
+    AFRICAS_TALKING_USERNAME = os.environ.get('AFRICAS_TALKING_USERNAME')
+    AFRICAS_TALKING_API_KEY = os.environ.get('AFRICAS_TALKING_API_KEY')
+    
+    # Twilio Configuration
+    TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+    TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
+    TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
+    
+    # Email Configuration (SMTP)
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
+    
+    # School Information for notifications
+    SCHOOL_NAME = os.environ.get('SCHOOL_NAME', 'Hillview School')
+    SCHOOL_PHONE = os.environ.get('SCHOOL_PHONE', '+254705204870')
+    CURRENT_DATE = datetime.now().strftime('%Y-%m-%d')
 
     # Security Configuration
     WTF_CSRF_ENABLED = True

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>M-PESA Payment Status</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .status-container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top-color: #007bff;
+        animation: spin 1s ease-in-out infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .badge {
+        font-size: 1rem;
+        padding: 8px 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="status-container">
+      <h2 class="text-center mb-4">M-PESA Payment Status</h2>
+
+      <!-- Transaction ID input (hidden in production, passed from STK Push response) -->
+      <input
+        type="hidden"
+        id="mpesa-transaction-id"
+        value="{{ transaction_id }}"
+      />
+
+      <!-- Status display area -->
+      <div id="transaction-status">
+        <div class="alert alert-info text-center">
+          <div class="spinner"></div>
+          <p class="mt-3">Checking payment status...</p>
+          <small>Waiting for M-PESA confirmation</small>
+        </div>
+      </div>
+
+      <!-- Transaction details -->
+      <div id="transaction-details" class="mt-4">
+        <h5>Transaction Details:</h5>
+        <table class="table table-sm">
+          <tr>
+            <td><strong>Transaction ID:</strong></td>
+            <td id="detail-id">{{ transaction_id }}</td>
+          </tr>
+          <tr>
+            <td><strong>Amount:</strong></td>
+            <td>KES <span id="detail-amount">{{ amount }}</span></td>
+          </tr>
+          <tr>
+            <td><strong>Phone:</strong></td>
+            <td id="detail-phone">{{ phone_number }}</td>
+          </tr>
+          <tr>
+            <td><strong>Status:</strong></td>
+            <td id="detail-status">
+              <span class="badge badge-warning">Pending</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="text-center mt-4">
+        <button
+          onclick="window.location.href='/fees'"
+          class="btn btn-secondary"
+        >
+          Back to Fees
+        </button>
+        <button onclick="location.reload()" class="btn btn-info">
+          Refresh Status
+        </button>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/mpesa_status_poller.js') }}"></script>
+    <script>
+      // Custom handler to update transaction details table
+      if (window.mpesaPoller) {
+        const originalHandler = window.mpesaPoller.onStatusChange;
+        window.mpesaPoller.onStatusChange = function (data) {
+          // Call original handler
+          originalHandler.call(this, data);
+
+          // Update details table
+          document.getElementById("detail-status").innerHTML =
+            this.getStatusBadge(data.status);
+          if (data.amount) {
+            document.getElementById("detail-amount").textContent =
+              data.amount.toFixed(2);
+          }
+        };
+      }
+    </script>
+  </body>
+</html>

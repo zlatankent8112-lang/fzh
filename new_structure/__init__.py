@@ -5,7 +5,7 @@ This file initializes the Flask application and registers extensions and bluepri
 import os
 from flask import Flask, request, abort, session, redirect, url_for, jsonify, render_template, g
 from datetime import datetime
-from .extensions import db, csrf, limiter, configure_rate_limiter
+from .extensions import db, csrf, limiter, configure_rate_limiter, login_manager
 from .config import config as _STATIC_CONFIG
 import importlib
 from .logging_config import setup_logging
@@ -259,6 +259,7 @@ def create_app(config_name='default'):
     except Exception:
         pass
     csrf.init_app(app)
+    login_manager.init_app(app)
     limiter.default_limits = [app.config.get('RATELIMIT_DEFAULT', '100 per hour')]
     configure_rate_limiter(app)
     # Expose limiter instance on app for introspection & tests
@@ -276,6 +277,16 @@ def create_app(config_name='default'):
             _ = db.engine  # warm up and register engine for this app instance
     except Exception as e:
         app.logger.error(f"Database engine binding eager-check failed: {e}")
+
+    # Setup Flask-Login user loader
+    @login_manager.user_loader
+    def load_user(user_id):
+        """Load user by ID for Flask-Login."""
+        from .models.user import Teacher
+        try:
+            return Teacher.query.get(int(user_id))
+        except (ValueError, TypeError):
+            return None
 
     # NOTE:
     # We intentionally avoid hooking a global appcontext_pushed signal that touches db.engine,

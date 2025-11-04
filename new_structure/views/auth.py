@@ -61,6 +61,11 @@ def register_successful_login(teacher_obj, username, role):
     the session expired or invalid and clear it, leading to an immediate 401.
     """
     rotate_session()
+    
+    # Flask-Login integration
+    from flask_login import login_user
+    login_user(teacher_obj, remember=True)
+    
     session['teacher_id'] = teacher_obj.id
     session['username'] = username
     session['role'] = role

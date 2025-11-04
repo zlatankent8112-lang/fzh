@@ -3,6 +3,12 @@ M-PESA Transaction Timeout Handler
 Automatically marks pending transactions as timed out after 2 minutes.
 Run this as a background job (e.g., cron job or celery task).
 """
+import sys
+import os
+# Add parent directory to path
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, parent_dir)
+
 from datetime import datetime, timedelta
 from new_structure import create_app
 from new_structure.extensions import db

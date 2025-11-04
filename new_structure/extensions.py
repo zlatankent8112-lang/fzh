@@ -7,6 +7,7 @@ from sqlalchemy import Table as _sa_Table
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_login import LoginManager
 import os
 import logging
 import time
@@ -124,6 +125,12 @@ except Exception:
     # Best-effort; if patching fails, models may still specify extend_existing individually
     pass
 csrf = CSRFProtect()
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.login_view = 'auth.admin_login'  # Redirect to admin/teacher login page
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
 
 # Establish storage at import time with safe fallback
 _initial_storage = _choose_rate_limit_storage()

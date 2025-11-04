@@ -5,10 +5,11 @@ import hmac
 from new_structure.extensions import db
 from .associations import teacher_subjects
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
 # Association table imported from models.associations to avoid circular imports
 
-class Teacher(db.Model):
+class Teacher(UserMixin, db.Model):
     """Teacher model representing school staff members.
 
     The canonical hashed password is stored in the 'password' column.

@@ -230,6 +230,37 @@ def callback():
                     db.session.commit()
                     
                     logger.info(f"Auto-reconciliation successful: Payment #{payment.id} created for transaction #{transaction.id}, Receipt: {transaction.mpesa_receipt_number}")
+                    
+                    # Send notifications
+                    try:
+                        from ..utils.notification_service import NotificationService
+                        
+                        # Get student details
+                        student = Student.query.get(transaction.student_id)
+                        if student:
+                            # Get parent phone and email if available
+                            parent_phone = None
+                            parent_email = None
+                            if hasattr(student, 'parent') and student.parent:
+                                parent_phone = student.parent.phone_number
+                                parent_email = student.parent.email
+                            
+                            # Send notification
+                            notification_result = NotificationService.send_payment_notification(
+                                student_name=student.name,
+                                amount=transaction.amount,
+                                receipt_number=transaction.mpesa_receipt_number,
+                                phone_number=transaction.phone_number,
+                                email=parent_email,
+                                parent_phone=parent_phone
+                            )
+                            
+                            if notification_result['sms_sent'] or notification_result['email_sent']:
+                                logger.info(f"Payment notification sent for transaction #{transaction.id}: SMS={notification_result['sms_sent']}, Email={notification_result['email_sent']}")
+                            else:
+                                logger.warning(f"Failed to send notification for transaction #{transaction.id}: SMS Error={notification_result.get('sms_error')}, Email Error={notification_result.get('email_error')}")
+                    except Exception as notify_error:
+                        logger.error(f"Error sending payment notification: {notify_error}", exc_info=True)
             
             return jsonify({
                 'ResultCode': 0,
@@ -435,7 +466,7 @@ def api_stk_push():
         }), 500
 
 
-@mpesa_bp.route('/handle-timeouts', methods=['POST'])
+@mpesa_bp.route('/handle-timeouts', methods=['GET', 'POST'])
 @login_required
 def handle_timeouts():
     """
@@ -487,6 +518,143 @@ def handle_timeouts():
     except Exception as e:
         logger.error(f"Error handling transaction timeouts: {str(e)}", exc_info=True)
         db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }), 500
+
+
+@mpesa_bp.route('/status/<int:transaction_id>')
+@login_required
+def payment_status_page(transaction_id):
+    """
+    Display payment status page with real-time updates.
+    Shows transaction details and polls for status changes.
+    """
+    try:
+        transaction = MpesaTransaction.query.get(transaction_id)
+        
+        if not transaction:
+            flash('Transaction not found', 'error')
+            return redirect(url_for('fees.index'))
+        
+        return render_template('mpesa_status.html',
+            transaction_id=transaction.id,
+            amount=transaction.amount,
+            phone_number=transaction.phone_number,
+            status=transaction.status
+        )
+        
+    except Exception as e:
+        logger.error(f"Error displaying status page: {str(e)}", exc_info=True)
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('fees.index'))
+
+
+@mpesa_bp.route('/transaction-status/<int:transaction_id>', methods=['GET'])
+@login_required
+def transaction_status(transaction_id):
+    """
+    Get real-time status of an M-PESA transaction.
+    Used for polling transaction status without page refresh.
+    """
+    try:
+        from ..utils.mpesa_status_checker import get_transaction_status
+        
+        result = get_transaction_status(transaction_id)
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error checking transaction status: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@mpesa_bp.route('/analytics')
+@login_required
+def analytics_dashboard():
+    """
+    M-PESA Analytics Dashboard.
+    Shows comprehensive statistics and trends for M-PESA payments.
+    """
+    try:
+        from ..utils.mpesa_analytics import MpesaAnalytics
+        from datetime import datetime
+        
+        # Get period from query params (default: 30 days)
+        days = int(request.args.get('days', 30))
+        
+        # Get all analytics data
+        stats = MpesaAnalytics.get_dashboard_stats(days=days)
+        daily_trends = MpesaAnalytics.get_daily_trends(days=days)
+        hourly_distribution = MpesaAnalytics.get_hourly_distribution()
+        top_students = MpesaAnalytics.get_top_paying_students(limit=10, days=days)
+        recent_transactions = MpesaAnalytics.get_recent_transactions(limit=15)
+        failure_analysis = MpesaAnalytics.get_failure_analysis(days=days)
+        
+        return render_template('mpesa_analytics.html',
+            stats=stats,
+            daily_trends=daily_trends,
+            hourly_distribution=hourly_distribution,
+            top_students=top_students,
+            recent_transactions=recent_transactions,
+            failure_analysis=failure_analysis,
+            selected_days=days,
+            today_date=datetime.now()
+        )
+        
+    except Exception as e:
+        logger.error(f"Error loading analytics dashboard: {str(e)}", exc_info=True)
+        flash(f'Error loading analytics: {str(e)}', 'error')
+        return redirect(url_for('mpesa.transactions'))
+
+
+@mpesa_bp.route('/test-notification', methods=['GET', 'POST'])
+@login_required
+def test_notification():
+    """
+    Test SMS/Email notification system.
+    Send a test notification to verify configuration.
+    """
+    try:
+        from ..utils.notification_service import NotificationService
+        
+        # Get parameters from request
+        if request.method == 'POST':
+            phone_number = request.form.get('phone_number')
+            email = request.form.get('email')
+        else:
+            phone_number = request.args.get('phone_number')
+            email = request.args.get('email')
+        
+        if not phone_number and not email:
+            return jsonify({
+                'success': False,
+                'message': 'Please provide phone_number or email parameter'
+            }), 400
+        
+        # Send test notification
+        result = NotificationService.send_payment_notification(
+            student_name="Test Student",
+            amount=100.00,
+            receipt_number="TEST123456",
+            phone_number=phone_number,
+            email=email
+        )
+        
+        return jsonify({
+            'success': True,
+            'sms_sent': result['sms_sent'],
+            'email_sent': result['email_sent'],
+            'sms_error': result.get('sms_error'),
+            'email_error': result.get('email_error'),
+            'message': 'Test notification sent'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error testing notifications: {str(e)}", exc_info=True)
         return jsonify({
             'success': False,
             'message': f'Error: {str(e)}'
