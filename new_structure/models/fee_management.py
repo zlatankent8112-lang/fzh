@@ -697,7 +697,8 @@ class MpesaTransaction(db.Model):
     mpesa_receipt_number = db.Column(db.String(50), nullable=True, index=True)  # M-PESA receipt code (from callback)
     transaction_date = db.Column(db.DateTime, nullable=True)  # Date from M-PESA
     status = db.Column(db.Enum('pending', 'success', 'failed', 'cancelled', 'timeout', name='mpesa_status'), nullable=False, default='pending', index=True)
-    result_code = db.Column(db.String(10), nullable=True)  # Result code from callback (0 = success)
+    # Result code from callback (0 = success). Use Integer for consistent comparisons in tests
+    result_code = db.Column(db.Integer, nullable=True)
     result_desc = db.Column(db.String(255), nullable=True)  # Result description
     
     # Reconciliation with School Payments

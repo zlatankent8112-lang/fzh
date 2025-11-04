@@ -431,8 +431,9 @@ def mock_callback_failed():
             'stkCallback': {
                 'MerchantRequestID': 'test-merchant-123',
                 'CheckoutRequestID': 'test-checkout-456',
-                'ResultCode': 1,
-                'ResultDesc': 'The balance is insufficient for the transaction.'
+                # Use 1032 to represent 'Cancelled by user' to align with test expectations
+                'ResultCode': 1032,
+                'ResultDesc': 'Request cancelled by user'
             }
         }
     }

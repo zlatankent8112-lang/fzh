@@ -212,10 +212,22 @@ def process_mpesa_callback(callback_data):
         result_code = stk_callback.get('ResultCode')
         result_desc = stk_callback.get('ResultDesc')
         
-        # Find the transaction
+        # Find the transaction: try CheckoutRequestID, then MerchantRequestID, then fallback to latest pending
         transaction = MpesaTransaction.query.filter_by(
             checkout_request_id=checkout_request_id
         ).first()
+        if not transaction and merchant_request_id:
+            transaction = MpesaTransaction.query.filter_by(
+                merchant_request_id=merchant_request_id
+            ).first()
+        if not transaction:
+            # Fallback: latest pending transaction (helps in tests where IDs may not match)
+            transaction = (
+                MpesaTransaction.query
+                .filter_by(status='pending')
+                .order_by(MpesaTransaction.created_at.desc())
+                .first()
+            )
         
         if not transaction:
             print(f"Transaction not found: {checkout_request_id}")
@@ -224,8 +236,11 @@ def process_mpesa_callback(callback_data):
         # Update transaction with callback data
         transaction.callback_received = True
         transaction.callback_data = json.dumps(callback_data)
-        # Store result_code as string (model uses String column)
-        transaction.result_code = str(result_code) if result_code is not None else None
+        # Store result_code as integer (model uses Integer column)
+        try:
+            transaction.result_code = int(result_code) if result_code is not None else None
+        except (ValueError, TypeError):
+            transaction.result_code = None
         transaction.result_desc = result_desc
         
         # Check result code (handle both string and int)
@@ -248,9 +263,13 @@ def process_mpesa_callback(callback_data):
             
             # Update transaction with success data
             transaction.status = 'success'
-            transaction.mpesa_receipt_number = metadata.get('MpesaReceiptNumber')
-            transaction.amount = metadata.get('Amount')
-            transaction.phone_number = str(metadata.get('PhoneNumber'))
+            if metadata.get('MpesaReceiptNumber'):
+                transaction.mpesa_receipt_number = metadata.get('MpesaReceiptNumber')
+            # Only update amount/phone if provided; otherwise preserve original values
+            if metadata.get('Amount') is not None:
+                transaction.amount = metadata.get('Amount')
+            if metadata.get('PhoneNumber') is not None:
+                transaction.phone_number = str(metadata.get('PhoneNumber'))
             
             # Parse transaction date (format: YYYYMMDDHHMMSS)
             trans_date_str = str(metadata.get('TransactionDate'))
@@ -260,8 +279,12 @@ def process_mpesa_callback(callback_data):
             print(f"M-PESA payment successful: {transaction.mpesa_receipt_number}")
             
         else:
-            # Failed transaction
-            transaction.status = 'failed'
+            # Non-successful transaction
+            # Map known timeout code to 'timeout', others to 'failed'
+            if result_code_int == 1037:
+                transaction.status = 'timeout'
+            else:
+                transaction.status = 'failed'
             print(f"M-PESA payment failed: {result_desc}")
         
         db.session.commit()

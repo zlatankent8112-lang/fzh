@@ -307,8 +307,12 @@ def callback():
             stk_callback = body.get('stkCallback', {})
             checkout_request_id = stk_callback.get('CheckoutRequestID')
             result_code = stk_callback.get('ResultCode')
+            try:
+                result_code_int = int(result_code) if result_code is not None else None
+            except (ValueError, TypeError):
+                result_code_int = None
             
-            if result_code == 0:
+            if result_code_int == 0:
                 # Find transaction
                 transaction = MpesaTransaction.query.filter_by(
                     checkout_request_id=checkout_request_id
@@ -318,26 +322,34 @@ def callback():
                     # Get M-PESA payment method (assuming method_id=2 is M-PESA)
                     # You can query PaymentMethod.query.filter_by(name='M-PESA').first() if needed
                     
-                    # Create payment record
-                    payment = Payment(
-                        student_id=transaction.student_id,
-                        amount=transaction.amount,
-                        payment_date=transaction.transaction_date or datetime.now(),
-                        method_id=2,  # M-PESA payment method ID
-                        reference=transaction.mpesa_receipt_number,
-                        recorded_by=None,  # System/Auto payment - no specific teacher
-                        notes=f"M-PESA payment: {transaction.transaction_desc}",
-                        allocation_mode='auto'
-                    )
-                    
-                    db.session.add(payment)
-                    db.session.commit()
-                    
-                    # Link payment to transaction
-                    transaction.payment_id = payment.id
-                    db.session.commit()
-                    
-                    logger.info(f"Auto-reconciliation successful: Payment #{payment.id} created for transaction #{transaction.id}, Receipt: {transaction.mpesa_receipt_number}")
+                    # Only auto-create payment if we have a student_id
+                    if transaction.student_id:
+                        try:
+                            # Create payment record
+                            payment = Payment(
+                                student_id=transaction.student_id,
+                                amount=transaction.amount,
+                                payment_date=transaction.transaction_date or datetime.now(),
+                                method_id=2,  # M-PESA payment method ID
+                                reference=transaction.mpesa_receipt_number,
+                                recorded_by=None,  # System/Auto payment - no specific teacher
+                                notes=f"M-PESA payment: {transaction.transaction_desc}",
+                                allocation_mode='auto'
+                            )
+                            
+                            db.session.add(payment)
+                            db.session.commit()
+                            
+                            # Link payment to transaction
+                            transaction.payment_id = payment.id
+                            db.session.commit()
+                            
+                            logger.info(f"Auto-reconciliation successful: Payment #{payment.id} created for transaction #{transaction.id}, Receipt: {transaction.mpesa_receipt_number}")
+                        except Exception as pay_err:
+                            logger.error(f"Auto-reconciliation skipped due to error: {pay_err}", exc_info=True)
+                            db.session.rollback()
+                    else:
+                        logger.info("Skipping auto-reconciliation: transaction has no linked student_id")
                     
                     # Send notifications
                     try:
