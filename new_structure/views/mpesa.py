@@ -433,3 +433,61 @@ def api_stk_push():
             'success': False,
             'message': f'Error: {str(e)}'
         }), 500
+
+
+@mpesa_bp.route('/handle-timeouts', methods=['POST'])
+@login_required
+def handle_timeouts():
+    """
+    Manually trigger timeout handling for pending transactions.
+    Marks transactions as timeout if no callback received after 2 minutes.
+    """
+    try:
+        from datetime import timedelta
+        
+        # Get timeout threshold (default: 2 minutes)
+        timeout_minutes = request.json.get('timeout_minutes', 2) if request.is_json else 2
+        timeout_threshold = datetime.utcnow() - timedelta(minutes=timeout_minutes)
+        
+        # Find pending transactions older than threshold
+        timed_out_transactions = MpesaTransaction.query.filter(
+            MpesaTransaction.status == 'pending',
+            MpesaTransaction.created_at < timeout_threshold,
+            MpesaTransaction.callback_received == False
+        ).all()
+        
+        if not timed_out_transactions:
+            return jsonify({
+                'success': True,
+                'message': 'No timed out transactions found',
+                'count': 0
+            })
+        
+        # Mark as timeout
+        count = 0
+        transaction_ids = []
+        for transaction in timed_out_transactions:
+            transaction.status = 'timeout'
+            transaction.result_desc = 'Transaction timed out - no callback received'
+            transaction.updated_at = datetime.utcnow()
+            transaction_ids.append(transaction.id)
+            count += 1
+            logger.warning(f"Transaction #{transaction.id} marked as timeout (created: {transaction.created_at})")
+        
+        db.session.commit()
+        logger.info(f"Marked {count} transactions as timed out")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Marked {count} transactions as timed out',
+            'count': count,
+            'transaction_ids': transaction_ids
+        })
+        
+    except Exception as e:
+        logger.error(f"Error handling transaction timeouts: {str(e)}", exc_info=True)
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }), 500
