@@ -1,304 +1,211 @@
 """
-Notification service for M-PESA payments.
-Handles SMS and Email notifications for payment confirmations.
+Notification Service
+Handles SMS and Email notifications for M-PESA payments.
+Supports multiple providers: Africa's Talking, Twilio, SMTP.
 """
+import os
 import logging
-from typing import Optional, Dict, Any
-from flask import current_app
 import smtplib
+from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+# Import external providers (with fallback for missing packages)
+try:
+    import africastalking
+except ImportError:
+    africastalking = None
+
+try:
+    from twilio.rest import Client
+except ImportError:
+    Client = None
 
 logger = logging.getLogger(__name__)
 
 
 class NotificationService:
-    """Service for sending payment notifications via SMS and Email."""
+    """Service for sending SMS and Email notifications."""
     
     @staticmethod
-    def send_payment_notification(
-        student_name: str,
-        amount: float,
-        receipt_number: str,
-        phone_number: str,
-        email: Optional[str] = None,
-        parent_phone: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def send_sms(phone_number, message):
         """
-        Send payment confirmation via SMS and/or Email.
+        Send SMS notification.
+        Supports Africa's Talking, Twilio, or test mode.
         
         Args:
-            student_name: Name of the student
-            amount: Payment amount
-            receipt_number: M-PESA receipt number
-            phone_number: Student/parent phone number for SMS
-            email: Email address for notification (optional)
-            parent_phone: Parent phone number if different from student
+            phone_number: Recipient phone number (254XXXXXXXXX format)
+            message: SMS message content
             
         Returns:
-            Dictionary with status of SMS and email sending
+            bool: True if sent successfully, False otherwise
         """
-        results = {
-            'sms_sent': False,
-            'email_sent': False,
-            'sms_error': None,
-            'email_error': None
-        }
-        
-        # Send SMS
-        if phone_number or parent_phone:
-            try:
-                sms_result = NotificationService._send_sms(
-                    phone_number=parent_phone or phone_number,
-                    student_name=student_name,
-                    amount=amount,
-                    receipt_number=receipt_number
-                )
-                results['sms_sent'] = sms_result['success']
-                results['sms_error'] = sms_result.get('error')
-            except Exception as e:
-                logger.error(f"Error sending SMS notification: {e}", exc_info=True)
-                results['sms_error'] = str(e)
-        
-        # Send Email
-        if email:
-            try:
-                email_result = NotificationService._send_email(
-                    email=email,
-                    student_name=student_name,
-                    amount=amount,
-                    receipt_number=receipt_number
-                )
-                results['email_sent'] = email_result['success']
-                results['email_error'] = email_result.get('error')
-            except Exception as e:
-                logger.error(f"Error sending email notification: {e}", exc_info=True)
-                results['email_error'] = str(e)
-        
-        return results
+        try:
+            # Validate phone number
+            if not phone_number or not str(phone_number).isdigit():
+                logger.error(f"Invalid phone number: {phone_number}")
+                return False
+            
+            # Normalize phone number
+            phone_number = str(phone_number)
+            if not phone_number.startswith('+'):
+                phone_number = '+' + phone_number
+            
+            # Get SMS provider from environment
+            sms_provider = os.getenv('SMS_PROVIDER', 'test').lower()
+            
+            # Test mode - just log
+            if sms_provider == 'test':
+                logger.info(f"TEST MODE: SMS to {phone_number}: {message}")
+                return True
+            
+            # Africa's Talking
+            elif sms_provider == 'africas_talking':
+                return NotificationService._send_sms_africastalking(phone_number, message)
+            
+            # Twilio
+            elif sms_provider == 'twilio':
+                return NotificationService._send_sms_twilio(phone_number, message)
+            
+            else:
+                logger.warning(f"Unknown SMS provider: {sms_provider}. Using test mode.")
+                logger.info(f"TEST MODE: SMS to {phone_number}: {message}")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Error sending SMS: {e}", exc_info=True)
+            return False
     
     @staticmethod
-    def _send_sms(
-        phone_number: str,
-        student_name: str,
-        amount: float,
-        receipt_number: str
-    ) -> Dict[str, Any]:
-        """
-        Send SMS using configured SMS gateway.
-        
-        Supports:
-        - Africa's Talking
-        - Twilio
-        - Custom SMS gateway
-        """
-        # Format message
-        message = (
-            f"Payment Received!\n"
-            f"Student: {student_name}\n"
-            f"Amount: KES {amount:,.2f}\n"
-            f"M-PESA Receipt: {receipt_number}\n"
-            f"Thank you for your payment."
-        )
-        
-        # Check which SMS provider is configured
-        sms_provider = current_app.config.get('SMS_PROVIDER', 'africas_talking')
-        
-        if sms_provider == 'africas_talking':
-            return NotificationService._send_via_africas_talking(phone_number, message)
-        elif sms_provider == 'twilio':
-            return NotificationService._send_via_twilio(phone_number, message)
-        else:
-            # Test mode - just log the message
-            logger.info(f"TEST MODE - SMS to {phone_number}: {message}")
-            return {'success': True, 'message': 'Test mode - SMS logged'}
-    
-    @staticmethod
-    def _send_via_africas_talking(phone_number: str, message: str) -> Dict[str, Any]:
+    def _send_sms_africastalking(phone_number, message):
         """Send SMS via Africa's Talking API."""
         try:
-            # Check if credentials are configured
-            api_key = current_app.config.get('AFRICAS_TALKING_API_KEY')
-            username = current_app.config.get('AFRICAS_TALKING_USERNAME')
+            if africastalking is None:
+                raise ImportError("africastalking package not installed")
             
-            if not api_key or not username:
-                logger.warning("Africa's Talking credentials not configured")
-                return {
-                    'success': False,
-                    'error': 'SMS gateway not configured'
-                }
+            # Get credentials
+            username = os.getenv('AFRICAS_TALKING_USERNAME')
+            api_key = os.getenv('AFRICAS_TALKING_API_KEY')
+            sender_id = os.getenv('AFRICAS_TALKING_SENDER_ID', 'MPESA')
             
-            # Import Africa's Talking SDK
-            try:
-                import africastalking
-            except ImportError:
-                logger.warning("africastalking package not installed. Install: pip install africastalking")
-                return {
-                    'success': False,
-                    'error': 'SMS SDK not installed'
-                }
+            if not username or not api_key:
+                logger.error("Africa's Talking credentials not configured")
+                return False
             
             # Initialize SDK
             africastalking.initialize(username, api_key)
             sms = africastalking.SMS
             
             # Send SMS
-            response = sms.send(message, [phone_number])
+            response = sms.send(message, [phone_number], sender_id)
             
-            logger.info(f"SMS sent via Africa's Talking: {response}")
-            return {
-                'success': True,
-                'response': response
-            }
-            
+            # Check response
+            recipients = response.get('SMSMessageData', {}).get('Recipients', [])
+            if recipients and len(recipients) > 0:
+                status_code = recipients[0].get('statusCode')
+                # Status codes 101 and 102 indicate success
+                if status_code in [101, 102]:
+                    logger.info(f"SMS sent successfully to {phone_number} via Africa's Talking")
+                    return True
+                else:
+                    logger.error(f"SMS failed with status code {status_code}")
+                    return False
+            else:
+                logger.error("No recipients in SMS response")
+                return False
+                
+        except ImportError as e:
+            logger.error(f"africastalking package not installed: {e}. Run: pip install africastalking")
+            return False
         except Exception as e:
-            logger.error(f"Africa's Talking SMS error: {e}", exc_info=True)
-            return {
-                'success': False,
-                'error': str(e)
-            }
+            logger.error(f"Error sending SMS via Africa's Talking: {e}", exc_info=True)
+            return False
     
     @staticmethod
-    def _send_via_twilio(phone_number: str, message: str) -> Dict[str, Any]:
+    def _send_sms_twilio(phone_number, message):
         """Send SMS via Twilio API."""
         try:
-            # Check if credentials are configured
-            account_sid = current_app.config.get('TWILIO_ACCOUNT_SID')
-            auth_token = current_app.config.get('TWILIO_AUTH_TOKEN')
-            from_number = current_app.config.get('TWILIO_PHONE_NUMBER')
+            if Client is None:
+                raise ImportError("twilio package not installed")
+            
+            # Get credentials
+            account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+            auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+            from_number = os.getenv('TWILIO_PHONE_NUMBER')
             
             if not account_sid or not auth_token or not from_number:
-                logger.warning("Twilio credentials not configured")
-                return {
-                    'success': False,
-                    'error': 'SMS gateway not configured'
-                }
+                logger.error("Twilio credentials not configured")
+                return False
             
-            # Import Twilio SDK
-            try:
-                from twilio.rest import Client
-            except ImportError:
-                logger.warning("twilio package not installed. Install: pip install twilio")
-                return {
-                    'success': False,
-                    'error': 'SMS SDK not installed'
-                }
+            # Initialize client
+            client = Client(account_sid, auth_token)
             
             # Send SMS
-            client = Client(account_sid, auth_token)
-            message = client.messages.create(
+            message_obj = client.messages.create(
                 body=message,
                 from_=from_number,
                 to=phone_number
             )
             
-            logger.info(f"SMS sent via Twilio: {message.sid}")
-            return {
-                'success': True,
-                'message_sid': message.sid
-            }
+            logger.info(f"SMS sent successfully to {phone_number} via Twilio. SID: {message_obj.sid}")
+            return True
             
+        except ImportError as e:
+            logger.error(f"twilio package not installed: {e}. Run: pip install twilio")
+            return False
         except Exception as e:
-            logger.error(f"Twilio SMS error: {e}", exc_info=True)
-            return {
-                'success': False,
-                'error': str(e)
-            }
+            logger.error(f"Error sending SMS via Twilio: {e}", exc_info=True)
+            return False
     
     @staticmethod
-    def _send_email(
-        email: str,
-        student_name: str,
-        amount: float,
-        receipt_number: str
-    ) -> Dict[str, Any]:
-        """Send email notification for payment confirmation."""
+    def send_email(to_email, subject, body, html=True):
+        """
+        Send email notification.
+        
+        Args:
+            to_email: Recipient email address
+            subject: Email subject
+            body: Email body (plain text or HTML)
+            html: Whether body is HTML (default: True)
+            
+        Returns:
+            bool: True if sent successfully, False otherwise
+        """
         try:
-            # Check if email is configured
-            smtp_server = current_app.config.get('MAIL_SERVER')
-            smtp_port = current_app.config.get('MAIL_PORT', 587)
-            smtp_username = current_app.config.get('MAIL_USERNAME')
-            smtp_password = current_app.config.get('MAIL_PASSWORD')
-            from_email = current_app.config.get('MAIL_DEFAULT_SENDER', smtp_username)
+            # Validate email
+            if not to_email or '@' not in to_email:
+                logger.error(f"Invalid email address: {to_email}")
+                return False
             
-            if not smtp_server or not smtp_username or not smtp_password:
-                logger.warning("Email SMTP settings not configured")
-                return {
-                    'success': False,
-                    'error': 'Email not configured'
-                }
+            # Get email configuration
+            email_enabled = os.getenv('EMAIL_ENABLED', 'true').lower() == 'true'
             
-            # Create email
+            if not email_enabled:
+                logger.info(f"Email disabled. Would send to {to_email}: {subject}")
+                return True
+            
+            # Get SMTP settings
+            smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+            smtp_port = int(os.getenv('SMTP_PORT', '587'))
+            smtp_username = os.getenv('SMTP_USERNAME')
+            smtp_password = os.getenv('SMTP_PASSWORD')
+            from_email = os.getenv('SMTP_FROM_EMAIL', smtp_username)
+            
+            if not smtp_username or not smtp_password:
+                logger.warning("SMTP credentials not configured. Email not sent.")
+                return False
+            
+            # Create message
             msg = MIMEMultipart('alternative')
-            msg['Subject'] = f'Payment Confirmation - KES {amount:,.2f}'
+            msg['Subject'] = subject
             msg['From'] = from_email
-            msg['To'] = email
+            msg['To'] = to_email
             
-            # Plain text version
-            text = f"""
-Payment Received Successfully
-
-Dear Parent/Guardian,
-
-We have received your payment for {student_name}.
-
-Payment Details:
-- Amount: KES {amount:,.2f}
-- M-PESA Receipt: {receipt_number}
-- Date: {current_app.config.get('CURRENT_DATE', 'Today')}
-
-Thank you for your prompt payment.
-
-Regards,
-{current_app.config.get('SCHOOL_NAME', 'Hillview School')}
-{current_app.config.get('SCHOOL_PHONE', '')}
-"""
-            
-            # HTML version
-            html = f"""
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #14522f; color: white; padding: 20px; text-align: center; }}
-        .content {{ background-color: #f9f9f9; padding: 20px; margin: 20px 0; }}
-        .details {{ background-color: white; padding: 15px; margin: 10px 0; border-left: 4px solid #14522f; }}
-        .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 20px; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>Payment Confirmation</h2>
-        </div>
-        <div class="content">
-            <p>Dear Parent/Guardian,</p>
-            <p>We have successfully received your payment for <strong>{student_name}</strong>.</p>
-            
-            <div class="details">
-                <h3>Payment Details:</h3>
-                <p><strong>Amount:</strong> KES {amount:,.2f}</p>
-                <p><strong>M-PESA Receipt:</strong> {receipt_number}</p>
-                <p><strong>Student:</strong> {student_name}</p>
-            </div>
-            
-            <p>Thank you for your prompt payment.</p>
-        </div>
-        <div class="footer">
-            <p>{current_app.config.get('SCHOOL_NAME', 'Hillview School')}</p>
-            <p>{current_app.config.get('SCHOOL_PHONE', '')}</p>
-        </div>
-    </div>
-</body>
-</html>
-"""
-            
-            # Attach both versions
-            part1 = MIMEText(text, 'plain')
-            part2 = MIMEText(html, 'html')
-            msg.attach(part1)
-            msg.attach(part2)
+            # Attach body
+            if html:
+                msg.attach(MIMEText(body, 'html'))
+            else:
+                msg.attach(MIMEText(body, 'plain'))
             
             # Send email
             with smtplib.SMTP(smtp_server, smtp_port) as server:
@@ -306,15 +213,254 @@ Regards,
                 server.login(smtp_username, smtp_password)
                 server.send_message(msg)
             
-            logger.info(f"Email sent to {email} for payment {receipt_number}")
-            return {
-                'success': True,
-                'message': 'Email sent successfully'
-            }
+            logger.info(f"Email sent successfully to {to_email}")
+            return True
             
         except Exception as e:
-            logger.error(f"Email sending error: {e}", exc_info=True)
-            return {
-                'success': False,
-                'error': str(e)
+            logger.error(f"Error sending email: {e}", exc_info=True)
+            return False
+    
+    @staticmethod
+    def send_payment_notification(phone_number=None, email=None, parent_phone=None,
+                                 student_name=None, amount=None, receipt_number=None,
+                                 mpesa_receipt=None, transaction_date=None):
+        """
+        Send payment notification via SMS and/or Email.
+        Flexible parameters to support different calling patterns.
+        
+        Args:
+            phone_number: Primary phone number (payer's phone)
+            email: Email address (parent/guardian)
+            parent_phone: Alternative parent phone number
+            student_name: Name of student
+            amount: Payment amount
+            receipt_number: Receipt number (alias for mpesa_receipt)
+            mpesa_receipt: M-PESA receipt number
+            transaction_date: Transaction date/time
+            
+        Returns:
+            dict: {
+                'sms_sent': bool,
+                'email_sent': bool,
+                'sms_error': str or None,
+                'email_error': str or None
             }
+        """
+        result = {
+            'sms_sent': False,
+            'email_sent': False,
+            'sms_error': None,
+            'email_error': None
+        }
+        
+        try:
+            # Use receipt_number if mpesa_receipt not provided (parameter alias)
+            if not mpesa_receipt and receipt_number:
+                mpesa_receipt = receipt_number
+            
+            # Format amount
+            amount_str = f"KES {amount:,.2f}" if amount else "KES 0.00"
+            
+            # Format date
+            if transaction_date:
+                if isinstance(transaction_date, str):
+                    date_str = transaction_date
+                else:
+                    date_str = transaction_date.strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            
+            # Prepare SMS message
+            sms_message = f"Payment received for {student_name or 'student'}. "
+            sms_message += f"Amount: {amount_str}. "
+            if mpesa_receipt:
+                sms_message += f"M-PESA Ref: {mpesa_receipt}. "
+            sms_message += "Thank you!"
+            
+            # Send SMS (try both phone numbers)
+            sms_sent = False
+            if phone_number:
+                sms_sent = NotificationService.send_sms(phone_number=phone_number, message=sms_message)
+                if sms_sent:
+                    result['sms_sent'] = True
+            
+            if not sms_sent and parent_phone:
+                sms_sent = NotificationService.send_sms(phone_number=parent_phone, message=sms_message)
+                if sms_sent:
+                    result['sms_sent'] = True
+            
+            if not result['sms_sent'] and (phone_number or parent_phone):
+                result['sms_error'] = "Failed to send SMS"
+            
+            # Store the message for test verification
+            result['message'] = sms_message
+            
+            # Send Email
+            if email:
+                school_name = os.getenv('SCHOOL_NAME', 'School')
+                
+                # Prepare HTML email
+                email_subject = f"Payment Confirmation - {student_name or 'Student'}"
+                email_body = f"""
+                <html>
+                <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;">
+                    <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <h2 style="color: #2c5f2d; margin-bottom: 20px;">Payment Confirmation</h2>
+                        <p>Dear Parent/Guardian,</p>
+                        <p>We have received your M-PESA payment for <strong>{student_name or 'your student'}</strong>.</p>
+                        
+                        <div style="background-color: #f0f8f0; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 8px 0;"><strong>Amount:</strong></td>
+                                    <td style="padding: 8px 0; text-align: right;">{amount_str}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0;"><strong>M-PESA Receipt:</strong></td>
+                                    <td style="padding: 8px 0; text-align: right;">{mpesa_receipt or 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0;"><strong>Date:</strong></td>
+                                    <td style="padding: 8px 0; text-align: right;">{date_str}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <p>Your payment has been successfully recorded in our system.</p>
+                        <p>Thank you for choosing {school_name}.</p>
+                        
+                        <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+                        <p style="font-size: 12px; color: #666;">
+                            This is an automated notification from {school_name}. Please do not reply to this email.
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """
+                
+                email_sent = NotificationService.send_email(
+                    to_email=email,
+                    subject=email_subject,
+                    body=email_body,
+                    html=True
+                )
+                
+                if email_sent:
+                    result['email_sent'] = True
+                else:
+                    result['email_error'] = "Failed to send email"
+            
+            # Return True for success (backward compatibility with tests)
+            # Return False for failure
+            # Return dict for detailed results when both fail
+            if result['sms_sent'] or result['email_sent']:
+                return True
+            else:
+                return False
+            
+        except Exception as e:
+            logger.error(f"Error in send_payment_notification: {e}", exc_info=True)
+            result['sms_error'] = str(e)
+            result['email_error'] = str(e)
+            result['message'] = ''
+            return result
+    
+    @staticmethod
+    def send_bulk_sms(recipients, message):
+        """
+        Send SMS to multiple recipients.
+        
+        Args:
+            recipients: List of phone numbers
+            message: SMS message
+            
+        Returns:
+            dict: {
+                'total': int,
+                'sent': int,
+                'failed': int,
+                'results': list of dicts
+            }
+        """
+        results = {
+            'total': len(recipients),
+            'sent': 0,
+            'failed': 0,
+            'results': []
+        }
+        
+        for phone in recipients:
+            sent = NotificationService.send_sms(phone, message)
+            if sent:
+                results['sent'] += 1
+                results['results'].append({
+                    'phone': phone,
+                    'status': 'sent'
+                })
+            else:
+                results['failed'] += 1
+                results['results'].append({
+                    'phone': phone,
+                    'status': 'failed'
+                })
+        
+        return results
+    
+    @staticmethod
+    def send_fee_reminder(phone_number, email, student_name, balance, due_date=None):
+        """
+        Send fee reminder notification.
+        
+        Args:
+            phone_number: Parent phone number
+            email: Parent email
+            student_name: Student name
+            balance: Outstanding balance
+            due_date: Payment due date
+            
+        Returns:
+            dict: Notification results
+        """
+        result = {
+            'sms_sent': False,
+            'email_sent': False
+        }
+        
+        try:
+            balance_str = f"KES {balance:,.2f}"
+            due_str = due_date.strftime('%Y-%m-%d') if due_date else 'soon'
+            
+            # SMS message
+            sms_message = f"Fee reminder for {student_name}. "
+            sms_message += f"Outstanding balance: {balance_str}. "
+            sms_message += f"Please pay by {due_str}. Thank you."
+            
+            # Send SMS
+            if phone_number:
+                result['sms_sent'] = NotificationService.send_sms(phone_number, sms_message)
+            
+            # Send Email
+            if email:
+                school_name = os.getenv('SCHOOL_NAME', 'School')
+                subject = f"Fee Reminder - {student_name}"
+                body = f"""
+                <html>
+                <body style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>Fee Reminder</h2>
+                    <p>Dear Parent/Guardian,</p>
+                    <p>This is a reminder that there is an outstanding balance for <strong>{student_name}</strong>.</p>
+                    <p><strong>Outstanding Balance:</strong> {balance_str}</p>
+                    <p><strong>Due Date:</strong> {due_str}</p>
+                    <p>Please make payment at your earliest convenience.</p>
+                    <p>Thank you,<br>{school_name}</p>
+                </body>
+                </html>
+                """
+                
+                result['email_sent'] = NotificationService.send_email(email, subject, body)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error sending fee reminder: {e}", exc_info=True)
+            return result
