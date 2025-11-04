@@ -179,15 +179,19 @@ def callback():
                 ).first()
                 
                 if transaction and not transaction.payment_id:
+                    # Get M-PESA payment method (assuming method_id=2 is M-PESA)
+                    # You can query PaymentMethod.query.filter_by(name='M-PESA').first() if needed
+                    
                     # Create payment record
                     payment = Payment(
                         student_id=transaction.student_id,
                         amount=transaction.amount,
                         payment_date=transaction.transaction_date or datetime.now(),
-                        payment_method='mpesa',
-                        reference_number=transaction.mpesa_receipt_number,
-                        recorded_by=1,  # System (could be improved)
-                        notes=f"M-PESA payment: {transaction.transaction_desc}"
+                        method_id=2,  # M-PESA payment method ID
+                        reference=transaction.mpesa_receipt_number,
+                        recorded_by=None,  # System/Auto payment - no specific teacher
+                        notes=f"M-PESA payment: {transaction.transaction_desc}",
+                        allocation_mode='auto'
                     )
                     
                     db.session.add(payment)
