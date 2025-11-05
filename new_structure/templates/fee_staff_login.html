@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0"
+    />
+    <meta
+      name="description"
+      content="Fee Management Login - {{ school_info.school_name or 'Hillview School' }} Management System"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#b58900" />
+
+    <title>
+      Fee Management Login - {{ school_info.school_name or 'Hillview School' }}
+    </title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Modern Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootswatch Solar Theme - Main Theme -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='bootstrap.min.css') }}"
+    />
+    <!-- Shared Solar Theme tokens/utilities -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/solar-shared.css') }}"
+    />
+
+    <style>
+      /* Premium Solar Theme Fee Management Login */
+      :root {
+        --solar-primary: #b58900;
+        --solar-secondary: #839496;
+        --solar-success: #2aa198;
+        --solar-info: #268bd2;
+        --solar-warning: #cb4b16;
+        --solar-danger: #d33682;
+        --solar-light: #fdf6e3;
+        --solar-dark: #073642;
+        --solar-body-bg: #002b36;
+        --solar-body-color: #839496;
+        --solar-glass: rgba(7, 54, 66, 0.95);
+        --solar-glass-border: rgba(131, 148, 150, 0.3);
+        --white: #ffffff;
+        --gray-100: #f3f4f6;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --space-10: 2.5rem;
+        --space-12: 3rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+        --radius-2xl: 1.5rem;
+      }
+
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background: var(--solar-body-bg);
+        min-height: 100vh;
+        display: block;
+        margin: 0;
+        padding: 1rem;
+        position: relative;
+        overflow-x: hidden;
+        color: var(--solar-body-color);
+      }
+
+      /* Animated background */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at 20% 80%,
+            rgba(181, 137, 0, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(38, 139, 210, 0.1) 0%,
+            transparent 50%
+          );
+        z-index: -1;
+        animation: float 20s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+
+      /* Left brand + right login grid layout */
+      .login-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: center;
+        min-height: calc(100vh - 2rem);
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .brand-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .brand-card {
+        width: 100%;
+        max-width: 520px;
+        background: rgba(7, 54, 66, 0.85);
+        border: 1px solid rgba(131, 148, 150, 0.28);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgba(131, 148, 150, 0.25) inset;
+        padding: 2rem;
+        text-align: center;
+        backdrop-filter: blur(16px);
+      }
+
+      .brand-logo-hero {
+        width: 220px;
+        height: auto;
+        display: block;
+        margin: 0 auto 1rem;
+        filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.35));
+      }
+
+      .brand-heading {
+        font-size: 1.4rem;
+        font-weight: 900;
+        letter-spacing: 0.4px;
+        margin: 0.25rem 0;
+        background: linear-gradient(135deg, #fefefe, #dcdcdc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .brand-subheading {
+        font-size: 0.95rem;
+        color: rgba(234, 234, 234, 0.9);
+        letter-spacing: 0.2px;
+        margin: 0.25rem 0 0;
+      }
+
+      .login-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .login-container {
+        width: 100%;
+        max-width: 440px;
+        background: var(--solar-glass);
+        border: 1px solid var(--solar-glass-border);
+        border-radius: var(--radius-2xl);
+        padding: var(--space-10);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(16px);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: var(--space-8);
+      }
+
+      .login-icon {
+        font-size: 3rem;
+        margin-bottom: var(--space-4);
+        filter: drop-shadow(0 4px 12px rgba(181, 137, 0, 0.3));
+      }
+
+      .login-header h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--solar-primary);
+        margin: 0 0 var(--space-2) 0;
+        letter-spacing: -0.025em;
+      }
+
+      .login-header .subtitle {
+        font-size: 0.95rem;
+        color: var(--solar-secondary);
+        margin: 0;
+      }
+
+      .role-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #b58900 0%, #cb4b16 100%);
+        color: white;
+        padding: 0.5rem 1.25rem;
+        border-radius: var(--radius-xl);
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: var(--space-4);
+        box-shadow: 0 4px 12px rgba(181, 137, 0, 0.3);
+      }
+
+      .form-group {
+        margin-bottom: var(--space-6);
+        position: relative;
+      }
+
+      .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--solar-secondary);
+        margin-bottom: var(--space-2);
+        letter-spacing: 0.01em;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 0.875rem var(--space-4);
+        background: var(--solar-dark);
+        border: 1px solid rgba(131, 148, 150, 0.35);
+        border-radius: var(--radius-lg);
+        color: var(--solar-light);
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+      }
+
+      .form-input::placeholder {
+        color: rgba(131, 148, 150, 0.6);
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: var(--solar-primary);
+        background: rgba(0, 43, 54, 0.95);
+        box-shadow: 0 0 0 3px rgba(181, 137, 0, 0.15);
+      }
+
+      .with-icon {
+        padding-left: calc(var(--space-4) + var(--space-8));
+      }
+
+      .with-end-icon {
+        padding-right: calc(var(--space-12) + var(--space-6));
+      }
+
+      .input-icon {
+        position: absolute;
+        left: var(--space-4);
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1.25rem;
+        height: 1.25rem;
+        color: var(--solar-secondary);
+        pointer-events: none;
+        opacity: 0.75;
+      }
+
+      .toggle-password {
+        position: absolute;
+        right: var(--space-4);
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--solar-secondary);
+        width: 1.5rem;
+        height: 1.5rem;
+        padding: 0;
+        cursor: pointer;
+        opacity: 0.85;
+        transition: all 0.3s;
+      }
+
+      .toggle-password:hover {
+        color: var(--solar-primary);
+        opacity: 1;
+      }
+
+      .form-group #password + .input-icon {
+        right: calc(var(--space-4) + 2rem);
+      }
+
+      .alert {
+        background: rgba(220, 50, 47, 0.15);
+        border: 1px solid rgba(220, 50, 47, 0.4);
+        color: #dc322f;
+        padding: var(--space-4);
+        border-radius: var(--radius-lg);
+        margin-bottom: var(--space-6);
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .login-button {
+        background: linear-gradient(135deg, #b58900 0%, #cb4b16 100%);
+        color: white;
+        border: none;
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(181, 137, 0, 0.3);
+      }
+
+      .login-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(181, 137, 0, 0.4);
+      }
+
+      .login-button:active {
+        transform: translateY(0);
+      }
+
+      .back-link {
+        text-align: center;
+        margin-top: var(--space-6);
+      }
+
+      .back-link a {
+        color: var(--solar-info);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .back-link a:hover {
+        color: var(--solar-success);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .login-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+
+        .brand-panel {
+          display: none;
+        }
+
+        .login-container {
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-grid">
+      <aside class="brand-panel">
+        <div class="brand-card">
+          <img
+            class="brand-logo-hero"
+            src="{{ url_for('static', filename='sta.png') }}"
+            alt="STEM-ED ARCHITECTS logo"
+            loading="lazy"
+          />
+          <h2 class="brand-heading">STEM-ED ARCHITECTS</h2>
+          <div class="brand-subheading">
+            Engineering Teaching & Learning Solutions
+          </div>
+        </div>
+      </aside>
+      <main class="login-panel">
+        <div class="login-container">
+          <!-- Login Header -->
+          <div class="login-header">
+            <div class="login-icon">💰</div>
+            <h1>Fee Management Login</h1>
+            <p class="subtitle">Hillview School Financial Portal</p>
+            <div class="role-badge">Staff Access Only</div>
+          </div>
+
+          {% if error %}
+          <div class="alert"><strong>⚠️ Error:</strong> {{ error }}</div>
+          {% endif %}
+
+          <form method="POST" action="{{ url_for('auth.fee_staff_login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <div class="form-group">
+              <label for="username" class="form-label">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                class="form-input with-icon"
+                placeholder="Enter your username"
+                required
+                autocomplete="username"
+                autofocus
+              />
+              <span class="input-icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 19.5a7.5 7.5 0 0 1 15 0"
+                  />
+                </svg>
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-input with-icon with-end-icon"
+                placeholder="Enter your password"
+                required
+                autocomplete="current-password"
+              />
+              <span class="input-icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M16.5 10.5V7.5a4.5 4.5 0 1 0-9 0v3M6.75 10.5h10.5a1.5 1.5 0 0 1 1.5 1.5v6.75a1.5 1.5 0 0 1-1.5 1.5H6.75a1.5 1.5 0 0 1-1.5-1.5V12a1.5 1.5 0 0 1 1.5-1.5Z"
+                  />
+                </svg>
+              </span>
+              <button
+                type="button"
+                id="togglePassword"
+                class="toggle-password"
+                aria-label="Show password"
+                aria-pressed="false"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.577 3.01 9.964 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.577-3.01-9.964-7.178Z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <button type="submit" class="login-button" id="loginBtn">
+              <span
+                class="btn-icon"
+                aria-hidden="true"
+                style="
+                  display: inline-block;
+                  width: 1rem;
+                  height: 1rem;
+                  margin-right: 0.5rem;
+                  vertical-align: -0.15rem;
+                "
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3H5.25A2.25 2.25 0 0 0 3 5.25v13.5A2.25 2.25 0 0 0 5.25 21H13.5a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H6"
+                  />
+                </svg>
+              </span>
+              Sign In
+            </button>
+          </form>
+
+          <!-- Back Link -->
+          <div class="back-link">
+            <a href="{{ url_for('auth.index') }}">
+              <span
+                class="link-icon"
+                aria-hidden="true"
+                style="display: inline-block; width: 0.95rem; height: 0.95rem"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.75"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                  />
+                </svg>
+              </span>
+              Back to Home
+            </a>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- JavaScript for Enhanced Interactions -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const container = document.querySelector(".login-container");
+        const toggle = document.getElementById("togglePassword");
+        const pwd = document.getElementById("password");
+
+        // Fade in animation
+        setTimeout(() => {
+          container.style.opacity = "1";
+          container.style.transform = "translateY(0)";
+        }, 100);
+
+        // Auto-focus username field
+        document.getElementById("username").focus();
+
+        // Password visibility toggle
+        if (toggle && pwd) {
+          toggle.addEventListener("click", () => {
+            const isHidden = pwd.getAttribute("type") === "password";
+            pwd.setAttribute("type", isHidden ? "text" : "password");
+            toggle.setAttribute("aria-pressed", String(isHidden));
+            toggle.setAttribute(
+              "aria-label",
+              isHidden ? "Hide password" : "Show password"
+            );
+            toggle.innerHTML = isHidden
+              ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c1.46 0 2.847-.277 4.116-.78M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.066 7.5a10.525 10.525 0 0 1-4.197 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m0 0a3 3 0 1 0 4.243 4.243m-4.243-4.243 4.243 4.243M21 21l-3.182-3.182"/></svg>'
+              : '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.577 3.01 9.964 7.183.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.577-3.01-9.964-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>';
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

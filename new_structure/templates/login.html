@@ -616,6 +616,36 @@
         color: white;
       }
 
+      /* Fee Staff Card Styling */
+      .fee-staff-card {
+        background: linear-gradient(135deg, #b58900 0%, #cb4b16 100%);
+        border-color: rgba(181, 137, 0, 0.3);
+      }
+
+      .fee-staff-card:hover {
+        background: linear-gradient(135deg, #cb4b16 0%, #dc322f 100%);
+        transform: translateY(-4px);
+        box-shadow: 0 16px 48px rgba(181, 137, 0, 0.35);
+      }
+
+      .fee-staff-card .login-icon {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+
+      .fee-staff-card .login-title,
+      .fee-staff-card .login-description {
+        color: white;
+      }
+
+      .fee-staff-card .login-arrow {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .fee-staff-card:hover .login-arrow {
+        color: white;
+      }
+
       .footer {
         text-align: center;
         margin-top: var(--space-8);
@@ -920,6 +950,55 @@
                   <h3 class="login-title">Subject Teacher</h3>
                   <p class="login-description">
                     Subject-specific teaching & assessment
+                  </p>
+                </div>
+                <div class="login-arrow">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                    role="img"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M8.47 4.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06L13.94 12 8.47 6.53a.75.75 0 0 1 0-1.06Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </a>
+
+            <!-- Fee Management Staff Login -->
+            <a
+              href="{{ url_for('auth.fee_staff_login') }}"
+              class="login-card fee-staff-card"
+            >
+              <div class="login-card-header">
+                <div class="login-icon">
+                  <!-- Currency Dollar Icon for Fee Staff -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                    role="img"
+                  >
+                    <path
+                      d="M10.464 8.746c.227-.18.497-.311.786-.394v2.795a2.252 2.252 0 0 1-.786-.393c-.394-.313-.546-.681-.546-1.004 0-.323.152-.691.546-1.004ZM12.75 15.662v-2.824c.347.085.664.228.921.421.427.32.579.686.579.991 0 .305-.152.671-.579.991a2.534 2.534 0 0 1-.921.42Z"
+                    />
+                    <path
+                      fill-rule="evenodd"
+                      d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v.816a3.836 3.836 0 0 0-1.72.756c-.712.566-1.112 1.35-1.112 2.178 0 .829.4 1.612 1.113 2.178.502.4 1.102.647 1.719.756v2.978a2.536 2.536 0 0 1-.921-.421l-.879-.66a.75.75 0 0 0-.9 1.2l.879.66c.533.4 1.169.645 1.821.75V18a.75.75 0 0 0 1.5 0v-.81a4.124 4.124 0 0 0 1.821-.749c.745-.559 1.179-1.344 1.179-2.191 0-.847-.434-1.632-1.179-2.191a4.122 4.122 0 0 0-1.821-.75V8.354c.29.082.559.213.786.393l.415.33a.75.75 0 0 0 .933-1.175l-.415-.33a3.836 3.836 0 0 0-1.719-.755V6Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="login-title">Fee Management</h3>
+                  <p class="login-description">
+                    Secretary, Accountant & Admin Access
                   </p>
                 </div>
                 <div class="login-arrow">

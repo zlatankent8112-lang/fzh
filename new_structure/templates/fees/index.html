@@ -137,29 +137,56 @@
       .back-link:hover {
         text-decoration: underline;
       }
-      /* Enhanced Navigation Menu */
+      /* Enhanced Navigation Menu - Solar Theme */
       .nav-menu {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 8px;
-        padding: 15px 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        padding: 20px 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+      .nav-menu::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+        pointer-events: none;
       }
       .nav-menu-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+        position: relative;
+        z-index: 1;
       }
       .nav-search {
         display: flex;
         align-items: center;
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 20px;
-        padding: 8px 15px;
-        flex: 0 0 300px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        padding: 10px 18px;
+        flex: 0 0 350px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s;
+        backdrop-filter: blur(10px);
+      }
+      .nav-search:focus-within {
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+      .nav-search svg {
+        width: 16px;
+        height: 16px;
+        margin-right: 10px;
+        opacity: 0.8;
       }
       .nav-search input {
         background: none;
@@ -168,52 +195,119 @@
         outline: none;
         width: 100%;
         font-size: 14px;
+        font-weight: 500;
       }
       .nav-search input::placeholder {
-        color: rgba(255, 255, 255, 0.7);
+        color: rgba(255, 255, 255, 0.75);
       }
       .nav-stats {
         display: flex;
-        gap: 20px;
+        gap: 30px;
         color: white;
+        position: relative;
+        z-index: 1;
       }
       .nav-stat {
         text-align: center;
+        padding: 0 15px;
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .nav-stat:last-child {
+        border-right: none;
       }
       .nav-stat-value {
-        font-size: 18px;
-        font-weight: bold;
+        font-size: 24px;
+        font-weight: 800;
         display: block;
+        margin-bottom: 4px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
       .nav-stat-label {
-        font-size: 11px;
-        opacity: 0.8;
+        font-size: 10px;
+        opacity: 0.85;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
       }
       .nav-links {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
       }
       .nav-links a {
         color: white;
         text-decoration: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        background: rgba(255, 255, 255, 0.1);
-        transition: all 0.3s;
-        font-weight: 500;
+        padding: 12px 22px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.15);
+        transition: all 0.3s ease;
+        font-weight: 600;
         font-size: 14px;
         display: flex;
         align-items: center;
         gap: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
       .nav-links a:hover {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.25);
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       }
       .nav-links a.active {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.35);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+      /* Responsive Design */
+      @media (max-width: 992px) {
+        .nav-menu-header {
+          flex-wrap: wrap;
+          gap: 15px;
+        }
+        .nav-search {
+          flex: 1 1 100%;
+          max-width: none;
+          order: 1;
+        }
+        .nav-stats {
+          flex: 1 1 auto;
+          order: 2;
+        }
+        .nav-user {
+          flex: 1 1 100%;
+          order: 3;
+          justify-content: space-between !important;
+          border-left: none !important;
+          padding-left: 0 !important;
+          padding-top: 15px;
+          border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+      }
+      @media (max-width: 768px) {
+        .nav-menu-header {
+          flex-direction: column;
+        }
+        .nav-stats {
+          width: 100%;
+          justify-content: space-around;
+        }
+        .nav-stat {
+          padding: 0 10px;
+        }
+        .nav-stat-value {
+          font-size: 20px;
+        }
+        .nav-links {
+          justify-content: center;
+        }
+        .nav-links a {
+          font-size: 13px;
+          padding: 10px 16px;
+        }
       }
       /* Breadcrumb */
       .breadcrumb {
@@ -257,19 +351,6 @@
   </head>
   <body>
     <div class="container">
-      <a href="{{ url_for('admin.dashboard') }}" class="back-link"
-        >← Back to Dashboard</a
-      >
-
-      <!-- Breadcrumb -->
-      <div class="breadcrumb">
-        <a href="{{ url_for('admin.dashboard') }}">🏠 Home</a>
-        <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-current">💰 Fee Management</span>
-      </div>
-
-      <h1>💰 Fee Management Dashboard</h1>
-
       <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -286,7 +367,9 @@
         <!-- Search and Stats Header -->
         <div class="nav-menu-header">
           <div class="nav-search">
-            <span style="margin-right: 8px">🔍</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             <input
               type="text"
               id="navSearch"
@@ -308,21 +391,57 @@
               <span class="nav-stat-label">Payments</span>
             </div>
           </div>
+          <div class="nav-user" style="display: flex; align-items: center; gap: 15px; padding-left: 20px; border-left: 1px solid rgba(255, 255, 255, 0.2);">
+            <div style="text-align: right;">
+              <div style="color: white; font-weight: 600; font-size: 14px;">{{ session.get('username', 'User') }}</div>
+              <div style="color: rgba(255, 255, 255, 0.8); font-size: 11px; text-transform: capitalize;">{{ session.get('role', 'Staff') }}</div>
+            </div>
+            <a href="{{ url_for('auth.logout_route') }}" style="background: rgba(255, 255, 255, 0.2); padding: 8px 16px; border-radius: 6px; color: white; text-decoration: none; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: all 0.3s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
+            </a>
+          </div>
         </div>
 
         <!-- Navigation Links -->
         <div class="nav-links">
           <a href="{{ url_for('fees.index') }}" class="active">
-            🏠 Dashboard
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Dashboard
           </a>
-          <a href="{{ url_for('fees.fee_structures') }}"> 📋 Fee Structures </a>
-          <a href="{{ url_for('fees.record_payment') }}"> 💵 Record Payment </a>
-          <a href="{{ url_for('fees.invoice_list') }}"> 📄 Invoices </a>
+          <a href="{{ url_for('fees.fee_structures') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Fee Structures
+          </a>
+          <a href="{{ url_for('fees.record_payment') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Record Payment
+          </a>
+          <a href="{{ url_for('fees.invoice_list') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Invoices
+          </a>
           <a href="{{ url_for('fees.generate_invoices') }}">
-            ➕ Generate Invoice
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Generate Invoice
           </a>
           <a href="{{ url_for('fees.analytics_dashboard') }}">
-            📊 Analytics
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Analytics
           </a>
         </div>
       </div>

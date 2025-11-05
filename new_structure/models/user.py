@@ -17,9 +17,10 @@ class Teacher(UserMixin, db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    # Renamed hashed column (now canonical)
+    # Canonical password column
     password = db.Column(db.String(255), nullable=False)
-    # Backwards compatibility alias property defined below
+    # Legacy column that still exists in database (keep for backward compatibility)
+    password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50), nullable=False)  # e.g., 'headteacher', 'teacher', 'classteacher'
     stream_id = db.Column(db.Integer, db.ForeignKey('stream.id'), nullable=True)
 
@@ -78,6 +79,8 @@ class Teacher(UserMixin, db.Model):
         # Hash (Werkzeug defaults to PBKDF2-HMAC-SHA256)
         hashed = generate_password_hash(pwd)
         self.password = hashed
+        # Also set password_hash for backward compatibility with existing database schema
+        self.password_hash = hashed
 
     def check_password(self, password):
         """Validate password using the canonical hashed 'password' column."""
@@ -99,8 +102,6 @@ class Teacher(UserMixin, db.Model):
     def is_password_hashed(self):
         """Return True if canonical password column stores a modern hash."""
         return bool(self.password and self.password.startswith(('scrypt:', 'pbkdf2:')))
-
-    # Backwards compatibility attribute removed; refer only to 'password'.
 
     @property
     def full_name(self):

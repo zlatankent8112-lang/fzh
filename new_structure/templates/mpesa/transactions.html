@@ -3,95 +3,367 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-PESA Transactions - Hillview School Management System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>M-PESA Transactions | Hillview School</title>
+    <!-- Version 2.0 - Updated icons and layout -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --danger-gradient: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #2d3436;
+            min-height: 100vh;
+        }
+        
+        /* Header Styles */
+        .dashboard-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 60px 0 80px;
+            margin-bottom: -30px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.1;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+        }
+        
+        .dashboard-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+        
+        .header-actions {
+            margin-top: 20px;
+        }
+        
+        .header-actions .btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            font-weight: 600;
+            padding: 10px 25px;
+            border-radius: 10px;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .header-actions .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* Stat Cards */
+        .stats-row {
+            display: flex !important;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        
+        .stats-row > div {
+            flex: 1;
+            min-width: 250px;
+            max-width: calc(25% - 15px);
+        }
+        
+        @media (max-width: 1200px) {
+            .stats-row > div {
+                max-width: calc(50% - 10px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-row > div {
+                max-width: 100%;
+            }
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 35px;
+            height: 100%;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: visible;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .stat-card .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .stat-card.primary .icon-wrapper {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .stat-card.success .icon-wrapper {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .stat-card.warning .icon-wrapper {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .stat-card.info .icon-wrapper {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .stat-card .icon-wrapper svg {
+            width: 36px;
+            height: 36px;
+            color: white;
+            stroke-width: 2;
+        }
+        
+        .stat-card h6 {
+            color: #8b95a5;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            line-height: 1;
+        }
+        
+        .stat-card.success h3 { color: #11998e; }
+        .stat-card.warning h3 { color: #f5576c; }
+        .stat-card.info h3 { color: #4facfe; }
+        
+        .stat-card .stat-subtitle {
+            color: #b0b7c3;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        /* Filter Card */
+        .filter-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .filter-card .form-control, .filter-card .form-select {
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-card .form-control:focus, .filter-card .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .filter-card .btn {
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        /* Table Card */
+        .table-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .table-card h5 {
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 15px;
+        }
+        
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+        }
+        
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            border-color: #f0f0f0;
+        }
+        
+        .badge {
+            padding: 8px 15px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 10px;
+        }
+        
+        .btn-group-sm .btn {
+            border-radius: 8px;
+            padding: 5px 12px;
+        }
+    </style>
 </head>
 <body>
-<div class="container-fluid mt-4">
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="fas fa-mobile-alt me-2"></i>M-PESA Transactions</h2>
-                    <p class="text-muted">View and manage M-PESA payment transactions</p>
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-mobile-alt mr-3"></i>M-PESA Transactions</h1>
+                    <p>View and manage M-PESA payment transactions</p>
                 </div>
-                <div>
-                    <a href="{{ url_for('mpesa.config') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-cog me-2"></i>Configuration
+                <div class="col-md-4 text-right header-actions">
+                    <a href="{{ url_for('mpesa.config') }}" class="btn">
+                        <i class="fas fa-cog mr-2"></i>Configuration
                     </a>
-                    <a href="{{ url_for('fees.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Fees
+                    <a href="{{ url_for('fees.index') }}" class="btn">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Fees
                     </a>
                 </div>
             </div>
         </div>
     </div>
+    
+    <div class="container-fluid px-4 mt-4">
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-0">Total Transactions</h6>
-                            <h3 class="mb-0">{{ stats.total_transactions }}</h3>
-                        </div>
-                        <div class="fs-1"><i class="fas fa-list"></i></div>
+        <!-- Statistics Cards -->
+        <div class="stats-row">
+            <div>
+                <div class="stat-card primary">
+                    <div class="icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
                     </div>
+                    <h6>Total Transactions</h6>
+                    <h3>{{ stats.total_transactions }}</h3>
+                    <p class="stat-subtitle">All payment requests</p>
+                </div>
+            </div>
+            
+            <div>
+                <div class="stat-card success">
+                    <div class="icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h6>Successful Payments</h6>
+                    <h3>{{ stats.successful }}</h3>
+                    <p class="stat-subtitle">{% if stats.total_transactions > 0 %}{{ "%.2f"|format((stats.successful / stats.total_transactions * 100)) }}% success rate{% else %}0% success rate{% endif %}</p>
+                </div>
+            </div>
+            
+            <div>
+                <div class="stat-card warning">
+                    <div class="icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h6>Total Collected</h6>
+                    <h3>{{ stats.total_amount|int }}</h3>
+                    <p class="stat-subtitle">KES amount</p>
+                </div>
+            </div>
+            
+            <div>
+                <div class="stat-card info">
+                    <div class="icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                        </svg>
+                    </div>
+                    <h6>Average Payment</h6>
+                    <h3>{% if stats.successful > 0 %}{{ (stats.total_amount / stats.successful)|int }}{% else %}0{% endif %}</h3>
+                    <p class="stat-subtitle">KES per transaction</p>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-3">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-0">Successful</h6>
-                            <h3 class="mb-0">{{ stats.successful }}</h3>
-                        </div>
-                        <div class="fs-1"><i class="fas fa-check-circle"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-0">Pending</h6>
-                            <h3 class="mb-0">{{ stats.pending }}</h3>
-                        </div>
-                        <div class="fs-1"><i class="fas fa-clock"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card text-white bg-info">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase mb-0">Total Amount</h6>
-                            <h3 class="mb-0">KES {{ "{:,.2f}".format(stats.total_amount) }}</h3>
-                        </div>
-                        <div class="fs-1"><i class="fas fa-money-bill-wave"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Filters -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ url_for('mpesa.transactions') }}" class="row g-3">
+        <!-- Filters -->
+        <div class="filter-card">
+            <form method="GET" action="{{ url_for('mpesa.transactions') }}" class="row">
                 <div class="col-md-3">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
@@ -120,23 +392,19 @@
                     <label class="form-label">&nbsp;</label>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-filter me-2"></i>Filter
+                            <i class="fas fa-filter mr-2"></i>Filter
                         </button>
                         <a href="{{ url_for('mpesa.transactions') }}" class="btn btn-secondary">
-                            <i class="fas fa-redo me-2"></i>Reset
+                            <i class="fas fa-redo mr-2"></i>Reset
                         </a>
                     </div>
                 </div>
             </form>
         </div>
-    </div>
 
-    <!-- Transactions Table -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-table me-2"></i>Transaction History</h5>
-        </div>
-        <div class="card-body">
+        <!-- Transactions Table -->
+        <div class="table-card">
+            <h5><i class="fas fa-table mr-2"></i>Transaction History</h5>
             {% if transactions %}
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
@@ -166,24 +434,24 @@
                             </td>
                             <td>
                                 {% if transaction.status == 'success' %}
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-check-circle me-1"></i>Success
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check-circle mr-1"></i>Success
                                     </span>
                                 {% elif transaction.status == 'pending' %}
-                                    <span class="badge bg-warning">
-                                        <i class="fas fa-clock me-1"></i>Pending
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-clock mr-1"></i>Pending
                                     </span>
                                 {% elif transaction.status == 'failed' %}
-                                    <span class="badge bg-danger">
-                                        <i class="fas fa-times-circle me-1"></i>Failed
+                                    <span class="badge badge-danger">
+                                        <i class="fas fa-times-circle mr-1"></i>Failed
                                     </span>
                                 {% elif transaction.status == 'cancelled' %}
-                                    <span class="badge bg-secondary">
-                                        <i class="fas fa-ban me-1"></i>Cancelled
+                                    <span class="badge badge-secondary">
+                                        <i class="fas fa-ban mr-1"></i>Cancelled
                                     </span>
                                 {% elif transaction.status == 'timeout' %}
-                                    <span class="badge bg-dark">
-                                        <i class="fas fa-hourglass-end me-1"></i>Timeout
+                                    <span class="badge badge-dark">
+                                        <i class="fas fa-hourglass-end mr-1"></i>Timeout
                                     </span>
                                 {% endif %}
                             </td>
@@ -242,16 +510,19 @@
 
             {% else %}
             <div class="text-center py-5">
-                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No M-PESA transactions found</p>
+                <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                <p class="text-muted mb-4">No M-PESA transactions found</p>
                 <a href="{{ url_for('fees.record_payment') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Record Payment
+                    <i class="fas fa-plus mr-2"></i>Record Payment
                 </a>
             </div>
             {% endif %}
         </div>
     </div>
+    
 </div>
+
+<div style="height: 60px;"></div>
 
 <script>
 // Check transaction status

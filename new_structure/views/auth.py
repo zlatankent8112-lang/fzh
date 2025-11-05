@@ -124,25 +124,88 @@ def index():
     """Route for the main index/login page."""
     return render_template('login.html')
 
-@auth_bp.route('/premium')
-def premium_login():
-    """Premium login page with Tailwind CSS and glassmorphism design"""
-    school_info = {
-        'school_name': 'Hillview School',
-        'school_motto': 'Excellence Through Knowledge and Character',
-        'logo_url': None
-    }
-    return render_template('login_premium.html', school_info=school_info)
+@auth_bp.route('/fee_staff_login', methods=['GET', 'POST'])
+@limiter.limit("15/minute;5/10second", override_defaults=False)
+@sql_injection_protection
+def fee_staff_login():
+    """Route for fee management staff login (headteacher, secretary, accountant)."""
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
 
-@auth_bp.route('/polished')
-def polished_login():
-    """Ultra-polished dark theme login page matching your design reference"""
-    school_info = {
-        'school_name': 'Hillview School',
-        'school_motto': 'Excellence Through Knowledge and Character',
-        'logo_url': None
-    }
-    return render_template('login_polished.html', school_info=school_info)
+        # Input validation
+        if not username or not password:
+            return render_template('fee_staff_login.html', 
+                error='Username and password required',
+                school_info={'school_name': 'Hillview School'})
+
+        # Length validation
+        if len(username) > 100 or len(password) > 128:
+            return render_template('fee_staff_login.html', 
+                error='Invalid credentials',
+                school_info={'school_name': 'Hillview School'})
+
+        # SQL injection protection
+        if not SQLInjectionProtection.validate_input(username, "username"):
+            return render_template('fee_staff_login.html', 
+                error='Invalid credentials',
+                school_info={'school_name': 'Hillview School'})
+
+        # Command injection protection
+        if (RCEProtection.detect_code_injection(username) or
+            RCEProtection.detect_code_injection(password)):
+            return render_template('fee_staff_login.html', 
+                error='Invalid credentials',
+                school_info={'school_name': 'Hillview School'})
+
+        # Secure logging - don't expose usernames
+        client_ip = request.environ.get('REMOTE_ADDR', 'unknown')
+        print(f"🔍 Fee staff login attempt from IP: {client_ip}")
+
+        try:
+            # Try to authenticate as headteacher first
+            teacher = authenticate_teacher(username, password, 'headteacher')
+            
+            # If not headteacher, try secretary
+            if not teacher:
+                teacher = authenticate_teacher(username, password, 'secretary')
+            
+            # If not secretary, try accountant
+            if not teacher:
+                teacher = authenticate_teacher(username, password, 'accountant')
+            
+            if teacher and is_locked(teacher):
+                flash('Account temporarily locked. Try again later.', 'error')
+                return render_template('fee_staff_login.html', 
+                    error='Invalid credentials',
+                    school_info={'school_name': 'Hillview School'})
+
+            if teacher:
+                register_successful_login(teacher, username, teacher.role)
+                # Redirect to fee management dashboard
+                return redirect(url_for('fees.index'))
+            else:
+                # Attempt to find teacher by username for failed attempt tracking
+                try:
+                    from ..models.user import Teacher
+                    from ..extensions import db
+                    candidate = Teacher.query.filter_by(username=username).first()
+                except Exception:
+                    candidate = None
+                register_failed_login(candidate)
+                flash('Invalid credentials', 'error')
+                return render_template('fee_staff_login.html', 
+                    error='Invalid credentials',
+                    school_info={'school_name': 'Hillview School'})
+        except Exception as e:
+            print(f"🚨 Authentication error: {str(e)}")
+            flash('An error occurred during authentication. Please try again.', 'error')
+            return render_template('fee_staff_login.html', 
+                error=f'Authentication error',
+                school_info={'school_name': 'Hillview School'})
+
+    return render_template('fee_staff_login.html',
+        school_info={'school_name': 'Hillview School'})
 
 @auth_bp.route('/admin_login', methods=['GET', 'POST'])
 @limiter.limit("10/minute;3/5second", override_defaults=False)

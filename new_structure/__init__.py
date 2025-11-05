@@ -1000,8 +1000,6 @@ def create_app(config_name='default'):
         result += "<p><strong>Quick Links:</strong></p>"
         result += "<ul>"
         result += "<li><a href='/'>Main Login</a></li>"
-        result += "<li><a href='/premium'>Premium Login</a></li>"
-        result += "<li><a href='/polished'>Polished Login</a></li>"
         result += "</ul>"
 
         for bp in blueprint_info:
@@ -1011,26 +1009,6 @@ def create_app(config_name='default'):
             result += "</ul>"
 
         return result
-
-    # Add direct route for polished login (fallback)
-    @app.route('/polished')
-    def direct_polished_login():
-        """Direct route for polished login page"""
-        try:
-            school_info = {
-                'school_name': 'Hillview School',
-                'school_motto': 'Excellence Through Knowledge and Character',
-                'logo_url': None
-            }
-            return render_template('login_polished.html', school_info=school_info)
-        except Exception as e:
-            return f"<h2>❌ Polished Login Error</h2><p>Error: {str(e)}</p><p><a href='/debug/blueprints'>Check Routes</a></p>"
-
-    # Add simple test route
-    @app.route('/test-polished')
-    def test_polished():
-        """Simple test route"""
-        return "<h1>✅ Test Route Works!</h1><p><a href='/polished'>Try Polished Login</a></p>"
 
     # Add database initialization debug route
     @app.route('/debug/init_database')

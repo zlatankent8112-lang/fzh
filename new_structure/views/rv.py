@@ -8935,7 +8935,6 @@ def manage_teachers():
 
                         new_teacher = Teacher(
                             username=username,
-                            password=generate_password_hash(password),
                             role=role,
                             first_name=first_name if first_name else None,
                             last_name=last_name if last_name else None,
@@ -8947,6 +8946,8 @@ def manage_teachers():
                             date_joined=db.func.current_date(),
                             is_active=True
                         )
+                        # Use set_password() to properly set both password and password_hash columns
+                        new_teacher.set_password(password)
                         db.session.add(new_teacher)
                         db.session.commit()
                         success_message = f"Teacher '{username}' added successfully with Employee ID: {employee_id}! You can now assign subjects to this teacher using the Bulk Assignments feature."
@@ -8980,7 +8981,7 @@ def manage_teachers():
 
                     # Update password if provided
                     if new_password and new_password.strip():
-                        teacher.password = generate_password_hash(new_password)
+                        teacher.set_password(new_password)
 
                     db.session.commit()
                     success_message = f"Teacher '{teacher.username}' updated successfully!"

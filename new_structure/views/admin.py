@@ -661,12 +661,10 @@ def manage_teachers():
                 if existing_teacher:
                     error_message = f"Teacher with username '{username}' already exists."
                 else:
-                    # Hash the password
-                    from werkzeug.security import generate_password_hash
-                    hashed_password = generate_password_hash(password)
-
                     # Create new teacher
-                    new_teacher = Teacher(username=username, password=hashed_password, role=role)
+                    new_teacher = Teacher(username=username, role=role)
+                    # Use set_password() to properly set both password and password_hash columns
+                    new_teacher.set_password(password)
                     db.session.add(new_teacher)
 
                     try:

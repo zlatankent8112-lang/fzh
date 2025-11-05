@@ -19,18 +19,19 @@ fee_bp = Blueprint('fees', __name__, url_prefix='/fees')
 
 # Authentication decorator for fee management routes
 def fee_access_required(f):
-    """Decorator to require authenticated user (any role: headteacher, classteacher, teacher)"""
+    """Decorator to require authenticated user with fee management access"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not is_authenticated(session):
             flash('Please log in to access fee management.', 'warning')
-            return redirect(url_for('auth.classteacher_login'))
+            return redirect(url_for('auth.fee_staff_login'))
         
         role = get_role(session)
-        # Allow all teacher roles to access fee management
-        if role not in ('headteacher', 'classteacher', 'teacher'):
-            flash('Access denied. Fee management requires staff privileges.', 'error')
-            return redirect(url_for('auth.classteacher_login'))
+        # Allow headteacher, secretary, and accountant to access fee management
+        # Note: 'classteacher' and 'teacher' roles removed for security - fee management is financial
+        if role not in ('headteacher', 'secretary', 'accountant'):
+            flash('Access denied. Fee management requires administrative or finance staff privileges.', 'error')
+            return redirect(url_for('auth.fee_staff_login'))
         
         return f(*args, **kwargs)
     return decorated_function
