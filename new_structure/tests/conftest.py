@@ -527,10 +527,23 @@ def mock_email_env(monkeypatch):
     monkeypatch.setenv('SCHOOL_NAME', 'Test School')
 
 @pytest.fixture()
-def mpesa_config(app, db_session):
-    """Create M-PESA configuration for testing"""
+def mock_mpesa_env(app, db_session, monkeypatch):
+    """Provision a test M-PESA configuration and related environment variables."""
     from new_structure.models.fee_management import MpesaConfig
+
+    # Set environment variables expected by code paths that read from os.environ
+    monkeypatch.setenv('MPESA_ENVIRONMENT', 'sandbox')
+    monkeypatch.setenv('MPESA_CONSUMER_KEY', 'test_consumer_key')
+    monkeypatch.setenv('MPESA_CONSUMER_SECRET', 'test_consumer_secret')
+    monkeypatch.setenv('MPESA_SHORTCODE', '174379')
+    monkeypatch.setenv('MPESA_PASSKEY', 'test_passkey')
+    monkeypatch.setenv('MPESA_CALLBACK_URL', 'http://localhost:5000/mpesa/callback')
+
     with app.app_context():
+        existing = MpesaConfig.query.filter_by(shortcode='174379').first()
+        if existing:
+            return existing
+
         config = MpesaConfig(
             environment='sandbox',
             consumer_key='test_consumer_key',
@@ -542,21 +555,5 @@ def mpesa_config(app, db_session):
         )
         db_session.add(config)
         db_session.commit()
-        # Ensure config is refreshed to avoid DetachedInstanceError
         db_session.refresh(config)
         return config
-
-@pytest.fixture()
-def mock_mpesa_env(mpesa_config):
-    """Mock M-PESA environment (just returns config for compatibility)"""
-    return mpesa_config
-
-@pytest.fixture()
-def mock_mpesa_env(monkeypatch):
-    """Mock M-PESA environment variables"""
-    monkeypatch.setenv('MPESA_ENVIRONMENT', 'test')
-    monkeypatch.setenv('MPESA_CONSUMER_KEY', 'test_key_123')
-    monkeypatch.setenv('MPESA_CONSUMER_SECRET', 'test_secret_456')
-    monkeypatch.setenv('MPESA_SHORTCODE', '174379')
-    monkeypatch.setenv('MPESA_PASSKEY', 'test_passkey_789')
-    monkeypatch.setenv('MPESA_CALLBACK_URL', 'http://localhost:5000/mpesa/callback')

@@ -52,8 +52,15 @@
     <div class="container">
       <a href="{{ url_for('fees.index') }}" class="back-link">← Back to Fee Dashboard</a>
       
-      <h1>Fee Balance Report</h1>
-      <p class="subtitle">Outstanding fee balances across all students</p>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+        <div>
+          <h1>Fee Balance Report</h1>
+          <p class="subtitle" style="margin: 5px 0 0 0;">Outstanding fee balances across all students</p>
+        </div>
+        <a href="{{ url_for('fees.export_balance_report_excel') }}" class="btn-success" style="background: #28a745; color: white; padding: 12px 24px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+          📊 Export to Excel
+        </a>
+      </div>
 
       <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}

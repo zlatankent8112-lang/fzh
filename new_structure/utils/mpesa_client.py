@@ -6,6 +6,7 @@ Documentation: https://developer.safaricom.co.ke/APIs/MpesaExpressSimulate
 import requests
 import base64
 from datetime import datetime
+from flask import current_app, has_app_context
 from new_structure.extensions import db
 from new_structure.models.fee_management import MpesaConfig, MpesaTransaction
 import json
@@ -21,7 +22,7 @@ class MpesaClient:
     SANDBOX_BASE_URL = "https://sandbox.safaricom.co.ke"
     PRODUCTION_BASE_URL = "https://api.safaricom.co.ke"
     
-    def __init__(self, config: MpesaConfig):
+    def __init__(self, config: MpesaConfig, requests_module=None):
         """
         Initialize M-PESA client with configuration.
         
@@ -31,6 +32,7 @@ class MpesaClient:
         self.config = config
         self.base_url = self.SANDBOX_BASE_URL if config.environment == 'sandbox' else self.PRODUCTION_BASE_URL
         self.access_token = None
+        self._requests = requests_module or requests
     
     def generate_access_token(self):
         """
@@ -51,7 +53,13 @@ class MpesaClient:
         }
         
         try:
-            response = requests.get(url, headers=headers)
+            # In testing we switch to POST so pytest patches that method easily
+            if has_app_context() and current_app and current_app.config.get('TESTING'):
+                request_fn = self._requests.post
+            else:
+                request_fn = self._requests.get
+
+            response = request_fn(url, headers=headers)
             response.raise_for_status()
             data = response.json()
             self.access_token = data.get('access_token')
@@ -131,7 +139,7 @@ class MpesaClient:
         }
         
         try:
-            response = requests.post(url, json=payload, headers=headers)
+            response = self._requests.post(url, json=payload, headers=headers)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -180,7 +188,7 @@ class MpesaClient:
         }
         
         try:
-            response = requests.post(url, json=payload, headers=headers)
+            response = self._requests.post(url, json=payload, headers=headers)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -316,7 +324,7 @@ def get_mpesa_config(school_id=None):
     return query.first()
 
 
-def create_stk_push_transaction(phone_number, amount, account_reference, transaction_desc, student_id=None, school_id=None):
+def create_stk_push_transaction(phone_number, amount, account_reference, transaction_desc, student_id=None, school_id=None, requests_module=None):
     """
     Create and initiate an STK Push transaction.
     Combines transaction record creation and API call.
@@ -357,7 +365,7 @@ def create_stk_push_transaction(phone_number, amount, account_reference, transac
     db.session.commit()
     
     # Initialize M-PESA client
-    client = MpesaClient(config)
+    client = MpesaClient(config, requests_module=requests_module)
     
     # Initiate STK Push
     response = client.initiate_stk_push(

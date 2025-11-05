@@ -948,6 +948,397 @@ def balance_report():
                          selected_status=status)
 
 
+@fee_bp.route('/analytics')
+@fee_access_required
+def analytics_dashboard():
+    """Fee collection analytics and reports dashboard"""
+    from sqlalchemy import func, case, and_
+    from datetime import date, timedelta, datetime
+    
+    # Get filter parameters
+    term_filter = request.args.get('term', 'Term 1')
+    academic_year = request.args.get('academic_year', '2025')
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    grade_filter = request.args.get('grade_id')
+    stream_filter = request.args.get('stream_id')
+    payment_status = request.args.get('payment_status')
+    
+    # Build base query filters
+    query_filters = []
+    payment_filters = []
+    
+    # Date range filter for payments
+    if start_date:
+        try:
+            start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
+            payment_filters.append(Payment.payment_date >= start_dt)
+        except ValueError:
+            pass
+    
+    if end_date:
+        try:
+            end_dt = datetime.strptime(end_date, '%Y-%m-%d').date()
+            payment_filters.append(Payment.payment_date <= end_dt)
+        except ValueError:
+            pass
+    
+    # Grade filter
+    if grade_filter:
+        query_filters.append(Grade.name == grade_filter)
+    
+    # Stream filter
+    if stream_filter:
+        query_filters.append(Stream.name == stream_filter)
+    
+    # =========================
+    # 1. SUMMARY STATISTICS
+    # =========================
+    summary_query = db.session.query(
+        func.sum(StudentFeeAccount.total_amount).label('total_expected'),
+        func.sum(StudentFeeAccount.amount_paid).label('total_collected'),
+        func.sum(StudentFeeAccount.balance).label('total_outstanding')
+    ).join(Student)
+    
+    if query_filters:
+        summary_query = summary_query.join(Grade).join(Stream, isouter=True).filter(and_(*query_filters))
+    
+    summary = summary_query.first()
+    total_expected = summary.total_expected or Decimal('0')
+    total_collected = summary.total_collected or Decimal('0')
+    total_outstanding = summary.total_outstanding or Decimal('0')
+    collection_rate = (float(total_collected) / float(total_expected) * 100) if total_expected > 0 else 0
+    
+    # Count students by payment status
+    status_base = db.session.query(Student.id, 
+                                    func.sum(StudentFeeAccount.balance).label('balance'),
+                                    func.sum(StudentFeeAccount.amount_paid).label('paid'))\
+        .join(StudentFeeAccount)
+    
+    if query_filters:
+        status_base = status_base.join(Grade).join(Stream, isouter=True).filter(and_(*query_filters))
+    
+    status_base = status_base.group_by(Student.id).subquery()
+    
+    fully_paid_count = db.session.query(func.count(status_base.c.id)).filter(status_base.c.balance == 0).scalar() or 0
+    partially_paid_count = db.session.query(func.count(status_base.c.id)).filter(
+        and_(status_base.c.balance > 0, status_base.c.paid > 0)
+    ).scalar() or 0
+    not_paid_count = db.session.query(func.count(status_base.c.id)).filter(status_base.c.paid == 0).scalar() or 0
+    
+    # Apply payment status filter if specified
+    if payment_status:
+        if payment_status == 'paid':
+            query_filters.append(StudentFeeAccount.balance == 0)
+        elif payment_status == 'partial':
+            query_filters.append(and_(StudentFeeAccount.balance > 0, StudentFeeAccount.amount_paid > 0))
+        elif payment_status == 'unpaid':
+            query_filters.append(StudentFeeAccount.amount_paid == 0)
+    
+    # =========================
+    # 2. COLLECTION BY GRADE
+    # =========================
+    grade_query = db.session.query(
+        Grade.name,
+        func.count(func.distinct(Student.id)).label('student_count'),
+        func.sum(StudentFeeAccount.total_amount).label('expected'),
+        func.sum(StudentFeeAccount.amount_paid).label('collected'),
+        func.sum(StudentFeeAccount.balance).label('outstanding')
+    ).join(Student, Grade.id == Student.grade_id)\
+     .join(StudentFeeAccount, Student.id == StudentFeeAccount.student_id)
+    
+    if stream_filter:
+        grade_query = grade_query.join(Stream).filter(Stream.name == stream_filter)
+    
+    grade_stats = grade_query.group_by(Grade.name).order_by(Grade.name).all()
+    
+    # =========================
+    # 3. COLLECTION BY STREAM
+    # =========================
+    stream_query = db.session.query(
+        Stream.name,
+        Grade.name.label('grade_name'),
+        func.count(func.distinct(Student.id)).label('student_count'),
+        func.sum(StudentFeeAccount.total_amount).label('expected'),
+        func.sum(StudentFeeAccount.amount_paid).label('collected'),
+        func.sum(StudentFeeAccount.balance).label('outstanding')
+    ).join(Student, Stream.id == Student.stream_id)\
+     .join(Grade, Stream.grade_id == Grade.id)\
+     .join(StudentFeeAccount, Student.id == StudentFeeAccount.student_id)
+    
+    if grade_filter:
+        stream_query = stream_query.filter(Grade.name == grade_filter)
+    
+    stream_stats = stream_query.group_by(Stream.name, Grade.name).order_by(Grade.name, Stream.name).all()
+    
+    # =========================
+    # 4. PAYMENT METHOD BREAKDOWN
+    # =========================
+    payment_method_query = db.session.query(
+        PaymentMethod.name,
+        func.count(Payment.id).label('transaction_count'),
+        func.sum(Payment.amount).label('total_amount')
+    ).join(Payment, PaymentMethod.id == Payment.method_id)
+    
+    if payment_filters:
+        payment_method_query = payment_method_query.filter(and_(*payment_filters))
+    
+    if query_filters:
+        payment_method_query = payment_method_query.join(
+            StudentFeeAccount, Payment.student_fee_account_id == StudentFeeAccount.id
+        ).join(Student).join(Grade).join(Stream, isouter=True).filter(and_(*query_filters))
+    
+    payment_method_stats = payment_method_query.group_by(PaymentMethod.name).all()
+    
+    # =========================
+    # 5. DAILY COLLECTION TRENDS (Last 30 days)
+    # =========================
+    thirty_days_ago = date.today() - timedelta(days=30)
+    trend_filters = [Payment.payment_date >= thirty_days_ago]
+    
+    if payment_filters:
+        trend_filters.extend(payment_filters)
+    
+    daily_query = db.session.query(
+        func.date(Payment.payment_date).label('date'),
+        func.count(Payment.id).label('count'),
+        func.sum(Payment.amount).label('amount')
+    ).filter(and_(*trend_filters))
+    
+    if query_filters:
+        daily_query = daily_query.join(
+            StudentFeeAccount, Payment.student_fee_account_id == StudentFeeAccount.id
+        ).join(Student).join(Grade).join(Stream, isouter=True).filter(and_(*query_filters))
+    
+    daily_collections = daily_query.group_by(func.date(Payment.payment_date))\
+                                   .order_by(func.date(Payment.payment_date))\
+                                   .all()
+    
+    # =========================
+    # 6. DEFAULTERS LIST (Top 20)
+    # =========================
+    defaulters_query = db.session.query(
+        Student,
+        func.sum(StudentFeeAccount.total_amount).label('total_fees'),
+        func.sum(StudentFeeAccount.amount_paid).label('total_paid'),
+        func.sum(StudentFeeAccount.balance).label('balance')
+    ).join(StudentFeeAccount)
+    
+    if query_filters:
+        defaulters_query = defaulters_query.join(Grade).join(Stream, isouter=True).filter(and_(*query_filters))
+    
+    defaulters = defaulters_query.group_by(Student.id)\
+                                 .having(func.sum(StudentFeeAccount.balance) > 0)\
+                                 .order_by(func.sum(StudentFeeAccount.balance).desc())\
+                                 .limit(20)\
+                                 .all()
+    
+    return render_template('fees/analytics_dashboard.html',
+                         # Summary stats
+                         total_expected=total_expected,
+                         total_collected=total_collected,
+                         total_outstanding=total_outstanding,
+                         collection_rate=collection_rate,
+                         fully_paid_count=fully_paid_count,
+                         partially_paid_count=partially_paid_count,
+                         not_paid_count=not_paid_count,
+                         # Breakdowns
+                         grade_stats=grade_stats,
+                         stream_stats=stream_stats,
+                         payment_method_stats=payment_method_stats,
+                         daily_collections=daily_collections,
+                         defaulters=defaulters,
+                         # Filters
+                         term_filter=term_filter,
+                         academic_year=academic_year)
+
+
+@fee_bp.route('/analytics/export/excel')
+@fee_access_required
+def export_analytics_excel():
+    """Export analytics data to Excel"""
+    from flask import send_file
+    from services.fee_export_service import FeeExportService
+    from sqlalchemy import func
+    from datetime import date, timedelta
+    
+    # Get filter parameters
+    term_filter = request.args.get('term', 'Term 1')
+    academic_year = request.args.get('academic_year', '2025')
+    
+    # Collect same analytics data as dashboard
+    total_expected = db.session.query(func.sum(StudentFeeAccount.total_amount)).scalar() or Decimal('0')
+    total_collected = db.session.query(func.sum(StudentFeeAccount.amount_paid)).scalar() or Decimal('0')
+    total_outstanding = db.session.query(func.sum(StudentFeeAccount.balance)).scalar() or Decimal('0')
+    collection_rate = (float(total_collected) / float(total_expected) * 100) if total_expected > 0 else 0
+    
+    fully_paid_count = db.session.query(func.count(func.distinct(Student.id)))\
+        .join(StudentFeeAccount)\
+        .group_by(Student.id)\
+        .having(func.sum(StudentFeeAccount.balance) == 0)\
+        .count()
+    
+    partially_paid_count = db.session.query(func.count(func.distinct(Student.id)))\
+        .join(StudentFeeAccount)\
+        .group_by(Student.id)\
+        .having(func.sum(StudentFeeAccount.balance) > 0, func.sum(StudentFeeAccount.amount_paid) > 0)\
+        .count()
+    
+    not_paid_count = db.session.query(func.count(func.distinct(Student.id)))\
+        .join(StudentFeeAccount)\
+        .group_by(Student.id)\
+        .having(func.sum(StudentFeeAccount.amount_paid) == 0)\
+        .count()
+    
+    grade_stats = db.session.query(
+        Grade.name,
+        func.count(func.distinct(Student.id)).label('student_count'),
+        func.sum(StudentFeeAccount.total_amount).label('expected'),
+        func.sum(StudentFeeAccount.amount_paid).label('collected'),
+        func.sum(StudentFeeAccount.balance).label('outstanding')
+    ).join(Student, Grade.id == Student.grade_id)\
+     .join(StudentFeeAccount, Student.id == StudentFeeAccount.student_id)\
+     .group_by(Grade.name)\
+     .order_by(Grade.name)\
+     .all()
+    
+    stream_stats = db.session.query(
+        Stream.name,
+        Grade.name.label('grade_name'),
+        func.count(func.distinct(Student.id)).label('student_count'),
+        func.sum(StudentFeeAccount.total_amount).label('expected'),
+        func.sum(StudentFeeAccount.amount_paid).label('collected'),
+        func.sum(StudentFeeAccount.balance).label('outstanding')
+    ).join(Student, Stream.id == Student.stream_id)\
+     .join(Grade, Stream.grade_id == Grade.id)\
+     .join(StudentFeeAccount, Student.id == StudentFeeAccount.student_id)\
+     .group_by(Stream.name, Grade.name)\
+     .order_by(Grade.name, Stream.name)\
+     .all()
+    
+    payment_method_stats = db.session.query(
+        PaymentMethod.name,
+        func.count(Payment.id).label('transaction_count'),
+        func.sum(Payment.amount).label('total_amount')
+    ).join(Payment, PaymentMethod.id == Payment.method_id)\
+     .group_by(PaymentMethod.name)\
+     .all()
+    
+    defaulters = db.session.query(
+        Student,
+        func.sum(StudentFeeAccount.total_amount).label('total_fees'),
+        func.sum(StudentFeeAccount.amount_paid).label('total_paid'),
+        func.sum(StudentFeeAccount.balance).label('balance')
+    ).join(StudentFeeAccount)\
+     .group_by(Student.id)\
+     .having(func.sum(StudentFeeAccount.balance) > 0)\
+     .order_by(func.sum(StudentFeeAccount.balance).desc())\
+     .limit(100)\
+     .all()
+    
+    analytics_data = {
+        'total_expected': total_expected,
+        'total_collected': total_collected,
+        'total_outstanding': total_outstanding,
+        'collection_rate': collection_rate,
+        'fully_paid_count': fully_paid_count,
+        'partially_paid_count': partially_paid_count,
+        'not_paid_count': not_paid_count,
+        'grade_stats': grade_stats,
+        'stream_stats': stream_stats,
+        'payment_method_stats': payment_method_stats,
+        'defaulters': defaulters
+    }
+    
+    excel_file = FeeExportService.export_analytics_to_excel(analytics_data)
+    
+    filename = f'Fee_Analytics_{term_filter}_{academic_year}_{datetime.now().strftime("%Y%m%d")}.xlsx'
+    
+    return send_file(
+        excel_file,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
+
+
+@fee_bp.route('/analytics/export/pdf')
+@fee_access_required
+def export_defaulters_pdf():
+    """Export defaulters list to PDF"""
+    from flask import send_file
+    from services.fee_export_service import FeeExportService
+    from sqlalchemy import func
+    
+    # Get defaulters
+    defaulters = db.session.query(
+        Student,
+        func.sum(StudentFeeAccount.total_amount).label('total_fees'),
+        func.sum(StudentFeeAccount.amount_paid).label('total_paid'),
+        func.sum(StudentFeeAccount.balance).label('balance')
+    ).join(StudentFeeAccount)\
+     .group_by(Student.id)\
+     .having(func.sum(StudentFeeAccount.balance) > 0)\
+     .order_by(func.sum(StudentFeeAccount.balance).desc())\
+     .all()
+    
+    pdf_file = FeeExportService.export_defaulters_to_pdf(defaulters)
+    
+    filename = f'Defaulters_List_{datetime.now().strftime("%Y%m%d")}.pdf'
+    
+    return send_file(
+        pdf_file,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=filename
+    )
+
+
+@fee_bp.route('/balance-report/export/excel')
+@fee_access_required
+def export_balance_report_excel():
+    """Export balance report to Excel"""
+    from flask import send_file
+    from services.fee_export_service import FeeExportService
+    from sqlalchemy import func
+    
+    # Get all students with their balances
+    students_data = db.session.query(
+        Student,
+        func.sum(StudentFeeAccount.total_amount).label('total_fees'),
+        func.sum(StudentFeeAccount.amount_paid).label('total_paid'),
+        func.sum(StudentFeeAccount.balance).label('balance')
+    ).join(StudentFeeAccount)\
+     .group_by(Student.id)\
+     .order_by(Student.name)\
+     .all()
+    
+    students_with_balances = []
+    for student, total_fees, total_paid, balance in students_data:
+        status = 'Paid' if balance == 0 else 'Partial' if total_paid > 0 else 'Not Paid'
+        students_with_balances.append({
+            'name': student.name,
+            'admission_number': student.admission_number,
+            'grade': student.grade.name if student.grade else 'N/A',
+            'stream': student.stream.name if student.stream else 'N/A',
+            'total_fees': total_fees,
+            'total_paid': total_paid,
+            'balance': balance,
+            'status': status
+        })
+    
+    excel_file = FeeExportService.export_balance_report_to_excel(students_with_balances)
+    
+    filename = f'Balance_Report_{datetime.now().strftime("%Y%m%d")}.xlsx'
+    
+    return send_file(
+        excel_file,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
+
+
 @fee_bp.route('/api/student/<int:student_id>/balance')
 @fee_access_required
 def api_student_balance(student_id):

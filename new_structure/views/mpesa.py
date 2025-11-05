@@ -4,7 +4,7 @@ Handles M-PESA configuration, STK Push payments, and callbacks.
 """
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
-from new_structure.extensions import db
+from new_structure.extensions import db, limiter
 from new_structure.models.fee_management import MpesaConfig, MpesaTransaction, Payment
 from new_structure.models.academic import Student
 from new_structure.utils.mpesa_client import (
@@ -42,6 +42,12 @@ def maybe_login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
+def _stk_push_rate_limit():
+    """Return rate limit string or disable based on config."""
+    if current_app.config.get('BYPASS_RATE_LIMIT_FOR_TEST'):
+        return "1000 per minute"
+    return "10 per minute"
 
 @mpesa_bp.route('/config', methods=['GET'])
 @maybe_login_required
@@ -176,6 +182,7 @@ def validate_amount(amount):
 
 
 @mpesa_bp.route('/stk-push', methods=['POST'])
+@limiter.limit(_stk_push_rate_limit)
 @maybe_login_required
 def stk_push():
     """
@@ -214,6 +221,9 @@ def stk_push():
         
         # Normalize phone number
         phone_number = normalize_phone_number(phone_number)
+
+        # Mask phone for logging (avoid exposing full number)
+        masked_phone = f"{phone_number[:6]}***{phone_number[-2:]}" if phone_number and len(phone_number) >= 8 else 'unknown'
         
         # Validate amount
         amount_valid, amount_error = validate_amount(amount)
@@ -245,16 +255,29 @@ def stk_push():
             if not transaction_desc or transaction_desc == 'Fee payment':
                 transaction_desc = f"Fee payment for {student.name}"
         
+        logger.info(
+            "Initiating STK Push for %s amount KES %.2f reference %s",
+            masked_phone,
+            amount,
+            account_reference
+        )
+
         # Create and initiate STK Push transaction
         transaction, response = create_stk_push_transaction(
             phone_number=phone_number,
             amount=amount,
             account_reference=account_reference,
             transaction_desc=transaction_desc,
-            student_id=student_id
+            student_id=student_id,
+            requests_module=requests
         )
         
         if response.get('ResponseCode') == '0':
+            logger.info(
+                "STK Push queued successfully for %s (CheckoutRequestID=%s)",
+                masked_phone,
+                response.get('CheckoutRequestID')
+            )
             return jsonify({
                 'success': True,
                 'message': 'Payment request sent! Please check your phone and enter M-PESA PIN.',
@@ -262,6 +285,11 @@ def stk_push():
                 'checkout_request_id': transaction.checkout_request_id
             })
         else:
+            logger.warning(
+                "STK Push request failed for %s: %s",
+                masked_phone,
+                response.get('ResponseDescription') or response.get('errorMessage')
+            )
             return jsonify({
                 'success': False,
                 'message': response.get('ResponseDescription') or response.get('errorMessage', 'Payment request failed')
@@ -298,10 +326,15 @@ def callback():
             '196.201.214.208',
         ]
         
-        # Get client IP (handle proxy headers if behind load balancer)
-        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-        if ',' in client_ip:
-            client_ip = client_ip.split(',')[0].strip()
+        # Prefer REMOTE_ADDR for validation to avoid trusting spoofable headers
+        remote_ip = request.remote_addr or ''
+        forwarded_header = request.headers.get('X-Forwarded-For', '')
+        forwarded_ip = forwarded_header.split(',')[0].strip() if forwarded_header else ''
+
+        # Allow tests to opt-in to forwarded header usage when validation bypassed
+        client_ip = remote_ip
+        if current_app.config.get('BYPASS_IP_VALIDATION_FOR_TEST') and forwarded_ip:
+            client_ip = forwarded_ip
         
         # Validate IP - must be from Safaricom (bypass only if explicitly requested)
         if not current_app.config.get('BYPASS_IP_VALIDATION_FOR_TEST'):
@@ -316,7 +349,10 @@ def callback():
         callback_data = request.get_json()
         
         # Log callback
-        logger.info(f"M-PESA Callback received from {client_ip}")
+        if forwarded_ip and forwarded_ip != remote_ip:
+            logger.info(f"M-PESA Callback received from {client_ip} (forwarded header: {forwarded_ip})")
+        else:
+            logger.info(f"M-PESA Callback received from {client_ip}")
         logger.debug(f"Callback data: {json.dumps(callback_data, indent=2)}")
         
         # Process callback
@@ -646,6 +682,7 @@ def query_status(transaction_id):
 
 
 @mpesa_bp.route('/api/stk-push', methods=['POST'])
+@limiter.limit(_stk_push_rate_limit)
 def api_stk_push():
     """
     API endpoint for STK Push (can be used by external integrations).
@@ -669,7 +706,8 @@ def api_stk_push():
             amount=float(data['amount']),
             account_reference=data['account_reference'],
             transaction_desc=data['transaction_desc'],
-            student_id=data.get('student_id')
+            student_id=data.get('student_id'),
+            requests_module=requests
         )
         
         if response.get('ResponseCode') == '0':

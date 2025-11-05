@@ -9030,3 +9030,60 @@ jinja2.exceptions.UndefinedError: 'today_date' is undefined
 2025-11-04 16:15:09,107 - WARNING - 905dadb9b83b404598198079d5b2d8c6 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
 2025-11-04 16:19:35,932 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
 2025-11-04 16:19:37,714 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 23:49:14,653 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-04 23:49:15,052 - INFO - n/a - new_structure.utils.database_init -   - ? Starting database initialization (MySQL mode)
+2025-11-04 23:49:15,083 - ERROR - n/a - new_structure.utils.database_init -   - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 23:49:16,655 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-04 23:49:27,793 - WARNING - n/a - new_structure.utils.cache_manager -   - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-04 23:51:12,293 - INFO - n/a - new_structure - GET / - Rate limiter storage active: memory://
+2025-11-04 23:51:12,313 - INFO - n/a - new_structure.utils.database_init - GET / - ? Starting database initialization (MySQL mode)
+2025-11-04 23:51:12,329 - ERROR - n/a - new_structure.utils.database_init - GET / - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 23:51:12,805 - INFO - n/a - mark_validation - GET / - Mark sanitizer middleware initialized
+2025-11-04 23:51:13,125 - WARNING - n/a - new_structure - GET / - Overriding configured redis RATELIMIT_STORAGE_URL with memory:// due to earlier fallback
+2025-11-04 23:51:13,125 - WARNING - n/a - new_structure - GET / - Overriding configured redis RATELIMIT_STORAGE_URL with memory:// due to earlier fallback
+2025-11-04 23:51:13,128 - WARNING - n/a - new_structure - GET / - Limiter initialization failed; continuing without limits: In-memory rate limiting backend is not allowed in production. Set RATE_LIMIT_STORAGE_URI to a Redis URI or ALLOW_IN_MEMORY_LIMITS=1 for a temporary override.
+2025-11-04 23:51:13,128 - WARNING - n/a - new_structure - GET / - Limiter initialization failed; continuing without limits: In-memory rate limiting backend is not allowed in production. Set RATE_LIMIT_STORAGE_URI to a Redis URI or ALLOW_IN_MEMORY_LIMITS=1 for a temporary override.
+2025-11-04 23:51:13,322 - INFO - n/a - new_structure.utils.database_init - GET / - ? Starting database initialization (MySQL mode)
+2025-11-04 23:51:13,322 - INFO - n/a - new_structure.utils.database_init - GET / - ? Starting database initialization (MySQL mode)
+2025-11-04 23:51:13,349 - ERROR - n/a - new_structure.utils.database_init - GET / - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 23:51:13,349 - ERROR - n/a - new_structure.utils.database_init - GET / - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 23:51:13,914 - INFO - n/a - mark_validation - GET / - Mark sanitizer middleware initialized
+2025-11-04 23:51:13,914 - INFO - n/a - mark_validation - GET / - Mark sanitizer middleware initialized
+2025-11-04 23:51:13,916 - WARNING - n/a - root - GET / - SECURITY VALIDATION: In-memory rate limit storage in production
+2025-11-04 23:51:13,916 - WARNING - n/a - root - GET / - SECURITY VALIDATION: In-memory rate limit storage in production
+2025-11-04 23:51:13,916 - WARNING - n/a - root - GET / - Security validation completed with issues: 1
+2025-11-04 23:51:13,916 - WARNING - n/a - root - GET / - Security validation completed with issues: 1
+2025-11-04 23:51:14,496 - WARNING - n/a - new_structure - GET / - Overriding configured redis RATELIMIT_STORAGE_URL with memory:// due to earlier fallback
+2025-11-04 23:51:14,496 - WARNING - n/a - new_structure - GET / - Overriding configured redis RATELIMIT_STORAGE_URL with memory:// due to earlier fallback
+2025-11-04 23:51:14,496 - WARNING - n/a - new_structure - GET / - Overriding configured redis RATELIMIT_STORAGE_URL with memory:// due to earlier fallback
+2025-11-04 23:51:14,500 - INFO - n/a - new_structure - GET / - Rate limiter storage active: memory://
+2025-11-04 23:51:14,500 - INFO - n/a - new_structure - GET / - Rate limiter storage active: memory://
+2025-11-04 23:51:14,500 - INFO - n/a - new_structure - GET / - Rate limiter storage active: memory://
+2025-11-04 23:51:14,506 - INFO - n/a - new_structure.utils.database_init - GET / - ? Starting database initialization (MySQL mode)
+2025-11-04 23:51:14,506 - INFO - n/a - new_structure.utils.database_init - GET / - ? Starting database initialization (MySQL mode)
+2025-11-04 23:51:14,506 - INFO - n/a - new_structure.utils.database_init - GET / - ? Starting database initialization (MySQL mode)
+2025-11-04 23:51:14,526 - ERROR - n/a - new_structure.utils.database_init - GET / - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 23:51:14,526 - ERROR - n/a - new_structure.utils.database_init - GET / - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 23:51:14,526 - ERROR - n/a - new_structure.utils.database_init - GET / - Error creating tables: (pymysql.err.OperationalError) (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-04 23:51:14,914 - INFO - n/a - mark_validation - GET / - Mark sanitizer middleware initialized
+2025-11-04 23:51:14,914 - INFO - n/a - mark_validation - GET / - Mark sanitizer middleware initialized
+2025-11-04 23:51:14,914 - INFO - n/a - mark_validation - GET / - Mark sanitizer middleware initialized
+2025-11-04 23:51:14,926 - INFO - n/a - new_structure -   - Generated strong development SECRET_KEY (persisted).
+2025-11-04 23:51:14,926 - INFO - n/a - new_structure -   - Generated strong development SECRET_KEY (persisted).
+2025-11-04 23:51:14,926 - INFO - n/a - new_structure -   - Generated strong development SECRET_KEY (persisted).
+2025-11-05 12:09:48,432 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-05 12:09:50,914 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-05 12:10:37,003 - INFO - c3e5e3c17b10417aae4ffb3847b396a9 - new_structure - GET /favicon.ico - Page not found: http://127.0.0.1:8080/favicon.ico - 127.0.0.1
+2025-11-05 12:10:41,172 - INFO - 12ad4ae8418a4e479439d776d5bd6bb8 - new_structure.services.auth_service - POST /admin_login - Authentication successful for headteacher with role headteacher
+2025-11-05 12:10:45,938 - WARNING - ba892641fe8741228f3a4b5f991fc236 - new_structure.utils.cache_manager - GET /headteacher/ - ?? Redis not available, falling back to in-memory cache: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+2025-11-05 12:11:03,250 - INFO - 94ec083fd0764f178b694f103154946e - new_structure - GET /fees/record-payment - Page not found: http://127.0.0.1:8080/fees/record-payment - 127.0.0.1
+2025-11-05 12:18:41,796 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
+2025-11-05 12:18:44,109 - INFO - n/a - mark_validation -   - Mark sanitizer middleware initialized
+2025-11-05 12:25:09,202 - INFO - n/a - new_structure -   - Rate limiter storage active: memory://
