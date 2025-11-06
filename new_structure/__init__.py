@@ -783,6 +783,8 @@ def create_app(config_name='default'):
 
             object_permissions = {
                 'headteacher': ['student', 'teacher', 'report', 'mark', 'grade', 'stream', 'streams', 'api', 'get_grade_streams', 'teacher_streams', 'get_streams', 'view_parent', 'parent', 'streams_by_id', 'subject_report', 'edit_class_marks', 'preview_class_report', 'view_student_reports', 'receipt', 'invoice', 'payment', 'structures'],
+                'secretary': ['student', 'teacher', 'report', 'mark', 'grade', 'stream', 'streams', 'api', 'get_grade_streams', 'teacher_streams', 'get_streams', 'view_parent', 'parent', 'streams_by_id', 'receipt', 'invoice', 'payment', 'structures'],
+                'accountant': ['student', 'receipt', 'invoice', 'payment', 'structures', 'grade', 'stream', 'streams', 'get_grade_streams', 'get_streams', 'streams_by_id'],
                 'classteacher': ['student', 'report', 'mark', 'get_grade_streams', 'teacher_streams', 'streams', 'get_streams', 'streams_by_id', 'subject_report', 'edit_class_marks', 'preview_class_report', 'view_student_reports', 'receipt', 'invoice', 'payment', 'structures'],
                 'teacher': ['mark', 'get_streams', 'streams', 'streams_by_id', 'subject_report', 'preview_class_report', 'view_student_reports', 'receipt', 'invoice', 'payment', 'structures']
             }

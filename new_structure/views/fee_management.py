@@ -72,6 +72,7 @@ def index():
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
     limit = int(request.args.get('limit', 20))
+    page = int(request.args.get('page', 1))
     
     # Build query for payments
     query = Payment.query.join(Student)
@@ -79,11 +80,11 @@ def index():
     if term_filter:
         query = query.filter(Payment.term == term_filter)
     if grade_filter:
-        query = query.join(Student.grade).filter(Grade.id == int(grade_filter))
+        query = query.filter(Student.grade_id == int(grade_filter))
     if stream_filter:
-        query = query.join(Student.stream).filter(Stream.id == int(stream_filter))
+        query = query.filter(Student.stream_id == int(stream_filter))
     if method_filter:
-        query = query.filter(Payment.method == method_filter)
+        query = query.filter(Payment.method_id == int(method_filter))
     if date_from:
         from datetime import datetime
         query = query.filter(Payment.payment_date >= datetime.strptime(date_from, '%Y-%m-%d'))
@@ -91,7 +92,17 @@ def index():
         from datetime import datetime
         query = query.filter(Payment.payment_date <= datetime.strptime(date_to, '%Y-%m-%d'))
     
-    payments = query.order_by(Payment.payment_date.desc()).limit(limit).all()
+    # Get total count before pagination
+    filtered_count = query.count()
+    
+    # Apply pagination
+    offset = (page - 1) * limit
+    payments = query.order_by(Payment.payment_date.desc()).offset(offset).limit(limit).all()
+    
+    # Calculate pagination info
+    total_pages = (filtered_count + limit - 1) // limit if filtered_count > 0 else 1
+    has_prev = page > 1
+    has_next = page < total_pages
     
     # Get filter options
     grades = Grade.query.order_by(Grade.name).all()
@@ -115,6 +126,11 @@ def index():
                          date_from=date_from,
                          date_to=date_to,
                          limit=limit,
+                         page=page,
+                         total_pages=total_pages,
+                         has_prev=has_prev,
+                         has_next=has_next,
+                         filtered_count=filtered_count,
                          total_amount=total_amount,
                          total_revenue=total_revenue,
                          total_outstanding=total_outstanding,
@@ -1367,8 +1383,23 @@ def view_receipt(receipt_id):
     student = Student.query.get(payment.student_id)
     payment_method = PaymentMethod.query.get(payment.method_id)
     
-    # Get accountant/teacher who recorded payment
-    accountant = Teacher.query.get(payment.recorded_by) if payment.recorded_by else None
+    # Get the actual accountant or secretary from the system (not who recorded it)
+    # Prioritize accountant, then secretary
+    accountant = Teacher.query.filter_by(role='accountant', is_active=True).first()
+    if not accountant:
+        accountant = Teacher.query.filter_by(role='secretary', is_active=True).first()
+    
+    # Debug: Log what we found
+    if accountant:
+        print(f"DEBUG VIEW_RECEIPT: Found finance staff - ID: {accountant.id}, Name: {accountant.first_name} {accountant.last_name}, Role: {accountant.role}")
+    else:
+        print("DEBUG VIEW_RECEIPT: No accountant or secretary found!")
+        # Fallback: Try without is_active filter
+        accountant = Teacher.query.filter_by(role='accountant').first()
+        if not accountant:
+            accountant = Teacher.query.filter_by(role='secretary').first()
+        if accountant:
+            print(f"DEBUG VIEW_RECEIPT: Found inactive finance staff - ID: {accountant.id}, Name: {accountant.first_name} {accountant.last_name}, Role: {accountant.role}, Active: {accountant.is_active}")
     
     # Get ALL student fee accounts to show complete breakdown
     all_accounts = StudentFeeAccount.query.filter_by(student_id=student.id).all()
@@ -1438,8 +1469,23 @@ def print_receipt(receipt_id):
     student = Student.query.get(payment.student_id)
     payment_method = PaymentMethod.query.get(payment.method_id)
     
-    # Get accountant/teacher who recorded payment
-    accountant = Teacher.query.get(payment.recorded_by) if payment.recorded_by else None
+    # Get the actual accountant or secretary from the system (not who recorded it)
+    # Prioritize accountant, then secretary
+    accountant = Teacher.query.filter_by(role='accountant', is_active=True).first()
+    if not accountant:
+        accountant = Teacher.query.filter_by(role='secretary', is_active=True).first()
+    
+    # Debug and fallback
+    if accountant:
+        print(f"DEBUG PRINT_RECEIPT: Found finance staff - ID: {accountant.id}, Name: {accountant.first_name} {accountant.last_name}, Role: {accountant.role}")
+    else:
+        print("DEBUG PRINT_RECEIPT: No active accountant or secretary found!")
+        # Fallback: Try without is_active filter
+        accountant = Teacher.query.filter_by(role='accountant').first()
+        if not accountant:
+            accountant = Teacher.query.filter_by(role='secretary').first()
+        if accountant:
+            print(f"DEBUG PRINT_RECEIPT: Found inactive finance staff - ID: {accountant.id}, Name: {accountant.first_name} {accountant.last_name}, Role: {accountant.role}, Active: {accountant.is_active}")
     
     # Get ALL student fee accounts to show complete breakdown
     all_accounts = StudentFeeAccount.query.filter_by(student_id=student.id).all()

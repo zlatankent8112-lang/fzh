@@ -393,13 +393,18 @@
       <div class="footer">
         <div>
           <strong>Received By:</strong><br />
-          {% if accountant and accountant.first_name and accountant.last_name %}
-          {{ accountant.first_name }} {{ accountant.last_name }}<br />
-          <small style="color: #666">{{ accountant.username }}</small>
-          {% else %} School Accountant<br />
-          <small style="color: #666"
-            >{{ accountant.username if accountant else '' }}</small
-          >
+          {% if accountant %} {% if accountant.first_name and
+          accountant.last_name %} {{ accountant.first_name }} {{
+          accountant.last_name }}<br />
+          {% else %} {{ accountant.username }}<br />
+          {% endif %}
+          <small style="color: #666">
+            {% if accountant.role == 'accountant' %} Accountant {% elif
+            accountant.role == 'secretary' %} Secretary {% else %} Accountant {%
+            endif %}
+          </small>
+          {% else %} School Staff<br />
+          <small style="color: #666">Accountant</small>
           {% endif %}
         </div>
         <div style="text-align: center">

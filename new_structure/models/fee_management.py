@@ -504,7 +504,7 @@ class Receipt(db.Model):
     issued_by = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)
     notes = db.Column(db.Text, nullable=True)
 
-    payment = db.relationship('Payment', backref='receipt', uselist=False, lazy=True)
+    payment = db.relationship('Payment', backref=db.backref('receipt', uselist=False), lazy=True)
     issuer = db.relationship('Teacher', backref='issued_receipts', lazy=True)
 
 

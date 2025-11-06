@@ -443,6 +443,24 @@
             </svg>
             Analytics
           </a>
+          <a href="{{ url_for('fees.balance_report') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            Balance Report
+          </a>
+          <a href="{{ url_for('mpesa.transactions') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            M-Pesa Transactions
+          </a>
+          <a href="{{ url_for('mpesa.analytics_dashboard') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            M-Pesa Analytics
+          </a>
         </div>
       </div>
 
@@ -555,7 +573,7 @@
       <!-- Payments Section with Filters -->
       <div class="card">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-          <span>💵 Payments ({{ recent_payments|length }})</span>
+          <span>💵 Recent Payments (Showing {{ recent_payments|length }}{% if term_filter or grade_filter or stream_filter or method_filter or date_from or date_to %} filtered{% endif %})</span>
           <div>
             <button onclick="toggleFilters()" class="btn btn-secondary" style="padding: 8px 15px; font-size: 13px;">
               🔍 Filters
@@ -637,7 +655,7 @@
           
           {% if term_filter or grade_filter or stream_filter or method_filter or date_from or date_to %}
           <div style="margin-top: 15px; padding: 10px; background: #d1ecf1; border-radius: 4px; font-size: 13px;">
-            ℹ️ Showing {{ recent_payments|length }} filtered payments | Total: <strong>KES {{ "{:,.2f}".format(total_amount) }}</strong>
+            ℹ️ Showing {{ recent_payments|length }} of {{ filtered_count }} filtered payments (Page {{ page }}/{{ total_pages }}) | Total on this page: <strong>KES {{ "{:,.2f}".format(total_amount) }}</strong>
           </div>
           {% endif %}
         </div>
@@ -656,6 +674,7 @@
                 <th>Amount</th>
                 <th>Method</th>
                 <th>Reference</th>
+                <th>Receipt</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -697,6 +716,29 @@
                   {% endif %}
                 </td>
                 <td>{{ payment.reference or '-' }}</td>
+                <td style="text-align: center;">
+                  {% if payment.receipt %}
+                    {% if payment.receipt is iterable and payment.receipt is not string %}
+                      {% if payment.receipt|length > 0 %}
+                        <a href="{{ url_for('fees.view_receipt', receipt_id=payment.receipt[0].id) }}" 
+                           class="btn" style="background: #28a745; color: white; padding: 5px 10px; font-size: 12px;" 
+                           title="View Receipt">
+                          📄 View
+                        </a>
+                      {% else %}
+                        <span style="color: #999; font-size: 12px;">No Receipt</span>
+                      {% endif %}
+                    {% else %}
+                      <a href="{{ url_for('fees.view_receipt', receipt_id=payment.receipt.id) }}" 
+                         class="btn" style="background: #28a745; color: white; padding: 5px 10px; font-size: 12px;" 
+                         title="View Receipt">
+                        📄 View
+                      </a>
+                    {% endif %}
+                  {% else %}
+                    <span style="color: #999; font-size: 12px;">No Receipt</span>
+                  {% endif %}
+                </td>
                 <td style="white-space: nowrap;">
                   <a href="{{ url_for('fees.edit_payment', payment_id=payment.id) }}" 
                      class="btn" style="background: #ffc107; color: #000; padding: 5px 10px; font-size: 12px; margin-right: 5px;">
@@ -710,7 +752,7 @@
               </tr>
               {% else %}
               <tr>
-                <td colspan="9" class="text-center">
+                <td colspan="10" class="text-center">
                   No payments found{% if term_filter or grade_filter or stream_filter or method_filter %} with current filters{% endif %}
                 </td>
               </tr>
@@ -718,6 +760,54 @@
             </tbody>
           </table>
         </div>
+        
+        <!-- Pagination Controls -->
+        {% if total_pages > 1 %}
+        <div style="padding: 20px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+          <div style="color: #666; font-size: 14px;">
+            Showing page {{ page }} of {{ total_pages }} ({{ filtered_count }} total payments)
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            {% if has_prev %}
+            <a href="{{ url_for('fees.index', page=page-1, term=term_filter, grade=grade_filter, stream=stream_filter, method=method_filter, date_from=date_from, date_to=date_to, limit=limit) }}" 
+               class="btn btn-secondary" style="padding: 8px 15px; font-size: 13px;">
+              ← Previous
+            </a>
+            {% else %}
+            <button class="btn btn-secondary" style="padding: 8px 15px; font-size: 13px; opacity: 0.5; cursor: not-allowed;" disabled>
+              ← Previous
+            </button>
+            {% endif %}
+            
+            <!-- Page numbers -->
+            <div style="display: flex; gap: 5px;">
+              {% for p in range(1, total_pages + 1) %}
+                {% if p == page %}
+                  <span style="padding: 8px 12px; background: #667eea; color: white; border-radius: 4px; font-weight: 600; font-size: 13px;">{{ p }}</span>
+                {% elif (p <= 3) or (p >= total_pages - 2) or (p >= page - 1 and p <= page + 1) %}
+                  <a href="{{ url_for('fees.index', page=p, term=term_filter, grade=grade_filter, stream=stream_filter, method=method_filter, date_from=date_from, date_to=date_to, limit=limit) }}" 
+                     style="padding: 8px 12px; background: #f8f9fa; color: #333; border-radius: 4px; text-decoration: none; font-size: 13px; border: 1px solid #ddd;">
+                    {{ p }}
+                  </a>
+                {% elif p == 4 or p == total_pages - 3 %}
+                  <span style="padding: 8px 12px; color: #999;">...</span>
+                {% endif %}
+              {% endfor %}
+            </div>
+            
+            {% if has_next %}
+            <a href="{{ url_for('fees.index', page=page+1, term=term_filter, grade=grade_filter, stream=stream_filter, method=method_filter, date_from=date_from, date_to=date_to, limit=limit) }}" 
+               class="btn btn-secondary" style="padding: 8px 15px; font-size: 13px;">
+              Next →
+            </a>
+            {% else %}
+            <button class="btn btn-secondary" style="padding: 8px 15px; font-size: 13px; opacity: 0.5; cursor: not-allowed;" disabled>
+              Next →
+            </button>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
       </div>
     </div>
     
