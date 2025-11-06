@@ -5,23 +5,374 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>M-PESA Configuration - Hillview School Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Font Awesome as alternative -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Page Header Styling */
+        .page-header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .page-header h2 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .page-header h2 i {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-right: 15px;
+        }
+
+        .page-header p {
+            color: #666;
+            margin: 0;
+        }
+
+        /* Card Enhancements */
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 20px 30px;
+            color: white;
+        }
+
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 30px;
+            background: white;
+        }
+
+        /* Alert Styling */
+        .alert {
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        /* Form Styling */
+        .form-label {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .form-text {
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        /* Button Styling */
+        .btn {
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid white;
+            color: white;
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-outline-secondary {
+            border: 2px solid #e0e0e0;
+            background: white;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Info Card Styling */
+        .border-info {
+            border: none !important;
+        }
+
+        .card.border-info .card-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .bg-light {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+        }
+
+        /* Instructions List */
+        ol, ul {
+            padding-left: 20px;
+        }
+
+        ol li, ul li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        ol li strong, ul li strong {
+            color: #667eea;
+        }
+
+        /* Quick Tips */
+        .list-unstyled li {
+            padding: 8px 0;
+            display: flex;
+            align-items: start;
+        }
+
+        .list-unstyled li i {
+            margin-top: 3px;
+        }
+
+        /* Input Group */
+        .input-group .btn {
+            border: 2px solid #e0e0e0;
+            border-left: none;
+        }
+
+        /* Form Switch */
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+
+        .form-check-input {
+            width: 3em;
+            height: 1.5em;
+        }
+
+        /* Links */
+        a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .card-body a {
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .page-header {
+                padding: 20px;
+            }
+
+            .page-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .card-body {
+                padding: 20px;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .d-flex.gap-2 {
+                flex-direction: column;
+                gap: 10px !important;
+            }
+        }
+
+        /* Animation for alerts */
+        .alert {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Icon styling */
+        i {
+            display: inline-block;
+            font-style: normal;
+            line-height: 1;
+        }
+
+        .btn i, h2 i, h5 i, h6 i {
+            margin-right: 8px;
+        }
+
+        /* Header Actions Styling */
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        @media (max-width: 576px) {
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 <div class="container-fluid mt-4">
     <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="fas fa-mobile-alt me-2"></i>M-PESA Configuration</h2>
-                    <p class="text-muted">Configure M-PESA Daraja API credentials for mobile payments</p>
-                </div>
-                <div>
-                    <a href="{{ url_for('mpesa.transactions') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-list me-2"></i>View Transactions
-                    </a>
-                </div>
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h2><i class="bi bi-phone"></i>M-PESA Configuration</h2>
+                <p>Configure M-PESA Daraja API credentials for mobile payments</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('mpesa.transactions') }}" class="btn btn-primary">
+                    <i class="bi bi-list-ul"></i>View Transactions
+                </a>
+                <a href="{{ url_for('fees.index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i>Back to Fees
+                </a>
             </div>
         </div>
     </div>
@@ -29,7 +380,7 @@
     <!-- Configuration Status -->
     {% if config %}
     <div class="alert {% if config.is_enabled %}alert-success{% else %}alert-warning{% endif %} alert-dismissible fade show" role="alert">
-        <i class="fas {% if config.is_enabled %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
+        <i class="bi {% if config.is_enabled %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %} me-2"></i>
         <strong>Status:</strong> M-PESA is currently {% if config.is_enabled %}<strong>ENABLED</strong>{% else %}<strong>DISABLED</strong>{% endif %} 
         ({{ config.environment|upper }} environment)
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -41,7 +392,7 @@
         <div class="col-md-12">
             <div class="card border-info">
                 <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Setup Instructions</h5>
+                    <h5 class="mb-0"><i class="bi bi-info-circle-fill me-2"></i>Setup Instructions</h5>
                 </div>
                 <div class="card-body">
                     <h6 class="fw-bold">How to get M-PESA Credentials:</h6>
@@ -69,7 +420,7 @@
                     </ol>
                     
                     <div class="alert alert-warning mt-3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
                         <strong>Important:</strong> Each school must have their own M-PESA credentials. 
                         Transaction fees are charged to the school's M-PESA account, not to you as the software provider.
                     </div>
@@ -83,7 +434,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-cog me-2"></i>API Configuration</h5>
+                    <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>API Configuration</h5>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('mpesa.save_config') }}" id="configForm">
@@ -118,7 +469,7 @@
                                        value="{{ config.consumer_secret if config else '' }}" required
                                        placeholder="e.g., iXXXXXXXXXXXXXXXX">
                                 <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('consumer_secret')">
-                                    <i class="fas fa-eye" id="consumer_secret_icon"></i>
+                                    <i class="bi bi-eye" id="consumer_secret_icon"></i>
                                 </button>
                             </div>
                             <small class="form-text text-muted">From Safaricom Developer Portal → Your App → Keys (Keep Secret!)</small>
@@ -170,13 +521,13 @@
                         <!-- Form Actions -->
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Configuration
+                                <i class="bi bi-save"></i>Save Configuration
                             </button>
                             <button type="button" class="btn btn-success" onclick="testConnection()">
-                                <i class="fas fa-vial me-2"></i>Test Connection
+                                <i class="bi bi-lightning"></i>Test Connection
                             </button>
                             <a href="{{ url_for('fees.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-times me-2"></i>Cancel
+                                <i class="bi bi-x-circle"></i>Cancel
                             </a>
                         </div>
                     </form>
@@ -188,28 +539,28 @@
         <div class="col-md-4">
             <div class="card bg-light">
                 <div class="card-header">
-                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Quick Tips</h6>
+                    <h6 class="mb-0"><i class="bi bi-lightbulb-fill me-2"></i>Quick Tips</h6>
                 </div>
                 <div class="card-body">
                     <ul class="list-unstyled">
                         <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
+                            <i class="bi bi-flask text-primary me-2"></i>
                             Test with sandbox before going live
                         </li>
                         <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
+                            <i class="bi bi-shield-fill-check text-danger me-2"></i>
                             Keep credentials secure (never share)
                         </li>
                         <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
+                            <i class="bi bi-diagram-3-fill text-info me-2"></i>
                             Use ngrok for local testing
                         </li>
                         <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
+                            <i class="bi bi-coin text-warning me-2"></i>
                             Transaction fees: ~0.5% - 1.5%
                         </li>
                         <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
+                            <i class="bi bi-lock-fill text-success me-2"></i>
                             Callback URL must be HTTPS in production
                         </li>
                     </ul>
@@ -229,10 +580,10 @@
                     <h6 class="fw-bold mt-3">Need Help?</h6>
                     <small>
                         <a href="https://developer.safaricom.co.ke/Documentation" target="_blank">
-                            <i class="fas fa-book me-1"></i>API Documentation
+                            <i class="bi bi-book me-1"></i>API Documentation
                         </a><br>
                         <a href="https://developer.safaricom.co.ke/MyApps" target="_blank">
-                            <i class="fas fa-key me-1"></i>Get Credentials
+                            <i class="bi bi-key me-1"></i>Get Credentials
                         </a>
                     </small>
                 </div>
@@ -249,12 +600,12 @@ function togglePassword(fieldId) {
     
     if (field.type === 'password') {
         field.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
     } else {
         field.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
     }
 }
 
@@ -262,7 +613,7 @@ function togglePassword(fieldId) {
 function testConnection() {
     const btn = event.target;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Testing...';
     
     fetch('{{ url_for("mpesa.test_config") }}', {
         method: 'POST',
@@ -283,7 +634,7 @@ function testConnection() {
     })
     .finally(() => {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-vial me-2"></i>Test Connection';
+        btn.innerHTML = '<i class="bi bi-lightning"></i>Test Connection';
     });
 }
 </script>

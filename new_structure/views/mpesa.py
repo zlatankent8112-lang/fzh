@@ -2,7 +2,7 @@
 M-PESA Integration Routes
 Handles M-PESA configuration, STK Push payments, and callbacks.
 """
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, current_app
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, current_app, session
 from flask_login import login_required, current_user
 from new_structure.extensions import db, limiter
 from new_structure.models.fee_management import MpesaConfig, MpesaTransaction, Payment
@@ -382,6 +382,13 @@ def callback():
                     # Only auto-create payment if we have a student_id
                     if transaction.student_id:
                         try:
+                            # Get student
+                            from new_structure.models.academic import Student
+                            student = Student.query.get(transaction.student_id)
+                            if not student:
+                                logger.error(f"Student not found for transaction #{transaction.id}")
+                                raise Exception("Student not found")
+                            
                             # Create payment record
                             payment = Payment(
                                 student_id=transaction.student_id,
@@ -395,13 +402,81 @@ def callback():
                             )
                             
                             db.session.add(payment)
-                            db.session.commit()
+                            db.session.flush()  # Get payment ID
+                            
+                            # Auto-allocate the payment to student's outstanding fees
+                            from new_structure.models.fee_management import StudentFeeAccount, PaymentAllocation, FeeStructure
+                            from decimal import Decimal
+                            
+                            # Get current term/year (you may need to get this dynamically)
+                            current_year = datetime.now().year
+                            current_term = "Term 1"  # You may need to determine this dynamically
+                            
+                            # Get student's outstanding fees by priority
+                            accounts = StudentFeeAccount.query.filter(
+                                StudentFeeAccount.student_id == transaction.student_id,
+                                StudentFeeAccount.balance > 0
+                            ).join(FeeStructure).order_by(FeeStructure.allocation_priority).all()
+                            
+                            remaining = Decimal(str(transaction.amount))
+                            allocated_total = Decimal('0')
+                            
+                            for acc in accounts:
+                                if remaining <= 0:
+                                    break
+                                
+                                allocated = min(remaining, acc.balance)
+                                
+                                # Create allocation
+                                allocation = PaymentAllocation(
+                                    payment_id=payment.id,
+                                    student_fee_account_id=acc.id,
+                                    amount_allocated=allocated
+                                )
+                                db.session.add(allocation)
+                                
+                                # Update account
+                                acc.amount_paid += allocated
+                                acc.balance -= allocated
+                                if acc.balance <= 0:
+                                    acc.status = 'paid'
+                                elif acc.amount_paid > 0:
+                                    acc.status = 'partial'
+                                acc.last_payment_date = datetime.now()
+                                
+                                remaining -= allocated
+                                allocated_total += allocated
+                            
+                            # Handle unallocated amount (overpayment/credit)
+                            if remaining > 0:
+                                from new_structure.models.fee_management import StudentCreditBalance
+                                credit = StudentCreditBalance(
+                                    student_id=transaction.student_id,
+                                    payment_id=payment.id,
+                                    credit_amount=remaining,
+                                    remaining_credit=remaining,
+                                    status='available',
+                                    notes=f'Credit from M-PESA payment {transaction.mpesa_receipt_number} - overpayment'
+                                )
+                                db.session.add(credit)
+                            
+                            # Auto-generate receipt
+                            from new_structure.models.fee_management import Receipt
+                            receipt_number = f"RCP-{datetime.now().year}-{payment.id:05d}"
+                            receipt = Receipt(
+                                receipt_number=receipt_number,
+                                payment_id=payment.id,
+                                issued_by=None,  # System-generated
+                                issued_at=datetime.now()
+                            )
+                            db.session.add(receipt)
                             
                             # Link payment to transaction
                             transaction.payment_id = payment.id
+                            
                             db.session.commit()
                             
-                            logger.info(f"Auto-reconciliation successful: Payment #{payment.id} created for transaction #{transaction.id}, Receipt: {transaction.mpesa_receipt_number}")
+                            logger.info(f"Auto-reconciliation successful: Payment #{payment.id} created and allocated for transaction #{transaction.id}, Receipt: {transaction.mpesa_receipt_number}, Allocated: {allocated_total}, Credit: {remaining}")
                         except Exception as pay_err:
                             logger.error(f"Auto-reconciliation skipped due to error: {pay_err}", exc_info=True)
                             db.session.rollback()
@@ -833,6 +908,152 @@ def transaction_status(transaction_id):
         return jsonify({
             'success': False,
             'error': str(e)
+        }), 500
+
+
+@mpesa_bp.route('/complete-manually/<int:transaction_id>', methods=['POST'])
+@maybe_login_required
+def complete_manually(transaction_id):
+    """
+    Manually complete a pending M-PESA transaction.
+    For local testing when callbacks can't be received.
+    """
+    try:
+        transaction = MpesaTransaction.query.get_or_404(transaction_id)
+        
+        if transaction.status != 'pending':
+            return jsonify({
+                'success': False,
+                'message': f'Transaction is already {transaction.status}'
+            }), 400
+        
+        # Get receipt number from request
+        data = request.get_json() or {}
+        receipt_number = data.get('receipt_number', f'MANUAL-{transaction_id}')
+        
+        # Update transaction to success
+        transaction.status = 'success'
+        transaction.result_code = 0
+        transaction.result_desc = 'Completed manually (local testing)'
+        transaction.mpesa_receipt_number = receipt_number
+        transaction.transaction_date = datetime.now()
+        transaction.updated_at = datetime.now()
+        
+        db.session.commit()
+        
+        # Now trigger the auto-reconciliation logic (create payment record)
+        if transaction.student_id and not transaction.payment_id:
+            try:
+                from new_structure.models.academic import Student
+                from new_structure.models.fee_management import (
+                    Payment, StudentFeeAccount, PaymentAllocation, 
+                    FeeStructure, StudentCreditBalance, Receipt
+                )
+                from decimal import Decimal
+                
+                student = Student.query.get(transaction.student_id)
+                if not student:
+                    raise Exception("Student not found")
+                
+                # Create payment record
+                payment = Payment(
+                    student_id=transaction.student_id,
+                    amount=transaction.amount,
+                    payment_date=transaction.transaction_date or datetime.now(),
+                    method_id=2,  # M-PESA
+                    reference=receipt_number,
+                    recorded_by=session.get('teacher_id'),  # Current user
+                    notes=f"M-PESA payment (manual completion): {transaction.transaction_desc}",
+                    allocation_mode='auto'
+                )
+                
+                db.session.add(payment)
+                db.session.flush()
+                
+                # Auto-allocate
+                accounts = StudentFeeAccount.query.filter(
+                    StudentFeeAccount.student_id == transaction.student_id,
+                    StudentFeeAccount.balance > 0
+                ).join(FeeStructure).order_by(FeeStructure.allocation_priority).all()
+                
+                remaining = Decimal(str(transaction.amount))
+                allocated_total = Decimal('0')
+                
+                for acc in accounts:
+                    if remaining <= 0:
+                        break
+                    
+                    allocated = min(remaining, acc.balance)
+                    
+                    allocation = PaymentAllocation(
+                        payment_id=payment.id,
+                        student_fee_account_id=acc.id,
+                        amount_allocated=allocated
+                    )
+                    db.session.add(allocation)
+                    
+                    acc.amount_paid += allocated
+                    acc.balance -= allocated
+                    if acc.balance <= 0:
+                        acc.status = 'paid'
+                    elif acc.amount_paid > 0:
+                        acc.status = 'partial'
+                    acc.last_payment_date = datetime.now()
+                    
+                    remaining -= allocated
+                    allocated_total += allocated
+                
+                # Handle credit
+                if remaining > 0:
+                    credit = StudentCreditBalance(
+                        student_id=transaction.student_id,
+                        payment_id=payment.id,
+                        credit_amount=remaining,
+                        remaining_credit=remaining,
+                        status='available',
+                        notes=f'Credit from M-PESA payment {receipt_number}'
+                    )
+                    db.session.add(credit)
+                
+                # Generate receipt
+                receipt_num = f"RCP-{datetime.now().year}-{payment.id:05d}"
+                receipt = Receipt(
+                    receipt_number=receipt_num,
+                    payment_id=payment.id,
+                    issued_by=session.get('teacher_id'),
+                    issued_at=datetime.now()
+                )
+                db.session.add(receipt)
+                
+                transaction.payment_id = payment.id
+                db.session.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Transaction completed! Payment recorded and receipt #{receipt_num} generated.',
+                    'payment_id': payment.id,
+                    'receipt_id': receipt.id
+                })
+                
+            except Exception as pay_err:
+                logger.error(f"Error creating payment: {pay_err}", exc_info=True)
+                db.session.rollback()
+                return jsonify({
+                    'success': True,
+                    'message': f'Transaction marked as complete, but payment creation failed: {str(pay_err)}'
+                })
+        else:
+            return jsonify({
+                'success': True,
+                'message': 'Transaction marked as complete (no student linked for auto-payment)'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error completing transaction manually: {str(e)}", exc_info=True)
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Error: {str(e)}'
         }), 500
 
 

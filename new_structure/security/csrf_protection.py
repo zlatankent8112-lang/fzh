@@ -332,6 +332,15 @@ def init_csrf_protection(app):
         
         if request.endpoint in exempt_endpoints:
             return
+
+        # Skip CSRF for specific blueprints and paths (handled separately)
+        blueprint = (request.blueprint or '')
+        if blueprint in ('parent_management', 'mpesa', 'parent_portal'):
+            return
+
+        # Also allow by URL prefix to be safe if blueprint isn't set
+        if request.path.startswith('/parent_management/') or request.path.startswith('/mpesa/'):
+            return
         
         # Skip for GET requests to most endpoints
         if request.method == 'GET':

@@ -377,7 +377,7 @@ def ssrf_protection(f):
         # Check form data for URLs
         if request.form:
             for field_name, value in request.form.items():
-                if cls._looks_like_url(value):
+                if _looks_like_url(value):
                     is_valid, error_msg = SSRFProtection.validate_url(value)
                     if not is_valid:
                         logging.warning(f"SSRF attempt blocked in form field {field_name}: {error_msg}")
@@ -386,7 +386,7 @@ def ssrf_protection(f):
         # Check query parameters for URLs
         if request.args:
             for param_name, value in request.args.items():
-                if cls._looks_like_url(value):
+                if _looks_like_url(value):
                     is_valid, error_msg = SSRFProtection.validate_url(value)
                     if not is_valid:
                         logging.warning(f"SSRF attempt blocked in query param {param_name}: {error_msg}")
@@ -395,7 +395,7 @@ def ssrf_protection(f):
         # Check JSON data for URLs
         if request.is_json and request.json:
             for key, value in request.json.items():
-                if isinstance(value, str) and cls._looks_like_url(value):
+                if isinstance(value, str) and _looks_like_url(value):
                     is_valid, error_msg = SSRFProtection.validate_url(value)
                     if not is_valid:
                         logging.warning(f"SSRF attempt blocked in JSON field {key}: {error_msg}")

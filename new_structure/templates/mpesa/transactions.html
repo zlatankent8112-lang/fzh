@@ -75,18 +75,29 @@
         .header-actions .btn {
             background: rgba(255,255,255,0.2);
             border: 2px solid rgba(255,255,255,0.3);
-            color: white;
+            color: white !important;
             font-weight: 600;
             padding: 10px 25px;
             border-radius: 10px;
             margin-right: 10px;
             transition: all 0.3s ease;
+            text-decoration: none !important;
+            display: inline-block;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
         }
         
         .header-actions .btn:hover {
             background: rgba(255,255,255,0.3);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            color: white !important;
+            text-decoration: none !important;
+        }
+        
+        .header-actions .btn:active {
+            transform: translateY(0);
         }
         
         /* Stat Cards */
@@ -474,6 +485,11 @@
                                             title="Check Status">
                                         <i class="fas fa-sync"></i>
                                     </button>
+                                    <button class="btn btn-outline-success btn-sm" 
+                                            onclick="completeManually({{ transaction.id }}, '{{ transaction.phone_number }}', {{ transaction.amount }})" 
+                                            title="Complete Manually (for local testing)">
+                                        <i class="fas fa-check"></i> Complete
+                                    </button>
                                     {% endif %}
                                 </div>
                             </td>
@@ -548,6 +564,44 @@ function checkStatus(transactionId) {
     })
     .catch(error => {
         alert('Error checking status: ' + error);
+    });
+}
+
+function completeManually(transactionId, phoneNumber, amount) {
+    const receiptNumber = prompt(`Complete this M-PESA transaction manually?\n\nPhone: ${phoneNumber}\nAmount: KES ${amount}\n\nEnter M-PESA Receipt Number (or leave blank):`);
+    
+    if (receiptNumber === null) {
+        return; // User clicked cancel
+    }
+
+    const confirmMsg = receiptNumber 
+        ? `Complete transaction with receipt: ${receiptNumber}?`
+        : `Complete transaction without receipt number?`;
+
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+
+    fetch(`{{ url_for('mpesa.complete_manually', transaction_id=0) }}`.replace('0', transactionId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            receipt_number: receiptNumber || `MANUAL-${Date.now()}`
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error completing transaction: ' + error);
     });
 }
 </script>

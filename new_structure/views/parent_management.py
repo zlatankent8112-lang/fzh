@@ -2,13 +2,13 @@
 Parent Management views for the Hillview School Management System.
 This module handles parent account management for headteachers.
 """
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, abort
 from functools import wraps
 from ..services.auth_service import is_authenticated, get_role
 from ..models import db
 from ..security.security_manager import secure_headteacher_route, comprehensive_security
-from ..security.csrf_protection import csrf_protect
-from ..extensions import limiter
+from ..security.csrf_protection import CSRFProtection
+from ..extensions import limiter, csrf
 from sqlalchemy import exists, and_, func
 try:
     from ..models.parent import Parent, ParentStudent, ParentEmailLog, EmailTemplate
@@ -36,9 +36,15 @@ def headteacher_required(f):
     """Enhanced decorator with comprehensive security protections."""
     @wraps(f)
     @limiter.limit("30 per minute")  # Rate limiting
-    @csrf_protect  # CSRF protection
     @comprehensive_security()  # Full security stack
     def decorated_function(*args, **kwargs):
+        # Apply custom CSRF validation for non-parent endpoints
+        if request.method not in ('GET', 'HEAD', 'OPTIONS'):
+            endpoint = (request.endpoint or '')
+            if not endpoint.startswith('parent_management.'):
+                if not CSRFProtection.validate_request():
+                    abort(403, "CSRF token validation failed")
+        
         # Session validation
         if not session.get('teacher_id'):
             flash('Authentication required', 'error')
@@ -651,10 +657,10 @@ def add_parent():
             db.session.add(parent)
             db.session.commit()
             
-            flash(f'Parent account created successfully! Temporary password: {temp_password}', 'success')
-            flash('Please share the temporary password with the parent and ask them to change it after first login.', 'info')
-            
-            return redirect(url_for('parent_management.dashboard'))
+            # Show password on the same page for 30 seconds
+            success_message = f'Parent account created successfully!'
+            info_message = 'Please share the temporary password with the parent and ask them to change it after first login.'
+            return render_template('add_parent.html', temp_password=temp_password, success_message=success_message, info_message=info_message)
         
         except Exception as e:
             db.session.rollback()
@@ -904,6 +910,7 @@ def merge_parents():
     return redirect(url_for('parent_management.dashboard'))
 
 @parent_management_bp.route('/delete_parent/<int:parent_id>', methods=['POST'])
+@csrf.exempt
 @headteacher_required
 def delete_parent(parent_id):
     """Delete a parent account and any associated links/logs."""

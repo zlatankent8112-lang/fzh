@@ -1,3 +1,40 @@
+{% if temp_password %}
+<div
+  id="temp-password-alert"
+  class="alert alert-success"
+  style="
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    min-width: 320px;
+    max-width: 500px;
+    text-align: center;
+    font-size: 1.1em;
+  "
+>
+  <strong>Temporary Password:</strong>
+  <span style="font-family: monospace; font-size: 1.2em"
+    >{{ temp_password }}</span
+  ><br />
+  <span style="font-size: 0.95em; color: #a3e635"
+    >Share this password with the parent and ask them to change it after first
+    login.</span
+  >
+</div>
+<script>
+  setTimeout(function () {
+    var alert = document.getElementById("temp-password-alert");
+    if (alert) {
+      alert.style.opacity = 0;
+      setTimeout(function () {
+        alert.remove();
+      }, 600);
+    }
+  }, 30000);
+</script>
+{% endif %}
 <!DOCTYPE html>
 <html lang="en">
   <head>

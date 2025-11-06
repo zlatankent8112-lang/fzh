@@ -357,6 +357,7 @@
                   id="is_mandatory"
                   name="is_mandatory"
                   {% if fee.is_mandatory %}checked{% endif %}
+                  onchange="handleMandatoryChange()"
                 />
                 <label for="is_mandatory">
                   <strong>Mandatory</strong> - All students must pay
@@ -376,11 +377,12 @@
               <div class="checkbox-item">
                 <input
                   type="checkbox"
-                  id="optional"
-                  name="optional"
+                  id="is_optional"
+                  name="is_optional"
                   {% if not fee.is_mandatory %}checked{% endif %}
+                  onchange="handleOptionalChange()"
                 />
-                <label for="optional">
+                <label for="is_optional">
                   <strong>Optional</strong> - Parent can choose
                 </label>
               </div>
@@ -479,8 +481,26 @@
     </div>
 
     <script>
+      function handleMandatoryChange() {
+        const mandatoryCheckbox = document.getElementById('is_mandatory');
+        const optionalCheckbox = document.getElementById('is_optional');
+        
+        if (mandatoryCheckbox.checked) {
+          optionalCheckbox.checked = false;
+        }
+      }
+      
+      function handleOptionalChange() {
+        const mandatoryCheckbox = document.getElementById('is_mandatory');
+        const optionalCheckbox = document.getElementById('is_optional');
+        
+        if (optionalCheckbox.checked) {
+          mandatoryCheckbox.checked = false;
+        }
+      }
+      
       // Optional checkbox logic - if checked, uncheck mandatory
-      const optionalCheckbox = document.getElementById('optional');
+      const optionalCheckbox = document.getElementById('is_optional');
       const mandatoryCheckbox = document.getElementById('is_mandatory');
 
       optionalCheckbox.addEventListener('change', function() {

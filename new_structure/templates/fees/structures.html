@@ -784,10 +784,97 @@
           </tbody>
         </table>
         </div> <!-- Close table-wrapper -->
+        
+        <!-- Pagination Controls -->
+        {% if total_pages > 1 %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-top: 1px solid #e9ecef;">
+          <div style="color: #666; font-size: 14px;">
+            Showing {{ ((page - 1) * per_page) + 1 }} to {{ [page * per_page, total_count]|min }} of {{ total_count }} fee structures
+          </div>
+          
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <!-- Items per page selector -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-right: 15px;">
+              <label style="font-size: 13px; color: #666;">Show:</label>
+              <select onchange="changePerPage(this.value)" style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                <option value="20" {% if per_page == 20 %}selected{% endif %}>20</option>
+                <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                <option value="200" {% if per_page == 200 %}selected{% endif %}>200</option>
+              </select>
+            </div>
+            
+            <!-- Previous Button -->
+            {% if has_prev %}
+            <a href="{{ url_for('fees.fee_structures', page=page-1, per_page=per_page, education_level=current_level, term=current_term) }}" 
+               class="btn btn-sm btn-secondary">
+              ← Previous
+            </a>
+            {% else %}
+            <button class="btn btn-sm btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
+              ← Previous
+            </button>
+            {% endif %}
+            
+            <!-- Page Numbers -->
+            <div style="display: flex; gap: 5px;">
+              {% set start_page = [1, page - 2]|max %}
+              {% set end_page = [total_pages, page + 2]|min %}
+              
+              {% if start_page > 1 %}
+                <a href="{{ url_for('fees.fee_structures', page=1, per_page=per_page, education_level=current_level, term=current_term) }}" 
+                   class="btn btn-sm" style="background: white; border: 1px solid #ddd; min-width: 36px;">1</a>
+                {% if start_page > 2 %}
+                  <span style="padding: 6px 10px; color: #666;">...</span>
+                {% endif %}
+              {% endif %}
+              
+              {% for p in range(start_page, end_page + 1) %}
+                {% if p == page %}
+                  <button class="btn btn-sm btn-primary" style="min-width: 36px;">{{ p }}</button>
+                {% else %}
+                  <a href="{{ url_for('fees.fee_structures', page=p, per_page=per_page, education_level=current_level, term=current_term) }}" 
+                     class="btn btn-sm" style="background: white; border: 1px solid #ddd; min-width: 36px;">{{ p }}</a>
+                {% endif %}
+              {% endfor %}
+              
+              {% if end_page < total_pages %}
+                {% if end_page < total_pages - 1 %}
+                  <span style="padding: 6px 10px; color: #666;">...</span>
+                {% endif %}
+                <a href="{{ url_for('fees.fee_structures', page=total_pages, per_page=per_page, education_level=current_level, term=current_term) }}" 
+                   class="btn btn-sm" style="background: white; border: 1px solid #ddd; min-width: 36px;">{{ total_pages }}</a>
+              {% endif %}
+            </div>
+            
+            <!-- Next Button -->
+            {% if has_next %}
+            <a href="{{ url_for('fees.fee_structures', page=page+1, per_page=per_page, education_level=current_level, term=current_term) }}" 
+               class="btn btn-sm btn-secondary">
+              Next →
+            </a>
+            {% else %}
+            <button class="btn btn-sm btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
+              Next →
+            </button>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
       </div>
       </div> <!-- Close tableView -->
     </div>
 
+    <script>
+      // Function to change items per page
+      function changePerPage(perPage) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('per_page', perPage);
+        url.searchParams.set('page', '1'); // Reset to first page
+        window.location.href = url.toString();
+      }
+    
+    </script>
     <script>
       // Toggle select all checkboxes
       function toggleSelectAll() {

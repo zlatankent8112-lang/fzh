@@ -347,6 +347,142 @@
         display: inline-block;
         color: white;
       }
+      
+      /* Hamburger Menu */
+      .hamburger {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1001;
+      }
+      .nav-menu {
+        position: relative;
+      }
+      .hamburger span {
+        width: 25px;
+        height: 3px;
+        background: white;
+        margin: 3px 0;
+        transition: all 0.3s ease;
+        border-radius: 3px;
+      }
+      .hamburger.active span:nth-child(1) {
+        transform: rotate(45deg) translate(8px, 8px);
+      }
+      .hamburger.active span:nth-child(2) {
+        opacity: 0;
+      }
+      .hamburger.active span:nth-child(3) {
+        transform: rotate(-45deg) translate(7px, -7px);
+      }
+      
+      /* Mobile Menu Overlay */
+      .mobile-menu-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+      .mobile-menu-overlay.active {
+        display: block;
+      }
+      
+      /* Mobile Navigation */
+      @media (max-width: 768px) {
+        .hamburger {
+          display: flex;
+        }
+        .nav-links {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: 280px;
+          height: 100vh;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          flex-direction: column;
+          padding: 80px 20px 20px 20px;
+          box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+          transition: right 0.3s ease;
+          z-index: 1000;
+          overflow-y: auto;
+          gap: 10px;
+        }
+        .nav-links.active {
+          right: 0;
+        }
+        .nav-links a {
+          width: 100%;
+          justify-content: flex-start;
+          padding: 15px 20px;
+          font-size: 15px;
+          border-radius: 8px;
+        }
+        .stats-row {
+          flex-direction: column;
+          gap: 15px;
+          margin-bottom: 20px;
+          padding: 0 15px;
+        }
+        .stat-card {
+          min-width: 100%;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card h5 {
+          font-size: 13px;
+          margin-bottom: 8px;
+        }
+        .stat-card h2 {
+          font-size: 28px;
+        }
+        /* Gradient stat cards for better mobile appearance */
+        .stat-card.primary {
+          background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+        .stat-card.success {
+          background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        }
+        .stat-card.info {
+          background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .container {
+          padding: 15px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        .nav-stat-value {
+          font-size: 18px;
+        }
+        .nav-stat-label {
+          font-size: 9px;
+        }
+        table {
+          font-size: 12px;
+        }
+        table th,
+        table td {
+          padding: 8px 4px;
+        }
+        .stats-row {
+          padding: 0 10px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -364,6 +500,16 @@
 
       <!-- Enhanced Navigation Menu -->
       <div class="nav-menu">
+        <!-- Hamburger Menu Button (Mobile) -->
+        <div class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="toggleMobileMenu()"></div>
+        
         <!-- Search and Stats Header -->
         <div class="nav-menu-header">
           <div class="nav-search">
@@ -517,6 +663,49 @@
           if (e.key === "Escape") {
             searchInput.value = "";
             searchInput.blur();
+            // Also close mobile menu if open
+            closeMobileMenu();
+          }
+        });
+        
+        // Mobile menu toggle functions
+        function toggleMobileMenu() {
+          const hamburger = document.getElementById('hamburgerBtn');
+          const navLinks = document.querySelector('.nav-links');
+          const overlay = document.getElementById('mobileMenuOverlay');
+          
+          hamburger.classList.toggle('active');
+          navLinks.classList.toggle('active');
+          overlay.classList.toggle('active');
+          
+          // Prevent body scroll when menu is open
+          if (navLinks.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+          } else {
+            document.body.style.overflow = '';
+          }
+        }
+        
+        function closeMobileMenu() {
+          const hamburger = document.getElementById('hamburgerBtn');
+          const navLinks = document.querySelector('.nav-links');
+          const overlay = document.getElementById('mobileMenuOverlay');
+          
+          hamburger.classList.remove('active');
+          navLinks.classList.remove('active');
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+        
+        // Close menu when clicking on a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+          link.addEventListener('click', closeMobileMenu);
+        });
+        
+        // Close menu on window resize if desktop size
+        window.addEventListener('resize', function() {
+          if (window.innerWidth > 768) {
+            closeMobileMenu();
           }
         });
       </script>

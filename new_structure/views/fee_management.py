@@ -146,17 +146,30 @@ def fee_structures():
     current_level = request.args.get('education_level', '')
     current_term = request.args.get('term', '')
     
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    
     query = FeeStructure.query
     if current_level:
         query = query.filter_by(education_level=current_level)
     if current_term:
         query = query.filter_by(term=current_term)
     
+    # Get total count for pagination
+    total_count = query.count()
+    
+    # Apply ordering and pagination
     fees = query.order_by(
         FeeStructure.academic_year.desc(),
         FeeStructure.term,
         FeeStructure.allocation_priority
-    ).all()
+    ).offset((page - 1) * per_page).limit(per_page).all()
+    
+    # Calculate pagination details (ensure at least 1 page)
+    total_pages = max(1, (total_count + per_page - 1) // per_page) if total_count > 0 else 1
+    has_prev = page > 1
+    has_next = page < total_pages
     
     # Calculate usage counts for each fee structure
     fee_usage = {}
@@ -180,11 +193,16 @@ def fee_structures():
         .all()
     education_levels = [level[0] for level in education_levels]
     
-    # Group fees by term for card layout
+    # Group fees by term for card layout (query all fees for this level, not just paginated)
     fees_by_term = {}
     if current_level:
+        # Get ALL fees for this education level (not paginated) for accurate term cards
+        all_level_fees_query = FeeStructure.query.filter_by(education_level=current_level)
+        all_level_fees = all_level_fees_query.order_by(FeeStructure.allocation_priority).all()
+        
         for term in ['Term 1', 'Term 2', 'Term 3']:
-            term_fees = [f for f in fees if f.term == term and f.is_active]
+            # Include fees specific to this term OR fees that apply to all terms (term=None)
+            term_fees = [f for f in all_level_fees if (f.term == term or f.term is None) and f.is_active]
             if term_fees:
                 fees_by_term[term] = {
                     'fees': term_fees,
@@ -194,11 +212,18 @@ def fee_structures():
     
     return render_template('fees/structures.html', 
                          fees=fees,
+                         fee_structures=fees,  # Alias for nav stats
                          fee_usage=fee_usage,
                          current_level=current_level,
                          current_term=current_term,
                          education_levels=education_levels,
-                         fees_by_term=fees_by_term)
+                         fees_by_term=fees_by_term,
+                         page=page,
+                         per_page=per_page,
+                         total_pages=total_pages,
+                         total_count=total_count,
+                         has_prev=has_prev,
+                         has_next=has_next)
 
 
 @fee_bp.route('/structures/create', methods=['GET', 'POST'])
@@ -227,7 +252,23 @@ def create_fee_structure():
             ).first()
             
             if existing:
-                flash(f'⚠️ A fee structure with this name, academic year, term, frequency, and education level already exists!', 'warning')
+                # Provide detailed info about the duplicate
+                status = "Active" if existing.is_active else "Inactive"
+                mandatory = "Mandatory" if existing.is_mandatory else "Optional"
+                term_info = existing.term if existing.term else "All Terms"
+                
+                flash(f'⚠️ A fee structure with these details already exists!\n\n'
+                      f'📋 Name: {existing.fee_type_name}\n'
+                      f'💰 Amount: KES {existing.amount}\n'
+                      f'🎓 Level: {existing.education_level.replace("_", " ").title()}\n'
+                      f'📅 Term: {term_info}\n'
+                      f'🔄 Frequency: {existing.frequency}\n'
+                      f'✅ Status: {status}\n'
+                      f'⚡ Priority: {existing.allocation_priority}\n'
+                      f'📌 Type: {mandatory}\n\n'
+                      f'🔗 <a href="{url_for("fees.edit_fee_structure", fee_id=existing.id)}" style="color: #007bff;">Click here to edit the existing fee</a> or '
+                      f'<a href="{url_for("fees.fee_structures", education_level=existing.education_level)}" style="color: #007bff;">view all {existing.education_level.replace("_", " ").title()} fees</a>', 
+                      'warning')
                 grades = Grade.query.order_by(Grade.name).all()
                 return render_template('fees/create_structure.html', grades=grades, fee=None, form_data=request.form)
             
@@ -240,6 +281,10 @@ def create_fee_structure():
                 applies_to_grades_json = json.dumps(grade_list) if grade_list else None
             else:
                 applies_to_grades_json = None
+            
+            # Handle mandatory/optional logic - if optional is checked, mandatory should be False
+            is_optional = request.form.get('is_optional') == 'on'
+            is_mandatory = request.form.get('is_mandatory') == 'on' if not is_optional else False
             
             fee = FeeStructure(
                 fee_type_name=request.form['fee_type_name'],
@@ -254,7 +299,7 @@ def create_fee_structure():
                 applies_to_grades=applies_to_grades_json,
                 allocation_priority=int(request.form.get('allocation_priority', 1)),
                 allow_partial_payment=request.form.get('allow_partial_payment') == 'on',
-                is_mandatory=request.form.get('is_mandatory') == 'on',
+                is_mandatory=is_mandatory,
                 is_refundable=request.form.get('is_refundable') == 'on',
                 is_active=request.form.get('is_active') == 'on',
                 created_by=teacher_id
@@ -446,9 +491,9 @@ def edit_fee_structure(fee_id):
             else:
                 fee.applies_to_grades = None
             
-            # Handle optional checkbox (overrides mandatory)
-            is_optional = request.form.get('optional') == 'on'
-            is_mandatory_checked = request.form.get('is_mandatory') == 'on'
+            # Handle mandatory/optional logic - if optional is checked, mandatory should be False
+            is_optional = request.form.get('is_optional') == 'on'
+            is_mandatory = request.form.get('is_mandatory') == 'on' if not is_optional else False
             
             fee.fee_type_name = request.form['fee_type_name']
             fee.description = request.form.get('description')
@@ -461,7 +506,7 @@ def edit_fee_structure(fee_id):
             fee.frequency = request.form.get('frequency', 'per_term')
             fee.allocation_priority = int(request.form.get('allocation_priority', 1))
             fee.allow_partial_payment = request.form.get('allow_partial_payment') == 'on'
-            fee.is_mandatory = is_mandatory_checked and not is_optional  # Optional overrides mandatory
+            fee.is_mandatory = is_mandatory
             fee.is_refundable = request.form.get('is_refundable') == 'on'
             fee.is_active = request.form.get('is_active') == 'on'
             
@@ -637,7 +682,15 @@ def record_payment():
             teacher_id = session.get('teacher_id')
             student_id = int(request.form['student_id'])
             amount = Decimal(request.form['amount'])
-            method_id = int(request.form['method_id'])
+            
+            # Handle method_id - may be empty string or missing
+            method_id_str = request.form.get('method_id', '').strip()
+            if method_id_str:
+                method_id = int(method_id_str)
+            else:
+                # Default to M-PESA (method_id=2) if not provided
+                method_id = 2
+            
             reference = request.form.get('reference', '')
             allocation_mode = request.form.get('allocation_mode', 'auto')
             

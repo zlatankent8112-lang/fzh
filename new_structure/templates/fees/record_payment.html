@@ -1196,6 +1196,15 @@
           return;
         }
 
+        // Get student's admission number and name from selectedStudent variable
+        let accountReference = `STU${studentId}`;
+        let studentName = 'Student';
+
+        if (selectedStudent) {
+          accountReference = selectedStudent.admission_number || `STU${studentId}`;
+          studentName = selectedStudent.name || 'Student';
+        }
+
         // Disable button and show loading
         const btn = event.target;
         btn.disabled = true;
@@ -1206,6 +1215,8 @@
         formData.append('student_id', studentId);
         formData.append('amount', amount);
         formData.append('phone_number', phone);
+        formData.append('account_reference', accountReference);
+        formData.append('transaction_desc', `Fee payment for ${studentName}`);
 
         fetch('{{ url_for("mpesa.stk_push") }}', {
           method: 'POST',

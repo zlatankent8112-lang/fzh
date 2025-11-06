@@ -455,8 +455,10 @@
                                 <input 
                                     type="checkbox" 
                                     name="fees[${feeCounter}][mandatory]" 
+                                    id="mandatory-${feeCounter}"
                                     checked
                                     style="width: auto; margin: 0;"
+                                    onchange="handleMandatoryChange(${feeCounter})"
                                 />
                                 <strong>Mandatory</strong> - All students must pay
                             </label>
@@ -476,7 +478,9 @@
                                 <input 
                                     type="checkbox" 
                                     name="fees[${feeCounter}][optional]"
+                                    id="optional-${feeCounter}"
                                     style="width: auto; margin: 0;"
+                                    onchange="handleOptionalChange(${feeCounter})"
                                 />
                                 <strong>Optional</strong> - Parent can choose
                             </label>
@@ -508,6 +512,24 @@
             header.textContent = `Fee ${index + 1}`;
           }
         });
+      }
+      
+      function handleMandatoryChange(feeId) {
+        const mandatoryCheckbox = document.getElementById(`mandatory-${feeId}`);
+        const optionalCheckbox = document.getElementById(`optional-${feeId}`);
+        
+        if (mandatoryCheckbox.checked) {
+          optionalCheckbox.checked = false;
+        }
+      }
+      
+      function handleOptionalChange(feeId) {
+        const mandatoryCheckbox = document.getElementById(`mandatory-${feeId}`);
+        const optionalCheckbox = document.getElementById(`optional-${feeId}`);
+        
+        if (optionalCheckbox.checked) {
+          mandatoryCheckbox.checked = false;
+        }
       }
     </script>
   </body>

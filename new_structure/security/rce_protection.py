@@ -324,7 +324,10 @@ def rce_protection(f):
     def decorated_function(*args, **kwargs):
         # Validate form data
         if request.form:
+            safe_form_fields = {'csrf_token'}
             for field_name, value in request.form.items():
+                if field_name in safe_form_fields:
+                    continue
                 if not RCEProtection.validate_input_for_rce(value, field_name):
                     logging.warning(f"RCE attempt blocked on route: {request.endpoint}")
                     abort(400, "Potentially dangerous input detected")
